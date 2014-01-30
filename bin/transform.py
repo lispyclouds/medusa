@@ -260,10 +260,13 @@ class MyParser(ast.NodeVisitor):
         for node in stmt_While.body:
             self.visit(node)
 
-        code += stmt_While.test.left.id 
+        code += stmt_While.test.left.id
         code += "++; "
         code += "}"
-        
+
+    def visit_FunctionDef(self, stmt_function):
+        print stmt_function.name
+
 
 MyParser().parse(open(sys.argv[1]).read())
 
