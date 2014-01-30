@@ -207,7 +207,6 @@ class MyParser(ast.NodeVisitor):
 
         for node in stmt_For.body:
             self.visit(node)
-
         code += "}"
 
         if len(stmt_For.orelse) > 0:
