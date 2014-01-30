@@ -199,6 +199,7 @@ class MyParser(ast.NodeVisitor):
     def visit_For(self, stmt_For):
         global code
 
+        code += "var flag = false; "
         code += " for (var "
         code += stmt_For.target.id
         code += " in "
@@ -209,9 +210,60 @@ class MyParser(ast.NodeVisitor):
             self.visit(node)
         code += "}"
 
+        #if isinstance(stmt_For.body, Break())
+
         if len(stmt_For.orelse) > 0:
             for node in stmt_For.orelse:
                 self.visit(node)
+
+    def visit_While(self, stmt_While):
+        global code
+
+        code += " while ("
+        varType = str(type(stmt_While.test.left))[13:-2]
+
+        if varType == "Name":
+            if stmt_While.test.left.id == 'True':
+                code += "true"
+            elif stmt_While.test.left.id == 'False':
+                code += "false"
+            else:
+                code += stmt_While.test.left.id
+        elif varType == "Str":
+           code += stmt_While.test.left.s
+        elif varType == "Num":
+            code += str(stmt_While.test.left.n)
+        else:
+            print debug_warning
+            print "Type not recognized => ", varType
+
+        code += operators[str(type(stmt_While.test.ops[0]))[8:-2]]
+        varType = str(type(stmt_While.test.comparators[0]))[13:-2]
+
+        if varType == "Name":
+            if stmt_While.test.comparators[0].id == 'True':
+                code += "true"
+            elif stmt_While.test.comparators[0].id == 'False':
+                code += "false"
+            else:
+                code += stmt_While.test.comparators[0].id
+        elif varType == "Str":
+            code += stmt_While.test.comparators[0].s
+        elif varType == "Num":
+            code += str(stmt_While.test.comparators[0].n)
+        else:
+            print debug_warning
+            print "Type not recognized => ", varType
+
+        code += ") "
+        code += " {"
+        for node in stmt_While.body:
+            self.visit(node)
+
+        code += stmt_While.test.left.id 
+        code += "++; "
+        code += "}"
+        
 
 MyParser().parse(open(sys.argv[1]).read())
 
