@@ -3,6 +3,7 @@
 import ast, _ast, sys
 
 imports = []
+local = []
 functions = []
 symTab = []
 
@@ -223,8 +224,6 @@ class MyParser(ast.NodeVisitor):
             self.visit(node)
         code += "}"
 
-        #if isinstance(stmt_For.body, Break())
-
         if len(stmt_For.orelse) > 0:
             for node in stmt_For.orelse:
                 self.visit(node)
@@ -279,7 +278,6 @@ class MyParser(ast.NodeVisitor):
 
     def visit_FunctionDef(self, stmt_function):
         print stmt_function.name
-
 
 MyParser().parse(open(sys.argv[1]).read())
 
