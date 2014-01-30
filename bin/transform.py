@@ -196,7 +196,6 @@ class MyParser(ast.NodeVisitor):
                 self.visit(node)
             code += "}"
 
-
     def visit_For(self, stmt_For):
         global code
 
@@ -205,16 +204,16 @@ class MyParser(ast.NodeVisitor):
         code += " in "
         code += stmt_For.iter.id
         code += " ) {"
-        
+
         for node in stmt_For.body:
             self.visit(node)
 
         code += "}"
-        
-        if hasattr(stmt_For, 'orelse'):
+
+        if len(stmt_For.orelse) > 0:
             for node in stmt_For.orelse:
                 self.visit(node)
-                
+
 MyParser().parse(open(sys.argv[1]).read())
 
 code += " }"
