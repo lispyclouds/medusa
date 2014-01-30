@@ -6,9 +6,6 @@ imports = []
 functions = []
 symTab = []
 
-#Testing Git
-#sample comment
-
 debug_notification = "**** Medusa Notification ****"
 debug_warning = "**** Medusa Warning ****"
 debugging_message = "**** Medusa Debug ****"
