@@ -150,40 +150,53 @@ class MyParser(ast.NodeVisitor):
         global code
 
         code += "if("
-        varType = str(type(stmt_If.test.left))[13:-2]
-
-        if varType == "Name":
-            if stmt_If.test.left.id == 'True':
+        if hasattr(stmt_If.test, 'left'):
+            varType = str(type(stmt_If.test.left))[13:-2]
+            if varType == "Name":
+                if stmt_If.test.left.id == 'True':
+                    code += "true"
+                elif stmt_If.test.left.id == 'False':
+                    code += "false"
+                else:
+                    code += stmt_If.test.left.id
+            elif varType == "Str":
+                code += stmt_If.test.left.s
+            elif varType == "Num":
+                code += str(stmt_If.test.left.n)
+            elif varType == "BinOp":
+                code += self.parseExp(stmt_If.test.left)
+            else:
+                print debug_warning
+                print "Type not recognized => ", varType
+        elif str(type(stmt_If.test))[13:-2] == "Name":
+            if stmt_If.test.id == "True":
                 code += "true"
-            elif stmt_If.test.left.id == 'False':
+            elif stmt_If.test.id == "False":
                 code += "false"
             else:
-                code += stmt_If.test.left.id
-        elif varType == "Str":
-            code += stmt_If.test.left.s
-        elif varType == "Num":
-            code += str(stmt_If.test.left.n)
-        else:
-            print debug_warning
-            print "Type not recognized => ", varType
+                print type(stmt_If.test.id)
 
-        code += operators[str(type(stmt_If.test.ops[0]))[8:-2]]
-        varType = str(type(stmt_If.test.comparators[0]))[13:-2]
+        if hasattr(stmt_If.test, 'ops'):
+            code += operators[str(type(stmt_If.test.ops[0]))[8:-2]]
 
-        if varType == "Name":
-            if stmt_If.test.comparators[0].id == 'True':
-                code += "true"
-            elif stmt_If.test.comparators[0].id == 'False':
-                code += "false"
+        if hasattr(stmt_If.test, 'comparators'):
+            varType = str(type(stmt_If.test.comparators[0]))[13:-2]
+            if varType == "Name":
+                if stmt_If.test.comparators[0].id == 'True':
+                    code += "true"
+                elif stmt_If.test.comparators[0].id == 'False':
+                    code += "false"
+                else:
+                    code += stmt_If.test.comparators[0].id
+            elif varType == "Str":
+                code += stmt_If.test.comparators[0].s
+            elif varType == "Num":
+                code += str(stmt_If.test.comparators[0].n)
+            elif varType == "BinOp":
+                code += self.parseExp(stmt_If.test.comparators[0])
             else:
-                code += stmt_If.test.comparators[0].id
-        elif varType == "Str":
-            code += stmt_If.test.comparators[0].s
-        elif varType == "Num":
-            code += str(stmt_If.test.comparators[0].n)
-        else:
-            print debug_warning
-            print "Type not recognized => ", varType
+                print debug_warning
+                print "Type not recognized => ", varType
 
         code += ") {"
         for node in stmt_If.body:
