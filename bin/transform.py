@@ -64,7 +64,7 @@ class MyParser(ast.NodeVisitor):
                 v = self.parseExp(item)
             elif isinstance(item, _ast.Call):
                 expCall = True
-                self.visit_Call(item)
+                self.visit_Call(item, True)
                 expCall = False
                 v = func
                 func = ""
@@ -83,7 +83,7 @@ class MyParser(ast.NodeVisitor):
 
         if isinstance(expr.left, _ast.Call):
             expCall = True
-            self.visit_Call(expr.left)
+            self.visit_Call(expr.left, True)
             expCall = False
             exp += func
             func = ""
@@ -107,7 +107,7 @@ class MyParser(ast.NodeVisitor):
 
         if isinstance(expr.right, _ast.Call):
             expCall = True
-            self.visit_Call(expr.right)
+            self.visit_Call(expr.right, True)
             expCall = False
             exp += func
             func = ""
@@ -145,7 +145,7 @@ class MyParser(ast.NodeVisitor):
             elif isinstance(stmt_print.values[i], _ast.BinOp):
                 data = self.parseExp(stmt_print.values[i])
             elif isinstance(stmt_print.values[i], _ast.Call):
-                self.visit_Call(stmt_print.values[i])
+                self.visit_Call(stmt_print.values[i], True)
 
             code += str(data) + ");"
             if (i + 1) < values:
@@ -181,7 +181,7 @@ class MyParser(ast.NodeVisitor):
             elif isinstance(stmt_assign.value, _ast.BinOp):
                 value = self.parseExp(stmt_assign.value)
             elif isinstance(stmt_assign.value, _ast.Call):
-                self.visit_Call(stmt_assign.value)
+                self.visit_Call(stmt_assign.value, True)
 
             if value != "":
                  code += str(value)
@@ -349,9 +349,9 @@ class MyParser(ast.NodeVisitor):
 
         code = code + temp
 
-    def visit_Call(self, stmt_call):
+    def visit_Call(self, stmt_call, myVar=False):
         global code, expCall, func
-
+        #print myVar
         if expCall:
             func += stmt_call.func.id + "("
         else:
@@ -376,11 +376,18 @@ class MyParser(ast.NodeVisitor):
                     p = self.parseList(stmt_call.args[i].elts)
                 elif isinstance(stmt_call.args[i], _ast.BinOp):
                     p = self.parseExp(stmt_call.args[i])
+                elif isinstance(stmt_call.args[i], _ast.Call):
+                    p = self.visit_Call(stmt_call.args[i], True)
+                else:
+                    print debug_warning
+                    #print "Type not recognized => ", stmt_call.args[i]
 
                 if expCall:
-                    func += str(p)
+                    if p is not None:
+                        func += str(p)
                 else:
-                    code += str(p)
+                    if p is not None:
+                        code += str(p)
 
                 if (i + 1) < alen:
                     if expCall:
@@ -393,6 +400,9 @@ class MyParser(ast.NodeVisitor):
                     else:
                         code += ")"
                 i += 1
+
+        if myVar == False:
+            code += ";"
 
     def visit_Return(self, stmt_return):
         global code
@@ -411,7 +421,7 @@ class MyParser(ast.NodeVisitor):
         elif isinstance(stmt_return.value, _ast.BinOp):
             v = self.parseExp(stmt_return.value)
         elif isinstance(stmt_return.value, _ast.Call):
-            self.visit_Call(stmt_return.value)
+            self.visit_Call(stmt_return.value, True)
 
         if v != "":
             code += str(v)
