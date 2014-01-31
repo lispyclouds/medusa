@@ -353,9 +353,9 @@ class MyParser(ast.NodeVisitor):
         global code, expCall, func
 
         if expCall:
-            func += stmt_call.func.id + "("
+            func += " " + stmt_call.func.id + "("
         else:
-            code += stmt_call.func.id + "("
+            code += " " + stmt_call.func.id + "("
         alen = len(stmt_call.args)
 
         if alen == 0:
@@ -415,7 +415,7 @@ class MyParser(ast.NodeVisitor):
 
         if v != "":
             code += str(v)
-        code += ";"
+        code += "; "
 
 MyParser().parse(open(sys.argv[1]).read())
 
