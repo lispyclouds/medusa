@@ -16,12 +16,12 @@ debugging_message = "**** Medusa Debug ****"
 debug_error = "**** Medusa Error ****"
 
 operators = dict()
-operators['_ast.Eq'] = "=="
-operators['_ast.Gt'] = ">"
-operators['_ast.GtE'] = ">="
-operators['_ast.Lt'] = "<"
-operators['_ast.LtE'] = "<="
-operators['_ast.NotEq'] = "!="
+operators['_ast.Eq'] = " == "
+operators['_ast.Gt'] = " > "
+operators['_ast.GtE'] = " >= "
+operators['_ast.Lt'] = " < "
+operators['_ast.LtE'] = " <= "
+operators['_ast.NotEq'] = " != "
 
 outFile = open("out.dart", 'w')
 code = "void main() {"
@@ -43,6 +43,8 @@ class MyParser(ast.NodeVisitor):
         return s
 
     def parseList(self, theList):
+        global func, expCall
+
         strList = "["
         i = 0
         l = len(theList)
@@ -60,6 +62,12 @@ class MyParser(ast.NodeVisitor):
                 v = self.parseList(item.elts)
             elif isinstance(item, _ast.BinOp):
                 v = self.parseExp(item)
+            elif isinstance(item, _ast.Call):
+                expCall = True
+                self.visit_Call(item)
+                expCall = False
+                v = func
+                func = ""
 
             strList += str(v)
             if (i + 1) < l:
@@ -182,7 +190,7 @@ class MyParser(ast.NodeVisitor):
     def visit_If(self, stmt_if):
         global code
 
-        code += "if("
+        code += " if("
         if hasattr(stmt_if.test, 'left'):
             varType = str(type(stmt_if.test.left))[13:-2]
             if varType == "Name":
