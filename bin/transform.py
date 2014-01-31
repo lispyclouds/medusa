@@ -351,7 +351,7 @@ class MyParser(ast.NodeVisitor):
 
     def visit_Call(self, stmt_call, myVar=False):
         global code, expCall, func
-        #print myVar
+
         if expCall:
             func += " " + stmt_call.func.id + "("
         else:
@@ -380,7 +380,7 @@ class MyParser(ast.NodeVisitor):
                     p = self.visit_Call(stmt_call.args[i], True)
                 else:
                     print debug_warning
-                    #print "Type not recognized => ", stmt_call.args[i]
+                    print "Type not recognized => ", stmt_call.args[i]
 
                 if expCall:
                     if p is not None:
