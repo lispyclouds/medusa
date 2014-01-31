@@ -7,7 +7,8 @@ funVars = []
 symTab = []
 
 funMode = False
-func = 0
+expCall = False
+func = ""
 
 debug_notification = "**** Medusa Notification ****"
 debug_warning = "**** Medusa Warning ****"
@@ -69,15 +70,23 @@ class MyParser(ast.NodeVisitor):
         return strList
 
     def parseExp(self, expr):
+        global expCall, func
         exp = ""
 
-        if isinstance(expr.left, _ast.BinOp):
-            exp += self.parseExp(expr.left)
+        if isinstance(expr.left, _ast.Call):
+            expCall = True
+            self.visit_Call(expr.left)
+            expCall = False
+            exp += func
+            func = ""
         else:
-            if hasattr(expr.left, 'n'):
-                exp += str(expr.left.n)
+            if isinstance(expr.left, _ast.BinOp):
+                exp += self.parseExp(expr.left)
             else:
-                exp += str(expr.left.id)
+                if hasattr(expr.left, 'n'):
+                    exp += str(expr.left.n)
+                else:
+                    exp += str(expr.left.id)
 
         if isinstance(expr.op, _ast.Add):
             exp += " + "
@@ -88,13 +97,20 @@ class MyParser(ast.NodeVisitor):
         else:
             exp += " / "
 
-        if isinstance(expr.right, _ast.BinOp):
-            exp += self.parseExp(expr.right)
+        if isinstance(expr.right, _ast.Call):
+            expCall = True
+            self.visit_Call(expr.right)
+            expCall = False
+            exp += func
+            func = ""
         else:
-            if hasattr(expr.right, 'n'):
-                exp += str(expr.right.n)
+            if isinstance(expr.right, _ast.BinOp):
+                exp += self.parseExp(expr.right)
             else:
-                exp += str(expr.right.id)
+                if hasattr(expr.right, 'n'):
+                    exp += str(expr.right.n)
+                else:
+                    exp += str(expr.right.id)
 
         return "(" + exp + ")" #Saxx
 
@@ -120,6 +136,8 @@ class MyParser(ast.NodeVisitor):
                 data = self.parseList(stmt_print.values[i].elts)
             elif isinstance(stmt_print.values[i], _ast.BinOp):
                 data = self.parseExp(stmt_print.values[i])
+            elif isinstance(stmt_print.values[i], _ast.Call):
+                self.visit_Call(stmt_print.values[i])
 
             code += str(data) + ");"
             if (i + 1) < values:
@@ -129,17 +147,20 @@ class MyParser(ast.NodeVisitor):
             i += 1
 
     def visit_Assign(self, stmt_assign):
-        global code, funVars
+        global code, funVars, funMode
 
         for target in stmt_assign.targets:
             if funMode:
-                if symTab.__contains__(target.id) == False:
-                    symTab.append(target.id)
-                    code += " var"
-            else:
                 if funVars.__contains__(target.id) == False:
                     funVars.append(target.id)
                     code += " var"
+            else:
+                if symTab.__contains__(target.id) == False:
+                    symTab.append(target.id)
+                    code += " var"
+
+            value = ""
+            code += " " + target.id + " = ";
 
             if isinstance(stmt_assign.value, _ast.Num):
                 value = stmt_assign.value.n
@@ -151,8 +172,12 @@ class MyParser(ast.NodeVisitor):
                 value = stmt_assign.value.id
             elif isinstance(stmt_assign.value, _ast.BinOp):
                 value = self.parseExp(stmt_assign.value)
+            elif isinstance(stmt_assign.value, _ast.Call):
+                self.visit_Call(stmt_assign.value)
 
-            code += " " + target.id + " = " + str(value) + ";"
+            if value != "":
+                 code += str(value)
+            code += ";"
 
     def visit_If(self, stmt_if):
         global code
@@ -284,7 +309,7 @@ class MyParser(ast.NodeVisitor):
         code += "}"
 
     def visit_FunctionDef(self, stmt_function):
-        global code, funVars
+        global code, funVars, funMode
 
         temp = code
         code = ""
@@ -309,6 +334,7 @@ class MyParser(ast.NodeVisitor):
 
         for node in stmt_function.body:
             self.visit(node)
+
         funMode = False
         code += " } "
         funVars = []
@@ -316,13 +342,19 @@ class MyParser(ast.NodeVisitor):
         code = code + temp
 
     def visit_Call(self, stmt_call):
-        global code
+        global code, expCall, func
 
-        code += " " + stmt_call.func.id + "("
+        if expCall:
+            func += stmt_call.func.id + "("
+        else:
+            code += stmt_call.func.id + "("
         alen = len(stmt_call.args)
 
         if alen == 0:
-            code += ");"
+            if expCall:
+                func += ")"
+            else:
+                code += ")"
         else:
             i = 0
             while i < alen:
@@ -337,13 +369,45 @@ class MyParser(ast.NodeVisitor):
                 elif isinstance(stmt_call.args[i], _ast.BinOp):
                     p = self.parseExp(stmt_call.args[i])
 
-                code += str(p)
+                if expCall:
+                    func += str(p)
+                else:
+                    code += str(p)
 
                 if (i + 1) < alen:
-                    code += ", "
+                    if expCall:
+                        func += ", "
+                    else:
+                        code += ", "
                 else:
-                    code += ");"
+                    if expCall:
+                        func += ")"
+                    else:
+                        code += ")"
                 i += 1
+
+    def visit_Return(self, stmt_return):
+        global code
+
+        code += " return "
+        v = ""
+
+        if isinstance(stmt_return.value, _ast.Name):
+            v = stmt_return.value.id
+        elif isinstance(stmt_return.value, _ast.Num):
+            v = stmt_return.value.n
+        elif isinstance(stmt_return.value, _ast.Str):
+            v = "'" + stmt_return.value.s + "'"
+        elif isinstance(stmt_return.value, _ast.List):
+            v = self.parseList(stmt_return.value.elts)
+        elif isinstance(stmt_return.value, _ast.BinOp):
+            v = self.parseExp(stmt_return.value)
+        elif isinstance(stmt_return.value, _ast.Call):
+            self.visit_Call(stmt_return.value)
+
+        if v != "":
+            code += str(v)
+        code += ";"
 
 MyParser().parse(open(sys.argv[1]).read())
 
