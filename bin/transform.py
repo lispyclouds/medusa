@@ -312,13 +312,8 @@ class MyParser(ast.NodeVisitor):
         for node in stmt_while.body:
             self.visit(node)
 
-<<<<<<< HEAD
-        code += stmt_while.test.left.id
-        code += "++; "
-        code += " }"
-=======
         code += "}"
->>>>>>> upstream/master
+
 
     def  visit_AugAssign(self, stmt_aug_assign):
         global code
