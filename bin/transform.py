@@ -122,14 +122,11 @@ class MyParser(ast.NodeVisitor):
 
         return "(" + exp + ")" #Saxx
 
-    def addImport(self, module):
-        if imports.__contains__("dart:io") == False:
-            imports.append("dart:io")
-
     def visit_Print(self, stmt_print):
         global code
 
-        self.addImport("dart:io")
+        if imports.__contains__("dart:io") == False:
+            imports.append("dart:io")
 
         data = ""
         i = 0
@@ -316,8 +313,7 @@ class MyParser(ast.NodeVisitor):
             print debug_warning
             print "Type not recognized => ", varType
 
-        code += ") "
-        code += " {"
+        code += ") {"
         for node in stmt_while.body:
             self.visit(node)
 
@@ -355,7 +351,11 @@ class MyParser(ast.NodeVisitor):
             print debug_warning
             print "Type not recognized"
 
-        code += str(stmt_aug_assign.value.n)
+        if isinstance(stmt_aug_assign.value, _ast.Num):
+            code += str(stmt_aug_assign.value.n)
+        elif isinstance(stmt_aug_assign.value, _ast.Name):
+            code += str(stmt_aug_assign.value.id)
+
         code += ";"
 
     def visit_FunctionDef(self, stmt_function):
@@ -395,7 +395,8 @@ class MyParser(ast.NodeVisitor):
         global code, expCall, func
 
         if stmt_call.func.id == 'range':
-            self.addImport("lib/range.dart")
+            if imports.__contains__("lib/range.dart") == False:
+                imports.append("lib/range.dart")
 
         if expCall:
             func += stmt_call.func.id + "("
