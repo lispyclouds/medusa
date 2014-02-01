@@ -122,7 +122,6 @@ class MyParser(ast.NodeVisitor):
 
         return "(" + exp + ")" #Saxx
 
-<<<<<<< HEAD
     def subscriptHandle(self, stmt_Subscript):
         data = str(stmt_Subscript.value.id)
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
@@ -139,11 +138,10 @@ class MyParser(ast.NodeVisitor):
             print debug_warning
             print "Type not recognized => ", type(stmt_Subscript.slice)
         return data
-=======
+
     def addImport(self, module):
         if imports.__contains__(module) == False:
             imports.append(module)
->>>>>>> upstream/master
 
     def visit_Print(self, stmt_print):
         global code
@@ -288,11 +286,8 @@ class MyParser(ast.NodeVisitor):
             self.visit_Call(stmt_For.iter, True)
         elif isinstance(stmt_For.iter, _ast.Name):
             code += stmt_For.iter.id
-<<<<<<< HEAD
-=======
         else:
             print "This type of for loop not yet handled"
->>>>>>> upstream/master
 
         code += " ) {"
 
