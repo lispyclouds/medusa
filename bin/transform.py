@@ -190,7 +190,7 @@ class MyParser(ast.NodeVisitor):
     def visit_If(self, stmt_if):
         global code
 
-        code += " if("
+        code += " if ("
         if hasattr(stmt_if.test, 'left'):
             varType = str(type(stmt_if.test.left))[13:-2]
             if varType == "Name":
@@ -313,8 +313,7 @@ class MyParser(ast.NodeVisitor):
             print debug_warning
             print "Type not recognized => ", varType
 
-        code += ") "
-        code += " {"
+        code += ") {"
         for node in stmt_while.body:
             self.visit(node)
 
@@ -352,7 +351,11 @@ class MyParser(ast.NodeVisitor):
             print debug_warning
             print "Type not recognized"
 
-        code += str(stmt_aug_assign.value.n)
+        if isinstance(stmt_aug_assign.value, _ast.Num):
+            code += str(stmt_aug_assign.value.n)
+        elif isinstance(stmt_aug_assign.value, _ast.Name):
+            code += str(stmt_aug_assign.value.id)
+        
         code += ";"
 
     def visit_FunctionDef(self, stmt_function):
@@ -423,7 +426,7 @@ class MyParser(ast.NodeVisitor):
                     p = self.visit_Call(stmt_call.args[i], True)
                 else:
                     print debug_warning
-                    #print "Type not recognized => ", stmt_call.args[i]
+                    print "Type not recognized => ", stmt_call.args[i]
 
                 if expCall:
                     if p is not None:
