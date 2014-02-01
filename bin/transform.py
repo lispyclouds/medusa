@@ -122,11 +122,14 @@ class MyParser(ast.NodeVisitor):
 
         return "(" + exp + ")" #Saxx
 
+    def addImport(self, module):
+        if imports.__contains__("dart:io") == False:
+            imports.append("dart:io")
+
     def visit_Print(self, stmt_print):
         global code
 
-        if imports.__contains__("dart:io") == False:
-            imports.append("dart:io")
+        self.addImport("dart:io")
 
         data = ""
         i = 0
@@ -190,7 +193,7 @@ class MyParser(ast.NodeVisitor):
     def visit_If(self, stmt_if):
         global code
 
-        code += " if("
+        code += " if ("
         if hasattr(stmt_if.test, 'left'):
             varType = str(type(stmt_if.test.left))[13:-2]
             if varType == "Name":
@@ -253,11 +256,17 @@ class MyParser(ast.NodeVisitor):
     def visit_For(self, stmt_For):
         global code
 
-        code += "var flag = false; "
         code += " for (var "
         code += stmt_For.target.id
         code += " in "
-        code += stmt_For.iter.id
+
+        if isinstance(stmt_For.iter, _ast.Call):
+            self.visit_Call(stmt_For.iter, True)
+        elif isinstance(stmt_For.iter, _ast.Name):
+            code += stmt_For.iter.id
+        else:
+            print "This type of for loop not yet handled"
+
         code += " ) {"
 
         for node in stmt_For.body:
@@ -384,7 +393,10 @@ class MyParser(ast.NodeVisitor):
 
     def visit_Call(self, stmt_call, myVar=False):
         global code, expCall, func
-        #print myVar
+
+        if stmt_call.func.id == 'range':
+            self.addImport("lib/range.dart")
+
         if expCall:
             func += stmt_call.func.id + "("
         else:
@@ -413,7 +425,7 @@ class MyParser(ast.NodeVisitor):
                     p = self.visit_Call(stmt_call.args[i], True)
                 else:
                     print debug_warning
-                    #print "Type not recognized => ", stmt_call.args[i]
+                    print "Type not recognized => ", stmt_call.args[i]
 
                 if expCall:
                     if p is not None:
