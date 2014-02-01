@@ -257,11 +257,16 @@ class MyParser(ast.NodeVisitor):
     def visit_For(self, stmt_For):
         global code
 
-        code += "var flag = false; "
         code += " for (var "
         code += stmt_For.target.id
         code += " in "
-        code += stmt_For.iter.id
+
+        if stmt_For.iter.func.id == 'range':
+            self.visit_Call(stmt_For.iter, True)
+            #print stmt_For.iter
+        else :
+            code += stmt_For.iter.id
+        
         code += " ) {"
 
         for node in stmt_For.body:
@@ -388,6 +393,14 @@ class MyParser(ast.NodeVisitor):
 
     def visit_Call(self, stmt_call, myVar=False):
         global code, expCall, func
+<<<<<<< HEAD
+=======
+        
+        if stmt_call.func.id == 'range':
+            if imports.__contains__("lib/range.dart") == False:
+                imports.append("lib/range.dart")
+
+>>>>>>> upstream/master
         if expCall:
             func += stmt_call.func.id + "("
         else:
