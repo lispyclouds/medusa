@@ -312,9 +312,25 @@ class MyParser(ast.NodeVisitor):
         for node in stmt_while.body:
             self.visit(node)
 
-        code += stmt_while.test.left.id
-        code += "++; "
         code += "}"
+
+    def  visit_AugAssign(self, stmt_aug_assign):
+        global code
+
+        code += " "
+        code += stmt_aug_assign.target.id
+
+        if isinstance(stmt_aug_assign.op, _ast.Add):
+            code += " += "
+        elif isinstance(stmt_aug_assign.op, _ast.Sub):
+            code += " -= "
+        elif isinstance(stmt_aug_assign.op, _ast.Mult):
+            code += " *= "
+        else:
+            code += " /= "
+
+        code += str(stmt_aug_assign.value.n)
+        code += ";"
 
     def visit_FunctionDef(self, stmt_function):
         global code, funVars, funMode
