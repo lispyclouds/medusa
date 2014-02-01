@@ -257,12 +257,13 @@ class MyParser(ast.NodeVisitor):
         code += stmt_For.target.id
         code += " in "
 
-        if stmt_For.iter.func.id == 'range':
+        if isinstance(stmt_For.iter, _ast.Call):
             self.visit_Call(stmt_For.iter, True)
-            #print stmt_For.iter
-        else :
+        elif isinstance(stmt_For.iter, _ast.Name):
             code += stmt_For.iter.id
-        
+        else:
+            print "This type of for loop not yet handled"
+
         code += " ) {"
 
         for node in stmt_For.body:
