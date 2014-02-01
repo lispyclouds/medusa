@@ -122,6 +122,23 @@ class MyParser(ast.NodeVisitor):
 
         return "(" + exp + ")" #Saxx
 
+    def subscriptHandle(self, stmt_Subscript):
+        data = str(stmt_Subscript.value.id)
+        if str(type(stmt_Subscript.slice))[13:-2] == "Index":
+            if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
+                data += "[" + stmt_Subscript.slice.value.n + "]"
+            elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
+                data += "[" + stmt_Subscript.slice.value.id + "]"
+            else:
+                print debug_warning
+                print "Type not recognized => ", type(stmt_Subscript.slice.value)
+        elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
+
+        else:
+            print debug_warning
+            print "Type not recognized => ", type(stmt_Subscript.slice)
+        return data
+
     def visit_Print(self, stmt_print):
         global code
 
@@ -146,6 +163,11 @@ class MyParser(ast.NodeVisitor):
                 data = self.parseExp(stmt_print.values[i])
             elif isinstance(stmt_print.values[i], _ast.Call):
                 self.visit_Call(stmt_print.values[i], True)
+            elif isinstance(stmt_print.values[i], _ast.Subscript):
+                data = self.subscriptHandle(stmt_print.values[i])
+            else:
+                print debug_warning
+                print "Type not recognized => ", str(type(stmt_print.values[i]))
 
             code += str(data) + ");"
             if (i + 1) < values:
@@ -186,10 +208,6 @@ class MyParser(ast.NodeVisitor):
             if value != "":
                  code += str(value)
             code += ";"
-
-    def visit_AugAssign(self, stmt_AugAssign):
-        global code, funVars, funMode
-
 
     def visit_If(self, stmt_if):
         global code
@@ -266,7 +284,7 @@ class MyParser(ast.NodeVisitor):
             #print stmt_For.iter
         else :
             code += stmt_For.iter.id
-        
+
         code += " ) {"
 
         for node in stmt_For.body:
@@ -393,14 +411,11 @@ class MyParser(ast.NodeVisitor):
 
     def visit_Call(self, stmt_call, myVar=False):
         global code, expCall, func
-<<<<<<< HEAD
-=======
-        
+
         if stmt_call.func.id == 'range':
             if imports.__contains__("lib/range.dart") == False:
                 imports.append("lib/range.dart")
 
->>>>>>> upstream/master
         if expCall:
             func += stmt_call.func.id + "("
         else:
@@ -429,7 +444,7 @@ class MyParser(ast.NodeVisitor):
                     p = self.visit_Call(stmt_call.args[i], True)
                 else:
                     print debug_warning
-                    print "Type not recognized => ", stmt_call.args[i]
+                    #print "Type not recognized => ", stmt_call.args[i]
 
                 if expCall:
                     if p is not None:
