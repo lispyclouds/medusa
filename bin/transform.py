@@ -190,7 +190,7 @@ class MyParser(ast.NodeVisitor):
     def visit_If(self, stmt_if):
         global code
 
-        code += " if("
+        code += " if ("
         if hasattr(stmt_if.test, 'left'):
             varType = str(type(stmt_if.test.left))[13:-2]
             if varType == "Name":
@@ -243,12 +243,12 @@ class MyParser(ast.NodeVisitor):
         for node in stmt_if.body:
             self.visit(node)
 
-        code += "}"
+        code += " }"
         if len(stmt_if.orelse) > 0:
             code += " else {"
             for node in stmt_if.orelse:
                 self.visit(node)
-            code += "}"
+            code += " }"
 
     def visit_For(self, stmt_For):
         global code
@@ -262,7 +262,7 @@ class MyParser(ast.NodeVisitor):
 
         for node in stmt_For.body:
             self.visit(node)
-        code += "}"
+        code += " }"
 
         if len(stmt_For.orelse) > 0:
             for node in stmt_For.orelse:
@@ -314,7 +314,7 @@ class MyParser(ast.NodeVisitor):
 
         code += stmt_while.test.left.id
         code += "++; "
-        code += "}"
+        code += " }"
 
     def visit_FunctionDef(self, stmt_function):
         global code, funVars, funMode
@@ -425,7 +425,7 @@ class MyParser(ast.NodeVisitor):
 
         if v != "":
             code += str(v)
-        code += "; "
+        code += ";"
 
 MyParser().parse(open(sys.argv[1]).read())
 
