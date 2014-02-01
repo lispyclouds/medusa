@@ -405,7 +405,7 @@ class MyParser(ast.NodeVisitor):
             self.visit(node)
 
         funMode = False
-        code += " } "
+        code += " }"
         funVars = []
 
         code = code + temp
@@ -415,6 +415,8 @@ class MyParser(ast.NodeVisitor):
 
         if stmt_call.func.id == 'range':
             self.addImport("lib/range.dart")
+        elif stmt_call.func.id == 'input':
+            self.addImport("lib/input.dart")
 
         if expCall:
             func += stmt_call.func.id + "("
