@@ -132,6 +132,23 @@ class MyParser(ast.NodeVisitor):
 
         return "(" + exp + ")" #Saxx
 
+    def subscriptHandle(self, stmt_Subscript):
+        data = str(stmt_Subscript.value.id)
+        if str(type(stmt_Subscript.slice))[13:-2] == "Index":
+            if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
+                data += "[" + stmt_Subscript.slice.value.n + "]"
+            elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
+                data += "[" + stmt_Subscript.slice.value.id + "]"
+            else:
+                print debug_warning
+                print "Type not recognized => ", type(stmt_Subscript.slice.value)
+        elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
+
+        else:
+            print debug_warning
+            print "Type not recognized => ", type(stmt_Subscript.slice)
+        return data
+
     def addImport(self, module):
         if imports.__contains__(module) == False:
             imports.append(module)
@@ -159,6 +176,11 @@ class MyParser(ast.NodeVisitor):
                 data = self.parseExp(stmt_print.values[i])
             elif isinstance(stmt_print.values[i], _ast.Call):
                 self.visit_Call(stmt_print.values[i], True)
+            elif isinstance(stmt_print.values[i], _ast.Subscript):
+                data = self.subscriptHandle(stmt_print.values[i])
+            else:
+                print debug_warning
+                print "Type not recognized => ", str(type(stmt_print.values[i]))
 
             code += str(data) + ");"
             if (i + 1) < values:
