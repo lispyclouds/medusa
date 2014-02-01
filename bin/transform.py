@@ -317,6 +317,7 @@ class MyParser(ast.NodeVisitor):
             print "Type not recognized => ", varType
 
         code += ") {"
+
         for node in stmt_while.body:
             self.visit(node)
 
