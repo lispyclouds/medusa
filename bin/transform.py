@@ -123,8 +123,8 @@ class MyParser(ast.NodeVisitor):
         return "(" + exp + ")" #Saxx
 
     def addImport(self, module):
-        if imports.__contains__("dart:io") == False:
-            imports.append("dart:io")
+        if imports.__contains__(module) == False:
+            imports.append(module)
 
     def visit_Print(self, stmt_print):
         global code
