@@ -142,8 +142,6 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.value)
-        elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
-
         else:
             print debug_warning
             print "Type not recognized => ", type(stmt_Subscript.slice)
@@ -358,6 +356,7 @@ class MyParser(ast.NodeVisitor):
 
     def  visit_AugAssign(self, stmt_aug_assign):
         global code
+        powFlag = False
 
         code += " "+ stmt_aug_assign.target.id
 
@@ -376,6 +375,7 @@ class MyParser(ast.NodeVisitor):
             code += " = pow ("
             code += stmt_aug_assign.target.id
             code += ", "
+            powFlag = True
         elif isinstance(stmt_aug_assign.op, _ast.RShift):
             code += " >>= "
         elif isinstance(stmt_aug_assign.op, _ast.LShift):
@@ -391,13 +391,16 @@ class MyParser(ast.NodeVisitor):
             print "Type not recognized"
 
         if isinstance(stmt_aug_assign.value, _ast.Num):
-            code += str(stmt_aug_assign.value.n)
+            code += str(stmt_aug_assign.value.n) 
         elif isinstance(stmt_aug_assign.value, _ast.Name):
             code += str(stmt_aug_assign.value.id)
         elif isinstance(stmt_aug_assign.value, _ast.BinOp):
             code += self.parseExp(stmt_aug_assign.value)
 
-        code += ");"
+        if powFlag:
+            code += ")"
+
+        code += ";"
 
     def visit_FunctionDef(self, stmt_function):
         global code, funVars, funMode
