@@ -190,7 +190,7 @@ class MyParser(ast.NodeVisitor):
     def visit_If(self, stmt_if):
         global code
 
-        code += " if ("
+        code += " if("
         if hasattr(stmt_if.test, 'left'):
             varType = str(type(stmt_if.test.left))[13:-2]
             if varType == "Name":
@@ -243,12 +243,12 @@ class MyParser(ast.NodeVisitor):
         for node in stmt_if.body:
             self.visit(node)
 
-        code += " }"
+        code += "}"
         if len(stmt_if.orelse) > 0:
             code += " else {"
             for node in stmt_if.orelse:
                 self.visit(node)
-            code += " }"
+            code += "}"
 
     def visit_For(self, stmt_For):
         global code
@@ -262,7 +262,7 @@ class MyParser(ast.NodeVisitor):
 
         for node in stmt_For.body:
             self.visit(node)
-        code += " }"
+        code += "}"
 
         if len(stmt_For.orelse) > 0:
             for node in stmt_For.orelse:
@@ -312,13 +312,7 @@ class MyParser(ast.NodeVisitor):
         for node in stmt_while.body:
             self.visit(node)
 
-<<<<<<< HEAD
-        code += stmt_while.test.left.id
-        code += "++; "
-        code += " }"
-=======
         code += "}"
->>>>>>> upstream/master
 
     def  visit_AugAssign(self, stmt_aug_assign):
         global code
@@ -390,11 +384,11 @@ class MyParser(ast.NodeVisitor):
 
     def visit_Call(self, stmt_call, myVar=False):
         global code, expCall, func
-
+        #print myVar
         if expCall:
-            func += " " + stmt_call.func.id + "("
+            func += stmt_call.func.id + "("
         else:
-            code += " " + stmt_call.func.id + "("
+            code += stmt_call.func.id + "("
         alen = len(stmt_call.args)
 
         if alen == 0:
@@ -419,7 +413,7 @@ class MyParser(ast.NodeVisitor):
                     p = self.visit_Call(stmt_call.args[i], True)
                 else:
                     print debug_warning
-                    print "Type not recognized => ", stmt_call.args[i]
+                    #print "Type not recognized => ", stmt_call.args[i]
 
                 if expCall:
                     if p is not None:
