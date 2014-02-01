@@ -326,8 +326,25 @@ class MyParser(ast.NodeVisitor):
             code += " -= "
         elif isinstance(stmt_aug_assign.op, _ast.Mult):
             code += " *= "
-        else:
+        elif isinstance(stmt_aug_assign.op, _ast.Div):
             code += " /= "
+        elif isinstance(stmt_aug_assign.op, _ast.Mod):
+            code += " %= "
+        elif isinstance(stmt_aug_assign.op, _ast.Pow):
+            code += " **= "
+        elif isinstance(stmt_aug_assign.op, _ast.RShift):
+            code += " >>= "
+        elif isinstance(stmt_aug_assign.op, _ast.LShift):
+            code += " <<= "
+        elif isinstance(stmt_aug_assign.op, _ast.BitAnd):
+            code += " &= "
+        elif isinstance(stmt_aug_assign.op, _ast.BitXor):
+            code += " ^= "
+        elif isinstance(stmt_aug_assign.op, _ast.BitOr):
+            code += " |= "
+        else:
+            print debug_warning
+            print "Type not recognized"
 
         code += str(stmt_aug_assign.value.n)
         code += ";"
