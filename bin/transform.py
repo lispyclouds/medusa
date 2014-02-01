@@ -122,11 +122,14 @@ class MyParser(ast.NodeVisitor):
 
         return "(" + exp + ")" #Saxx
 
+    def addImport(self, module):
+        if imports.__contains__("dart:io") == False:
+            imports.append("dart:io")
+
     def visit_Print(self, stmt_print):
         global code
 
-        if imports.__contains__("dart:io") == False:
-            imports.append("dart:io")
+        self.addImport("dart:io")
 
         data = ""
         i = 0
@@ -395,8 +398,7 @@ class MyParser(ast.NodeVisitor):
         global code, expCall, func
 
         if stmt_call.func.id == 'range':
-            if imports.__contains__("lib/range.dart") == False:
-                imports.append("lib/range.dart")
+            self.addImport("lib/range.dart")
 
         if expCall:
             func += stmt_call.func.id + "("
