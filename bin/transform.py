@@ -79,6 +79,8 @@ class MyParser(ast.NodeVisitor):
 
     def parseExp(self, expr):
         global expCall, func
+        powFlag = False
+
         exp = ""
 
         if isinstance(expr.left, _ast.Call):
@@ -102,9 +104,15 @@ class MyParser(ast.NodeVisitor):
             exp += " - "
         elif isinstance(expr.op, _ast.Mult):
             exp += " * "
-        else:
-            exp += " / "
-
+        elif isinstance(expr.op, _ast.Div):
+            exp += " ~/ "
+        elif isinstance(expr.op, _ast.Mod):
+            exp += " % "
+        elif isinstance(expr.op, _ast.Pow):
+            self.addImport('dart:math')
+            exp = "pow (" + exp
+            exp += ", "
+            powFlag = True
         if isinstance(expr.right, _ast.Call):
             expCall = True
             self.visit_Call(expr.right, True)
@@ -119,6 +127,8 @@ class MyParser(ast.NodeVisitor):
                     exp += str(expr.right.n)
                 else:
                     exp += str(expr.right.id)
+        if powFlag:
+            exp += ")"
 
         return "(" + exp + ")" #Saxx
 
@@ -126,14 +136,12 @@ class MyParser(ast.NodeVisitor):
         data = str(stmt_Subscript.value.id)
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
             if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
-                data += "[" + str(stmt_Subscript.slice.value.n) + "]"
+                data += "[" + stmt_Subscript.slice.value.n + "]"
             elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
                 data += "[" + stmt_Subscript.slice.value.id + "]"
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.value)
-        elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
-            print "Slice"
         else:
             print debug_warning
             print "Type not recognized => ", type(stmt_Subscript.slice)
@@ -293,6 +301,7 @@ class MyParser(ast.NodeVisitor):
 
         for node in stmt_For.body:
             self.visit(node)
+
         code += "}"
 
         if len(stmt_For.orelse) > 0:
@@ -339,6 +348,7 @@ class MyParser(ast.NodeVisitor):
             print "Type not recognized => ", varType
 
         code += ") {"
+
         for node in stmt_while.body:
             self.visit(node)
 
@@ -346,9 +356,9 @@ class MyParser(ast.NodeVisitor):
 
     def  visit_AugAssign(self, stmt_aug_assign):
         global code
+        powFlag = False
 
-        code += " "
-        code += stmt_aug_assign.target.id
+        code += " "+ stmt_aug_assign.target.id
 
         if isinstance(stmt_aug_assign.op, _ast.Add):
             code += " += "
@@ -361,7 +371,11 @@ class MyParser(ast.NodeVisitor):
         elif isinstance(stmt_aug_assign.op, _ast.Mod):
             code += " %= "
         elif isinstance(stmt_aug_assign.op, _ast.Pow):
-            code += " **= "
+            self.addImport('dart:math')
+            code += " = pow ("
+            code += stmt_aug_assign.target.id
+            code += ", "
+            powFlag = True
         elif isinstance(stmt_aug_assign.op, _ast.RShift):
             code += " >>= "
         elif isinstance(stmt_aug_assign.op, _ast.LShift):
@@ -380,6 +394,11 @@ class MyParser(ast.NodeVisitor):
             code += str(stmt_aug_assign.value.n)
         elif isinstance(stmt_aug_assign.value, _ast.Name):
             code += str(stmt_aug_assign.value.id)
+        elif isinstance(stmt_aug_assign.value, _ast.BinOp):
+            code += self.parseExp(stmt_aug_assign.value)
+
+        if powFlag:
+            code += ")"
 
         code += ";"
 
