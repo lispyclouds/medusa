@@ -126,14 +126,14 @@ class MyParser(ast.NodeVisitor):
         data = str(stmt_Subscript.value.id)
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
             if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
-                data += "[" + stmt_Subscript.slice.value.n + "]"
+                data += "[" + str(stmt_Subscript.slice.value.n) + "]"
             elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
                 data += "[" + stmt_Subscript.slice.value.id + "]"
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.value)
         elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
-
+            print "Slice"
         else:
             print debug_warning
             print "Type not recognized => ", type(stmt_Subscript.slice)
