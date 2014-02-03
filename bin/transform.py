@@ -133,9 +133,13 @@ class MyParser(ast.NodeVisitor):
         return "(" + exp + ")" #Saxx
 
     def subscriptHandle(self, stmt_Subscript):
+<<<<<<< HEAD
         data = str(stmt_Subscript.value.id)
 
+=======
+>>>>>>> upstream/master
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
+            data = str(stmt_Subscript.value.id)
             if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
                 data += "[" + str(stmt_Subscript.slice.value.n) + "]"
             elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
@@ -143,6 +147,36 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.value)
+        elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
+            self.addImport("lib/slice.dart")
+            data = "slice(" + stmt_Subscript.value.id + ", "
+            if isinstance(stmt_Subscript.slice.lower, _ast.Num):
+                data += str(stmt_Subscript.slice.lower.n) + ", "
+            elif stmt_Subscript.slice.lower == None:
+                if stmt_Subscript.slice.step.n < 0:
+                    data += stmt_Subscript.value.id + ".length, "
+                else:
+                    data += "0, "
+            else:
+                print debug_warning
+                print "Type not recognized => ", type(stmt_Subscript.slice.lower)
+            if isinstance(stmt_Subscript.slice.upper, _ast.Num):
+                data += str(stmt_Subscript.slice.upper.n) + ", "
+            elif stmt_Subscript.slice.upper == None:
+                if stmt_Subscript.slice.step.n > 0:
+                    data += stmt_Subscript.value.id + ".length, "
+                else:
+                    data += "0, "
+            else:
+                print debug_warning
+                print "Type not recognized => ", type(stmt_Subscript.slice.upper)
+            if isinstance(stmt_Subscript.slice.step, _ast.Num):
+                data += str(stmt_Subscript.slice.step.n) + ")"
+            elif stmt_Subscript.slice.step == None:
+                data += "1)"
+            else:
+                print debug_warning
+                print "Type not recognized => ", type(stmt_Subscript.slice.upper)
         else:
             print debug_warning
             print "Type not recognized => ", type(stmt_Subscript.slice)
@@ -216,7 +250,11 @@ class MyParser(ast.NodeVisitor):
                 value = self.parseExp(stmt_assign.value)
             elif isinstance(stmt_assign.value, _ast.Call):
                 self.visit_Call(stmt_assign.value, True)
-
+            elif isinstance(stmt_assign.value, _ast.Subscript):
+                value = self.subscriptHandle(stmt_assign.value)
+            else:
+                print debug_warning
+                print "Type not recognized => ", type(stmt_assign.value)
             if value != "":
                  code += str(value)
             code += ";"
