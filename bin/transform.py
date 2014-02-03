@@ -24,7 +24,7 @@ operators['_ast.LtE'] = " <= "
 operators['_ast.NotEq'] = " != "
 
 outFile = open("out.dart", 'w')
-code = "void main() {"
+code = ""
 
 class MyParser(ast.NodeVisitor):
     def __init__(self):
@@ -134,9 +134,10 @@ class MyParser(ast.NodeVisitor):
 
     def subscriptHandle(self, stmt_Subscript):
         data = str(stmt_Subscript.value.id)
+
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
             if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
-                data += "[" + stmt_Subscript.slice.value.n + "]"
+                data += "[" + str(stmt_Subscript.slice.value.n) + "]"
             elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
                 data += "[" + stmt_Subscript.slice.value.id + "]"
             else:
@@ -391,7 +392,7 @@ class MyParser(ast.NodeVisitor):
             print "Type not recognized"
 
         if isinstance(stmt_aug_assign.value, _ast.Num):
-            code += str(stmt_aug_assign.value.n) 
+            code += str(stmt_aug_assign.value.n)
         elif isinstance(stmt_aug_assign.value, _ast.Name):
             code += str(stmt_aug_assign.value.id)
         elif isinstance(stmt_aug_assign.value, _ast.BinOp):
@@ -417,7 +418,8 @@ class MyParser(ast.NodeVisitor):
         else:
             i = 0
             while i < alen:
-                code += stmt_function.args.args[i].id
+                if str(stmt_function.args.args[i].id) != "self":
+                    code += stmt_function.args.args[i].id
                 funVars.append(stmt_function.args.args[i].id)
 
                 if (i + 1) < alen:
@@ -440,7 +442,7 @@ class MyParser(ast.NodeVisitor):
 
         if stmt_call.func.id == 'range':
             self.addImport("lib/range.dart")
-        elif stmt_call.func.id == 'input':
+        elif stmt_call.func.id == 'input' or stmt_call.func.id == 'raw_input':
             self.addImport("lib/input.dart")
 
         if expCall:
@@ -518,8 +520,18 @@ class MyParser(ast.NodeVisitor):
             code += str(v)
         code += ";"
 
+    def visit_ClassDef(self, stmt_class):
+        global code
+
+        for node in stmt_class.body:
+            self.visit(node)
+
+        code = "class " + stmt_class.name + " { " + code
+
+
 MyParser().parse(open(sys.argv[1]).read())
 
+code = "void main() {" + code + ""
 code += " }"
 
 for imp in imports:
