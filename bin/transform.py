@@ -24,7 +24,7 @@ operators['_ast.LtE'] = " <= "
 operators['_ast.NotEq'] = " != "
 
 outFile = open("out.dart", 'w')
-code = ""
+code = "void main() {"
 
 class MyParser(ast.NodeVisitor):
     def __init__(self):
@@ -133,11 +133,6 @@ class MyParser(ast.NodeVisitor):
         return "(" + exp + ")" #Saxx
 
     def subscriptHandle(self, stmt_Subscript):
-<<<<<<< HEAD
-        data = str(stmt_Subscript.value.id)
-
-=======
->>>>>>> upstream/master
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
             data = str(stmt_Subscript.value.id)
             if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
@@ -456,8 +451,7 @@ class MyParser(ast.NodeVisitor):
         else:
             i = 0
             while i < alen:
-                if str(stmt_function.args.args[i].id) != "self":
-                    code += stmt_function.args.args[i].id
+                code += stmt_function.args.args[i].id
                 funVars.append(stmt_function.args.args[i].id)
 
                 if (i + 1) < alen:
@@ -480,7 +474,7 @@ class MyParser(ast.NodeVisitor):
 
         if stmt_call.func.id == 'range':
             self.addImport("lib/range.dart")
-        elif stmt_call.func.id == 'input' or stmt_call.func.id == 'raw_input':
+        elif stmt_call.func.id == 'input':
             self.addImport("lib/input.dart")
 
         if expCall:
@@ -558,18 +552,8 @@ class MyParser(ast.NodeVisitor):
             code += str(v)
         code += ";"
 
-    def visit_ClassDef(self, stmt_class):
-        global code
-
-        for node in stmt_class.body:
-            self.visit(node)
-
-        code = "class " + stmt_class.name + " { " + code
-
-
 MyParser().parse(open(sys.argv[1]).read())
 
-code = "void main() {" + code + ""
 code += " }"
 
 for imp in imports:
