@@ -24,7 +24,7 @@ operators['_ast.LtE'] = " <= "
 operators['_ast.NotEq'] = " != "
 
 outFile = open("out.dart", 'w')
-code = "void main() {"
+code = " void main() {"
 
 class MyParser(ast.NodeVisitor):
     def __init__(self):
@@ -444,14 +444,15 @@ class MyParser(ast.NodeVisitor):
         funMode = True
 
         alen = len(stmt_function.args.args)
-        code = stmt_function.name + "("
+        code = " " + stmt_function.name + "("
 
         if alen == 0:
             code += ") {"
         else:
             i = 0
             while i < alen:
-                code += stmt_function.args.args[i].id
+                if str(stmt_function.args.args[i].id) != "self":
+                    code += stmt_function.args.args[i].id
                 funVars.append(stmt_function.args.args[i].id)
 
                 if (i + 1) < alen:
@@ -551,6 +552,31 @@ class MyParser(ast.NodeVisitor):
         if v != "":
             code += str(v)
         code += ";"
+
+    def visit_ClassDef(self, stmt_class):
+        global code, funMode
+
+        main = code
+        code = ""
+        funMode = True
+
+        code = " class " + stmt_class.name
+        if len(stmt_class.bases) == 1:
+            code += " extends " + str(stmt_class.bases[0].id)
+        elif len(stmt_class.bases) > 1:
+            print "Multiple Inheritace is unsupported at the moment! Sorry!"
+            exit(1)
+        code += " {"
+
+        temp = code
+        code = ""
+
+        for node in stmt_class.body:
+            self.visit(node)
+
+        code = temp + code + " }" + main
+        funMode = False
+        funVars = []
 
 MyParser().parse(open(sys.argv[1]).read())
 
