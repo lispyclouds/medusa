@@ -5,6 +5,7 @@ import ast, _ast, sys
 imports = []
 funVars = []
 symTab = []
+classes = []
 
 funMode = False
 expCall = False
@@ -41,6 +42,10 @@ class MyParser(ast.NodeVisitor):
         s = s.replace('\r', r'\r')
 
         return s
+
+    def addImport(self, module):
+        if imports.__contains__(module) == False:
+            imports.append(module)
 
     def parseList(self, theList):
         global func, expCall
@@ -177,9 +182,39 @@ class MyParser(ast.NodeVisitor):
             print "Type not recognized => ", type(stmt_Subscript.slice)
         return data
 
-    def addImport(self, module):
-        if imports.__contains__(module) == False:
-            imports.append(module)
+    def attrHandle(self, stmt_call):
+        resolved = ""
+
+        if hasattr(stmt_call, "args"):
+            resolved += " " + stmt_call.func.value.id + "." + stmt_call.func.attr + "("
+
+            alen = len(stmt_call.args)
+            i = 0
+
+            while (i < alen):
+                if isinstance(stmt_call.args[i], _ast.Num):
+                    resolved += str(stmt_call.args[i].n)
+                elif isinstance(stmt_call.args[i], _ast.Str):
+                    resolved += "'" + stmt_call.args[i].s + "'"
+                elif isinstance(stmt_call.args[i], _ast.List):
+                    resolved += self.parseList(stmt_call.args[i].elts)
+                elif isinstance(stmt_call.args[i], _ast.Name):
+                    resolved += stmt_call.args[i].id
+                elif isinstance(stmt_call.args[i], _ast.BinOp):
+                    resolved += self.parseExp(stmt_call.args[i])
+                elif isinstance(stmt_call.args[i], _ast.Call):
+                    self.visit_Call(stmt_call.args[i], True)
+
+                if (i + 1) < alen:
+                    resolved += ", "
+                i += 1
+
+            resolved += ")"
+
+        else:
+            resolved = " " + stmt_call.value.id + "." + stmt_call.attr
+
+        return resolved
 
     def visit_Print(self, stmt_print):
         global code
@@ -206,6 +241,8 @@ class MyParser(ast.NodeVisitor):
                 self.visit_Call(stmt_print.values[i], True)
             elif isinstance(stmt_print.values[i], _ast.Subscript):
                 data = self.subscriptHandle(stmt_print.values[i])
+            elif isinstance(stmt_print.values[i], _ast.Attribute):
+                data = self.attrHandle(stmt_print.values[i])
             else:
                 print debug_warning
                 print "Type not recognized => ", str(type(stmt_print.values[i]))
@@ -444,22 +481,28 @@ class MyParser(ast.NodeVisitor):
         funMode = True
 
         alen = len(stmt_function.args.args)
-        code = " " + stmt_function.name + "("
+
+        if stmt_function.name == "__init__":
+            code = " " + classes[-1] + "("
+        else:
+            code = " " + stmt_function.name + "("
 
         if alen == 0:
             code += ") {"
         else:
             i = 0
             while i < alen:
-                if str(stmt_function.args.args[i].id) != "self":
-                    code += stmt_function.args.args[i].id
+                if str(stmt_function.args.args[i].id) == "self":
+                    i += 1
+                    continue
+
+                code += stmt_function.args.args[i].id
                 funVars.append(stmt_function.args.args[i].id)
 
                 if (i + 1) < alen:
                     code += ", "
-                else:
-                    code += ") {"
                 i += 1
+            code += ") {"
 
         for node in stmt_function.body:
             self.visit(node)
@@ -470,20 +513,39 @@ class MyParser(ast.NodeVisitor):
 
         code = code + temp
 
-    def visit_Call(self, stmt_call, myVar=False):
+    def visit_Call(self, stmt_call, myVar = False):
         global code, expCall, func
+
+        if isinstance(stmt_call.func, _ast.Attribute):
+            if expCall:
+                func += self.attrHandle(stmt_call)
+            else:
+                code += self.attrHandle(stmt_call)
+
+            if myVar == False:
+                if expCall:
+                    func += ";"
+                else:
+                    code += ";"
+            return
 
         if stmt_call.func.id == 'range':
             self.addImport("lib/range.dart")
         elif stmt_call.func.id == 'input':
             self.addImport("lib/input.dart")
 
+        if classes.__contains__(stmt_call.func.id):
+            if expCall:
+                func += "new "
+            else:
+                code += "new "
+
         if expCall:
             func += stmt_call.func.id + "("
         else:
             code += stmt_call.func.id + "("
-        alen = len(stmt_call.args)
 
+        alen = len(stmt_call.args)
         if alen == 0:
             if expCall:
                 func += ")"
@@ -561,6 +623,9 @@ class MyParser(ast.NodeVisitor):
         funMode = True
 
         code = " class " + stmt_class.name
+        if classes.__contains__(stmt_class.name) == False:
+            classes.append(stmt_class.name)
+
         if len(stmt_class.bases) == 1:
             code += " extends " + str(stmt_class.bases[0].id)
         elif len(stmt_class.bases) > 1:
