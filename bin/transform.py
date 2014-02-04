@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import ast, _ast, sys
+import ast, _ast, sys, re
 
 imports = []
 funVars = []
@@ -138,23 +138,55 @@ class MyParser(ast.NodeVisitor):
         return "(" + exp + ")" #Saxx
 
     def subscriptHandle(self, stmt_Subscript):
+        #print str(type(stmt_Subscript.slice))
+        #a = input()
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
-            data = str(stmt_Subscript.value.id)
+            #print "Index"
+            if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
+                data = self.subscriptHandle(stmt_Subscript.value)
+            elif str(type(stmt_Subscript.value))[13:-2] == "Name":
+                data = str(stmt_Subscript.value.id)
+            else:
+                print debug_warning
+                print "type not supported yet => ", str(type(stmt_Subscript.value))
             if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
-                data += "[" + str(stmt_Subscript.slice.value.n) + "]"
+                num = stmt_Subscript.slice.value.n
+                if num < 0:
+                    if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
+                        data += "[" + self.subscriptHandle(stmt_Subscript.value) + ".length " + str(num) +" ]"
+                    elif str(type(stmt_Subscript.value))[13:-2] == "Name":
+                        data += "[" + stmt_Subscript.value.id + ".length" + str(num) + "]"
+                    else:
+                        print debug_warning
+                        print "Type not supported => ", str(type(stmt_Subscript.value))
+                else:
+                    data += "[" + str(stmt_Subscript.slice.value.n) + "]"
             elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
                 data += "[" + stmt_Subscript.slice.value.id + "]"
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.value)
         elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
-            self.addImport("lib/slice.dart")
-            data = "slice(" + stmt_Subscript.value.id + ", "
+            self.addImport('lib/slice.dart')
+            #print "Slice"
+            if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
+                data = "slice(" + self.subscriptHandle(stmt_Subscript.value) + ", "
+            elif str(type(stmt_Subscript.value))[13:-2] == "Name":
+                data = "slice(" + stmt_Subscript.value.id + ", "
+            else:
+                print debug_warning
+                print "type not supported yet => ", str(type(stmt_Subscript.value))
             if isinstance(stmt_Subscript.slice.lower, _ast.Num):
                 data += str(stmt_Subscript.slice.lower.n) + ", "
             elif stmt_Subscript.slice.lower == None:
                 if stmt_Subscript.slice.step.n < 0:
-                    data += stmt_Subscript.value.id + ".length, "
+                    if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
+                        data += self.subscriptHandle(stmt_Subscript.value) + ".length, "
+                    elif str(type(stmt_Subscript.value))[13:-2] == "Name":
+                        data += stmt_Subscript.value.id + ".length, "
+                    else:
+                        print debug_warning
+                        print "type not supported yet => ", str(type(stmt_Subscript.value))
                 else:
                     data += "0, "
             else:
@@ -164,7 +196,13 @@ class MyParser(ast.NodeVisitor):
                 data += str(stmt_Subscript.slice.upper.n) + ", "
             elif stmt_Subscript.slice.upper == None:
                 if stmt_Subscript.slice.step.n > 0:
-                    data += stmt_Subscript.value.id + ".length, "
+                    if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
+                        data += self.subscriptHandle(stmt_Subscript.value) + ".length, "
+                    elif str(type(stmt_Subscript.value))[13:-2] == "Name":
+                        data += stmt_Subscript.value.id + ".length, "
+                    else:
+                        print debug_warning
+                        print "type not supported yet => ", str(type(stmt_Subscript.value))
                 else:
                     data += "0, "
             else:
@@ -279,7 +317,12 @@ class MyParser(ast.NodeVisitor):
             elif isinstance(stmt_assign.value, _ast.Name):
                 value = stmt_assign.value.id
             elif isinstance(stmt_assign.value, _ast.BinOp):
-                value = self.parseExp(stmt_assign.value)
+                if str(type(stmt_assign.value.left))[13:-2] == "Str":
+                    #indexes = [i for i, ltr in enumerate(stmt_assign.value.left.s) if ltr in ("%s", "%d")]
+                    indexes = [m.start() for m in re.finditer('%s', stmt_assign.value.left.s)]
+                    print indexes
+                else:
+                    value = self.parseExp(stmt_assign.value)
             elif isinstance(stmt_assign.value, _ast.Call):
                 self.visit_Call(stmt_assign.value, True)
             elif isinstance(stmt_assign.value, _ast.Subscript):
