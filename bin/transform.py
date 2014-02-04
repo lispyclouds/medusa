@@ -347,12 +347,12 @@ class MyParser(ast.NodeVisitor):
         for node in stmt_if.body:
             self.visit(node)
 
-        code += "}"
+        code += " }"
         if len(stmt_if.orelse) > 0:
             code += " else {"
             for node in stmt_if.orelse:
                 self.visit(node)
-            code += "}"
+            code += " }"
 
     def visit_For(self, stmt_For):
         global code
@@ -536,14 +536,14 @@ class MyParser(ast.NodeVisitor):
 
         if classes.__contains__(stmt_call.func.id):
             if expCall:
-                func += "new "
+                func += "new"
             else:
-                code += "new "
+                code += "new"
 
         if expCall:
-            func += stmt_call.func.id + "("
+            func += " " + stmt_call.func.id + "("
         else:
-            code += stmt_call.func.id + "("
+            code += " " + stmt_call.func.id + "("
 
         alen = len(stmt_call.args)
         i = 0
