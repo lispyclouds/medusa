@@ -546,48 +546,42 @@ class MyParser(ast.NodeVisitor):
             code += stmt_call.func.id + "("
 
         alen = len(stmt_call.args)
-        if alen == 0:
-            if expCall:
-                func += ")"
+        i = 0
+
+        while i < alen:
+            if isinstance(stmt_call.args[i], _ast.Name):
+                p = stmt_call.args[i].id
+            elif isinstance(stmt_call.args[i], _ast.Num):
+                p = stmt_call.args[i].n
+            elif isinstance(stmt_call.args[i], _ast.Str):
+                p = "'" + stmt_call.args[i].s + "'"
+            elif isinstance(stmt_call.args[i], _ast.List):
+                p = self.parseList(stmt_call.args[i].elts)
+            elif isinstance(stmt_call.args[i], _ast.BinOp):
+                p = self.parseExp(stmt_call.args[i])
+            elif isinstance(stmt_call.args[i], _ast.Call):
+                p = self.visit_Call(stmt_call.args[i], True)
             else:
-                code += ")"
-        else:
-            i = 0
-            while i < alen:
-                if isinstance(stmt_call.args[i], _ast.Name):
-                    p = stmt_call.args[i].id
-                elif isinstance(stmt_call.args[i], _ast.Num):
-                    p = stmt_call.args[i].n
-                elif isinstance(stmt_call.args[i], _ast.Str):
-                    p = "'" + stmt_call.args[i].s + "'"
-                elif isinstance(stmt_call.args[i], _ast.List):
-                    p = self.parseList(stmt_call.args[i].elts)
-                elif isinstance(stmt_call.args[i], _ast.BinOp):
-                    p = self.parseExp(stmt_call.args[i])
-                elif isinstance(stmt_call.args[i], _ast.Call):
-                    p = self.visit_Call(stmt_call.args[i], True)
-                else:
-                    print debug_warning
-                    print "Type not recognized => ", stmt_call.args[i]
+                print debug_warning
+                print "Type not recognized => ", stmt_call.args[i]
 
+            if p is not None:
                 if expCall:
-                    if p is not None:
-                        func += str(p)
+                    func += str(p)
                 else:
-                    if p is not None:
-                        code += str(p)
+                    code += str(p)
 
-                if (i + 1) < alen:
-                    if expCall:
-                        func += ", "
-                    else:
-                        code += ", "
+            if (i + 1) < alen:
+                if expCall:
+                    func += ", "
                 else:
-                    if expCall:
-                        func += ")"
-                    else:
-                        code += ")"
-                i += 1
+                    code += ", "
+            i += 1
+
+        if expCall:
+            func += ")"
+        else:
+            code += ")"
 
         if myVar == False:
             code += ";"
