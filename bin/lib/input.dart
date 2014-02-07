@@ -4,14 +4,14 @@ import 'dart:io';
 
 String raw_input([message]) {
     if (message != null)
-        print(message);
+        stdout.write(message);
 
     return stdin.readLineSync(encoding: SYSTEM_ENCODING);
 }
 
 num input([message]) {
     if (message != null)
-        print(message);
+        stdout.write(message);
 
     num value;
 
