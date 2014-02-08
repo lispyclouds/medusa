@@ -6,6 +6,7 @@ imports = []
 funVars = []
 symTab = []
 classes = []
+inbuilts = ["input", "raw_input", "str", "range"]
 
 funMode = False
 expCall = False
@@ -149,7 +150,7 @@ class MyParser(ast.NodeVisitor):
                 elif isinstance(expr.left, _ast.Name):
                     exp += str(expr.left.id)
                 elif isinstance(expr.left, _ast.Str):
-                    exp += str(expr.left.s)
+                    exp += "'" + str(expr.left.s) + "'"
                 elif isinstance(expr.left, _ast.Attribute):
                     exp += self.attrHandle(expr.left)
 
@@ -184,7 +185,7 @@ class MyParser(ast.NodeVisitor):
                 elif isinstance(expr.right, _ast.Name):
                     exp += str(expr.right.id)
                 elif isinstance(expr.right, _ast.Str):
-                    exp += str(expr.right.s)
+                    exp += "'" + str(expr.right.s) + "'"
                 elif isinstance(expr.right, _ast.Attribute):
                     exp += self.attrHandle(expr.right)
         if powFlag:
@@ -573,7 +574,7 @@ class MyParser(ast.NodeVisitor):
         code = code + temp
 
     def visit_Call(self, stmt_call, myVar = False):
-        global code, expCall, func
+        global code, expCall, func, classes, inbuilts
 
         if isinstance(stmt_call.func, _ast.Attribute):
             if expCall:
@@ -588,10 +589,8 @@ class MyParser(ast.NodeVisitor):
                     code += ";"
             return
 
-        if stmt_call.func.id == 'range':
-            self.addImport("lib/range.dart")
-        elif stmt_call.func.id == 'input':
-            self.addImport("lib/input.dart")
+        if stmt_call.func.id in inbuilts:
+            self.addImport("lib/inbuilts.dart")
 
         if classes.__contains__(stmt_call.func.id):
             if expCall:
@@ -704,7 +703,7 @@ MyParser().parse(open(sys.argv[1]).read())
 code += " }"
 
 for imp in imports:
-    code = "import '" + imp + "';" + code
+    code = "import '" + imp + "'; " + code
 
 outFile.write(code)
 outFile.close()
