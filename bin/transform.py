@@ -100,8 +100,10 @@ class MyParser(ast.NodeVisitor):
             else:
                 if hasattr(expr.left, 'n'):
                     exp += str(expr.left.n)
-                else:
+                elif hasattr(expr.left, 'id'):
                     exp += str(expr.left.id)
+                elif hasattr(expr.left, 's'):
+                    exp += str(expr.left.s)
 
         if isinstance(expr.op, _ast.Add):
             exp += " + "
@@ -131,8 +133,10 @@ class MyParser(ast.NodeVisitor):
             else:
                 if hasattr(expr.right, 'n'):
                     exp += str(expr.right.n)
-                else:
+                elif hasattr(expr.right, 'id'):
                     exp += str(expr.right.id)
+                elif hasattr(expr.right, 's'):
+                    exp += str(expr.right.s)
         if powFlag:
             exp += ")"
 
@@ -222,7 +226,12 @@ class MyParser(ast.NodeVisitor):
         resolved = ""
 
         if hasattr(stmt_call, "args"):
-            resolved += " " + stmt_call.func.value.id + "." + stmt_call.func.attr + "("
+            if stmt_call.func.value.id == "self":
+                obj = "this"
+            else:
+                obj = stmt_call.func.value.id
+
+            resolved += " " + obj + "." + stmt_call.func.attr + "("
 
             alen = len(stmt_call.args)
             i = 0
@@ -248,7 +257,12 @@ class MyParser(ast.NodeVisitor):
             resolved += ")"
 
         else:
-            resolved = " " + stmt_call.value.id + "." + stmt_call.attr
+            if stmt_call.value.id == "self":
+                obj = "this"
+            else:
+                obj = stmt_call.value.id
+
+            resolved = " " + obj + "." + stmt_call.attr
 
         return resolved
 
@@ -294,18 +308,21 @@ class MyParser(ast.NodeVisitor):
         global code, funVars, funMode
 
         for target in stmt_assign.targets:
-            if funMode:
-                if funVars.__contains__(target.id) == False:
-                    funVars.append(target.id)
-                    code += " var"
+            if isinstance(target, _ast.Attribute):
+                code += self.attrHandle(target) + " = "
             else:
-                if symTab.__contains__(target.id) == False:
-                    symTab.append(target.id)
-                    code += " var"
+                if funMode:
+                    if funVars.__contains__(target.id) == False:
+                        funVars.append(target.id)
+                        code += " var"
+                else:
+                    if symTab.__contains__(target.id) == False:
+                        symTab.append(target.id)
+                        code += " var"
+
+                code += " " + target.id + " = ";
 
             value = ""
-            code += " " + target.id + " = ";
-
             if isinstance(stmt_assign.value, _ast.Num):
                 value = stmt_assign.value.n
             elif isinstance(stmt_assign.value, _ast.Str):
@@ -464,7 +481,10 @@ class MyParser(ast.NodeVisitor):
         global code
         powFlag = False
 
-        code += " "+ stmt_aug_assign.target.id
+        if isinstance(stmt_aug_assign.target, _ast.Attribute):
+            code += self.attrHandle(stmt_aug_assign.target)
+        else:
+            code += " " + stmt_aug_assign.target.id
 
         if isinstance(stmt_aug_assign.op, _ast.Add):
             code += " += "
@@ -502,6 +522,8 @@ class MyParser(ast.NodeVisitor):
             code += str(stmt_aug_assign.value.id)
         elif isinstance(stmt_aug_assign.value, _ast.BinOp):
             code += self.parseExp(stmt_aug_assign.value)
+        elif isinstance(stmt_aug_assign.value, _ast.Attribute):
+            code += self.attrHandle(stmt_aug_assign.value)
 
         if powFlag:
             code += ")"
@@ -515,29 +537,25 @@ class MyParser(ast.NodeVisitor):
         code = ""
         funMode = True
 
-        alen = len(stmt_function.args.args)
-
         if stmt_function.name == "__init__":
             code = " " + classes[-1] + "("
         else:
             code = " " + stmt_function.name + "("
 
-        if alen == 0:
-            code += ") {"
-        else:
-            i = 0
-            while i < alen:
-                if str(stmt_function.args.args[i].id) == "self":
-                    i += 1
-                    continue
-
-                code += stmt_function.args.args[i].id
-                funVars.append(stmt_function.args.args[i].id)
-
-                if (i + 1) < alen:
-                    code += ", "
+        i = 0
+        alen = len(stmt_function.args.args)
+        while i < alen:
+            if str(stmt_function.args.args[i].id) == "self":
                 i += 1
-            code += ") {"
+                continue
+
+            code += stmt_function.args.args[i].id
+            funVars.append(stmt_function.args.args[i].id)
+
+            if (i + 1) < alen:
+                code += ", "
+            i += 1
+        code += ") {"
 
         for node in stmt_function.body:
             self.visit(node)
@@ -628,7 +646,10 @@ class MyParser(ast.NodeVisitor):
         v = ""
 
         if isinstance(stmt_return.value, _ast.Name):
-            v = stmt_return.value.id
+            if stmt_return.value.id == "self":
+                v = "this"
+            else:
+                v = stmt_return.value.id
         elif isinstance(stmt_return.value, _ast.Num):
             v = stmt_return.value.n
         elif isinstance(stmt_return.value, _ast.Str):
