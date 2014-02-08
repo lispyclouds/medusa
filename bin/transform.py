@@ -44,6 +44,8 @@ class MyParser(ast.NodeVisitor):
         return s
 
     def addImport(self, module):
+        global imports
+
         if imports.__contains__(module) == False:
             imports.append(module)
 
@@ -683,7 +685,7 @@ class MyParser(ast.NodeVisitor):
         if len(stmt_class.bases) == 1:
             code += " extends " + str(stmt_class.bases[0].id)
         elif len(stmt_class.bases) > 1:
-            print "Multiple Inheritace is unsupported at the moment! Sorry!"
+            print "Multiple Inheritace is unsupported at the moment :( Sorry!"
             exit(1)
         code += " {"
 
@@ -702,7 +704,7 @@ MyParser().parse(open(sys.argv[1]).read())
 code += " }"
 
 for imp in imports:
-    code = "import '" + imp + "'; " + code
+    code = "import '" + imp + "';" + code
 
 outFile.write(code)
 outFile.close()
