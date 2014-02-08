@@ -1,4 +1,4 @@
-library pyinbuilts;
+library inbuilts;
 
 import "dart:io";
 import "dart:collection";
