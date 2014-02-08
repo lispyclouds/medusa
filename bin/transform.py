@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
-import ast, _ast, sys, re
+import ast, _ast, sys
 
 imports = []
 funVars = []
 symTab = []
 classes = []
-inbuilts = ["input", "raw_input", "str", "range"]
+inbuilts = ["input", "range", "raw_input", "str", "xrange"]
 
 funMode = False
 expCall = False
@@ -605,6 +605,7 @@ class MyParser(ast.NodeVisitor):
 
         alen = len(stmt_call.args)
         i = 0
+        p = ""
 
         while i < alen:
             if isinstance(stmt_call.args[i], _ast.Name):
@@ -619,6 +620,8 @@ class MyParser(ast.NodeVisitor):
                 p = self.parseExp(stmt_call.args[i])
             elif isinstance(stmt_call.args[i], _ast.Call):
                 p = self.visit_Call(stmt_call.args[i], True)
+            elif isinstance(stmt_call.args[i], _ast.Attribute):
+                p = self.attrHandle(stmt_call.args[i])
             else:
                 print debug_warning
                 print "Type not recognized => ", stmt_call.args[i]

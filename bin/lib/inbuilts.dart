@@ -125,4 +125,5 @@ class RangeIterator implements Iterator<int> {
 }
 
 Range range(int start_inclusive, [int stop_exclusive, int step = 1]) => new Range(start_inclusive, stop_exclusive, step);
+Range xrange(int start_inclusive, [int stop_exclusive, int step = 1]) => new Range(start_inclusive, stop_exclusive, step);
 Range indices(lengthable) => new Range(0, lengthable.length);
