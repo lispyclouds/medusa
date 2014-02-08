@@ -47,6 +47,50 @@ class MyParser(ast.NodeVisitor):
         if imports.__contains__(module) == False:
             imports.append(module)
 
+    def attrHandle(self, stmt_call):
+        resolved = ""
+
+        if hasattr(stmt_call, "args"):
+            if stmt_call.func.value.id == "self":
+                obj = "this"
+            else:
+                obj = stmt_call.func.value.id
+
+            resolved += " " + obj + "." + stmt_call.func.attr + "("
+
+            alen = len(stmt_call.args)
+            i = 0
+
+            while (i < alen):
+                if isinstance(stmt_call.args[i], _ast.Num):
+                    resolved += str(stmt_call.args[i].n)
+                elif isinstance(stmt_call.args[i], _ast.Str):
+                    resolved += "'" + stmt_call.args[i].s + "'"
+                elif isinstance(stmt_call.args[i], _ast.List):
+                    resolved += self.parseList(stmt_call.args[i].elts)
+                elif isinstance(stmt_call.args[i], _ast.Name):
+                    resolved += stmt_call.args[i].id
+                elif isinstance(stmt_call.args[i], _ast.BinOp):
+                    resolved += self.parseExp(stmt_call.args[i])
+                elif isinstance(stmt_call.args[i], _ast.Call):
+                    self.visit_Call(stmt_call.args[i], True)
+
+                if (i + 1) < alen:
+                    resolved += ", "
+                i += 1
+
+            resolved += ")"
+
+        else:
+            if stmt_call.value.id == "self":
+                obj = "this"
+            else:
+                obj = stmt_call.value.id
+
+            resolved = " " + obj + "." + stmt_call.attr
+
+        return resolved
+
     def parseList(self, theList):
         global func, expCall
 
@@ -98,12 +142,14 @@ class MyParser(ast.NodeVisitor):
             if isinstance(expr.left, _ast.BinOp):
                 exp += self.parseExp(expr.left)
             else:
-                if hasattr(expr.left, 'n'):
+                if isinstance(expr.left, _ast.Num):
                     exp += str(expr.left.n)
-                elif hasattr(expr.left, 'id'):
+                elif isinstance(expr.left, _ast.Name):
                     exp += str(expr.left.id)
-                elif hasattr(expr.left, 's'):
+                elif isinstance(expr.left, _ast.Str):
                     exp += str(expr.left.s)
+                elif isinstance(expr.left, _ast.Attribute):
+                    exp += self.attrHandle(expr.left)
 
         if isinstance(expr.op, _ast.Add):
             exp += " + "
@@ -131,12 +177,14 @@ class MyParser(ast.NodeVisitor):
             if isinstance(expr.right, _ast.BinOp):
                 exp += self.parseExp(expr.right)
             else:
-                if hasattr(expr.right, 'n'):
+                if isinstance(expr.right, _ast.Num):
                     exp += str(expr.right.n)
-                elif hasattr(expr.right, 'id'):
+                elif isinstance(expr.right, _ast.Name):
                     exp += str(expr.right.id)
-                elif hasattr(expr.right, 's'):
+                elif isinstance(expr.right, _ast.Str):
                     exp += str(expr.right.s)
+                elif isinstance(expr.right, _ast.Attribute):
+                    exp += self.attrHandle(expr.right)
         if powFlag:
             exp += ")"
 
@@ -221,50 +269,6 @@ class MyParser(ast.NodeVisitor):
             print debug_warning
             print "Type not recognized => ", type(stmt_Subscript.slice)
         return data
-
-    def attrHandle(self, stmt_call):
-        resolved = ""
-
-        if hasattr(stmt_call, "args"):
-            if stmt_call.func.value.id == "self":
-                obj = "this"
-            else:
-                obj = stmt_call.func.value.id
-
-            resolved += " " + obj + "." + stmt_call.func.attr + "("
-
-            alen = len(stmt_call.args)
-            i = 0
-
-            while (i < alen):
-                if isinstance(stmt_call.args[i], _ast.Num):
-                    resolved += str(stmt_call.args[i].n)
-                elif isinstance(stmt_call.args[i], _ast.Str):
-                    resolved += "'" + stmt_call.args[i].s + "'"
-                elif isinstance(stmt_call.args[i], _ast.List):
-                    resolved += self.parseList(stmt_call.args[i].elts)
-                elif isinstance(stmt_call.args[i], _ast.Name):
-                    resolved += stmt_call.args[i].id
-                elif isinstance(stmt_call.args[i], _ast.BinOp):
-                    resolved += self.parseExp(stmt_call.args[i])
-                elif isinstance(stmt_call.args[i], _ast.Call):
-                    self.visit_Call(stmt_call.args[i], True)
-
-                if (i + 1) < alen:
-                    resolved += ", "
-                i += 1
-
-            resolved += ")"
-
-        else:
-            if stmt_call.value.id == "self":
-                obj = "this"
-            else:
-                obj = stmt_call.value.id
-
-            resolved = " " + obj + "." + stmt_call.attr
-
-        return resolved
 
     def visit_Print(self, stmt_print):
         global code
