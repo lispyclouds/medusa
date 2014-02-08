@@ -15,7 +15,7 @@ transformer.o: $(src)/transformer.c
 	$(CC) -c $(src)/transformer.c -I$(inc) $(cflags)
 
 exec.o: $(src)/exec.c
-    $(CC) -c $(src)/exec.c -I$(inc) $(cflags)
+	$(CC) -c $(src)/exec.c -I$(inc) $(cflags)
 
 main.o: $(src)/main.c
 	$(CC) -c $(src)/main.c -I$(inc) $(cflags)

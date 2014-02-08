@@ -10,9 +10,9 @@ void makeDiffIndex() {
     sqlite3_exec(handle, query, 0, 0, 0);
 }
 
-char* hashFile(char* path) {
+char* hashFile() {
     int i, bytes;
-    FILE *inFile = fopen(path, "rb");
+    FILE *inFile = fopen(buffer, "rb");
     SHA512_CTX context;
     unsigned char digest[SHA512_DIGEST_LENGTH + 1], buffer[BUFSIZ];
     char *bufPtr;
@@ -31,22 +31,22 @@ char* hashFile(char* path) {
     return hexString;
 }
 
-int tryInsert(char* fileName, char* hash) {
-    char *query = (char *) malloc(strlen(fileName) + strlen(hash) + 41);
+int tryInsert(char* hash) {
+    char *query = (char *) malloc(strlen(buffer) + strlen(hash) + 41);
     int ret;
 
-    sprintf(query, "INSERT INTO DiffIndex VALUES('%s', '%s', '')", fileName, hash);
+    sprintf(query, "INSERT INTO DiffIndex VALUES('%s', '%s', '')", buffer, hash);
     ret = sqlite3_exec(handle, query, 0, 0, 0);
 
     free(query);
     return ret;
 }
 
-int changed(char* fileName, char* hash) {
-    char *query = (char *) malloc(strlen(fileName) + 50);
+int changed(char* hash) {
+    char *query = (char *) malloc(strlen(buffer) + 50);
     sqlite3_stmt *stmt;
 
-    sprintf(query, "SELECT ContentHash FROM DiffIndex WHERE InFile='%s'", fileName);
+    sprintf(query, "SELECT ContentHash FROM DiffIndex WHERE InFile='%s'", buffer);
     sqlite3_prepare_v2(handle, query, -1, &stmt, 0);
 
     sqlite3_step(stmt);
@@ -54,17 +54,18 @@ int changed(char* fileName, char* hash) {
     free(query);
 
     if (strcmp(value, hash) != 0) {
-        query = (char *) malloc(strlen(fileName) + strlen(hash) + 52);
-        sprintf(query, "UPDATE DiffIndex SET ContentHash='%s' WHERE InFile='%s'", hash, fileName);
+        query = (char *) malloc(strlen(buffer) + strlen(hash) + 52);
+        sprintf(query, "UPDATE DiffIndex SET ContentHash='%s' WHERE InFile='%s'", hash, buffer);
         sqlite3_exec(handle, query, 0, 0, 0);
-        free(query);
 
+        free(query);
         return 1;
     }
+
     return 0;
 }
 
-int cached(char* fileName) {
+int cached() {
     char *hash;
 
     if (access("DiffIndex", 0) == -1)
@@ -72,10 +73,10 @@ int cached(char* fileName) {
     else
         sqlite3_open("DiffIndex", &handle);
 
-    hash = hashFile(fileName);
+    hash = hashFile();
 
-    if (tryInsert(fileName, hash)) {
-        if (changed(fileName, hash))
+    if (tryInsert(hash)) {
+        if (changed(hash))
             return 0;
         else
             return 1;

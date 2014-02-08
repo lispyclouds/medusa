@@ -89,7 +89,7 @@ class RangeIterator implements Iterator<int> {
     }
 
     bool moveNext() {
-        if (_step > 0  ? _pos +_step> _stop - 1 : _pos + _step < _stop + 1)
+        if (_step > 0  ? _pos + _step> _stop - 1 : _pos + _step < _stop + 1)
             return false;
 
         _pos += _step;

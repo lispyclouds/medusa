@@ -10,9 +10,9 @@
 #include <openssl/sha.h>
 
 void makeDiffIndex();
-char* hashFile(char* path);
-int tryInsert(char* fileName, char* hash);
-int changed(char* fileName, char* hash);
-int cached(char* fileName);
+char* hashFile();
+int tryInsert(char* hash);
+int changed(char* hash);
+int cached();
 
 #endif
