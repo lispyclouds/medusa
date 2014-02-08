@@ -118,6 +118,7 @@ class MyParser(ast.NodeVisitor):
             exp = "pow (" + exp
             exp += ", "
             powFlag = True
+
         if isinstance(expr.right, _ast.Call):
             expCall = True
             self.visit_Call(expr.right, True)
@@ -138,10 +139,7 @@ class MyParser(ast.NodeVisitor):
         return "(" + exp + ")" #Saxx
 
     def subscriptHandle(self, stmt_Subscript):
-        #print str(type(stmt_Subscript.slice))
-        #a = input()
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
-            #print "Index"
             if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
                 data = self.subscriptHandle(stmt_Subscript.value)
             elif str(type(stmt_Subscript.value))[13:-2] == "Name":
@@ -168,7 +166,7 @@ class MyParser(ast.NodeVisitor):
                 print "Type not recognized => ", type(stmt_Subscript.slice.value)
         elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
             self.addImport('lib/slice.dart')
-            #print "Slice"
+
             if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
                 data = "slice(" + self.subscriptHandle(stmt_Subscript.value) + ", "
             elif str(type(stmt_Subscript.value))[13:-2] == "Name":
@@ -317,12 +315,7 @@ class MyParser(ast.NodeVisitor):
             elif isinstance(stmt_assign.value, _ast.Name):
                 value = stmt_assign.value.id
             elif isinstance(stmt_assign.value, _ast.BinOp):
-                if str(type(stmt_assign.value.left))[13:-2] == "Str":
-                    #indexes = [i for i, ltr in enumerate(stmt_assign.value.left.s) if ltr in ("%s", "%d")]
-                    indexes = [m.start() for m in re.finditer('%s', stmt_assign.value.left.s)]
-                    print indexes
-                else:
-                    value = self.parseExp(stmt_assign.value)
+                value = self.parseExp(stmt_assign.value)
             elif isinstance(stmt_assign.value, _ast.Call):
                 self.visit_Call(stmt_assign.value, True)
             elif isinstance(stmt_assign.value, _ast.Subscript):
@@ -400,9 +393,7 @@ class MyParser(ast.NodeVisitor):
     def visit_For(self, stmt_For):
         global code
 
-        code += " for (var "
-        code += stmt_For.target.id
-        code += " in "
+        code += " for (var " + stmt_For.target.id + " in "
 
         if isinstance(stmt_For.iter, _ast.Call):
             self.visit_Call(stmt_For.iter, True)
@@ -410,6 +401,7 @@ class MyParser(ast.NodeVisitor):
             code += stmt_For.iter.id
         else:
             print "This type of for loop not yet handled"
+            exit(1)
 
         code += " ) {"
 
@@ -579,14 +571,14 @@ class MyParser(ast.NodeVisitor):
 
         if classes.__contains__(stmt_call.func.id):
             if expCall:
-                func += "new"
+                func += "new "
             else:
-                code += "new"
+                code += "new "
 
         if expCall:
-            func += " " + stmt_call.func.id + "("
+            func += stmt_call.func.id + "("
         else:
-            code += " " + stmt_call.func.id + "("
+            code += stmt_call.func.id + "("
 
         alen = len(stmt_call.args)
         i = 0
