@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+"""authors: heisenberg, apoorv, akashgiri"""
+
 import ast, _ast, sys
 
 imports = []
@@ -288,6 +290,7 @@ class MyParser(ast.NodeVisitor):
             print debug_warning
             print "Type not recognized => ", type(stmt_Subscript.slice)
             exit(1)
+
         return data
 
     def visit_Print(self, stmt_print):
@@ -674,6 +677,8 @@ class MyParser(ast.NodeVisitor):
             v = self.parseExp(stmt_return.value)
         elif isinstance(stmt_return.value, _ast.Call):
             self.visit_Call(stmt_return.value, True)
+        elif isinstance(stmt_return.value, _ast.Attribute):
+            v = self.attrHandle(stmt_return.value)
 
         if v != "":
             code += str(v)
