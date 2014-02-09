@@ -18,6 +18,16 @@ debugging_message = "**** Medusa Debug ****"
 debug_error = "**** Medusa Error ****"
 
 operators = dict()
+operators['_ast.Add'] = " + "
+operators['_ast.Sub'] = " - "
+operators['_ast.Mult'] = " * "
+operators['_ast.Div'] = " ~/ "
+operators['_ast.RShift'] = " >> "
+operators['_ast.LShift'] = " << "
+operators['_ast.BitAnd'] = " & "
+operators['_ast.BitXor'] = " ^ "
+operators['_ast.BitOr'] = " | "
+operators['_ast.Mod'] = " % "
 operators['_ast.Eq'] = " == "
 operators['_ast.Gt'] = " > "
 operators['_ast.GtE'] = " >= "
@@ -154,21 +164,18 @@ class MyParser(ast.NodeVisitor):
                 elif isinstance(expr.left, _ast.Attribute):
                     exp += self.attrHandle(expr.left)
 
-        if isinstance(expr.op, _ast.Add):
-            exp += " + "
-        elif isinstance(expr.op, _ast.Sub):
-            exp += " - "
-        elif isinstance(expr.op, _ast.Mult):
-            exp += " * "
-        elif isinstance(expr.op, _ast.Div):
-            exp += " ~/ "
-        elif isinstance(expr.op, _ast.Mod):
-            exp += " % "
+        op = str(type(expr.op))[8:-2]
+        if op in operators:
+            exp += operators[op]
         elif isinstance(expr.op, _ast.Pow):
             self.addImport('dart:math')
             exp = "pow (" + exp
             exp += ", "
             powFlag = True
+        else:
+            print debug_warning
+            print "Operator not implemented => " + op
+            exit(1)
 
         if isinstance(expr.right, _ast.Call):
             expCall = True
@@ -202,6 +209,7 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "type not supported yet => ", str(type(stmt_Subscript.value))
+                exit(1)
             if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
                 num = stmt_Subscript.slice.value.n
                 if num < 0:
@@ -212,6 +220,7 @@ class MyParser(ast.NodeVisitor):
                     else:
                         print debug_warning
                         print "Type not supported => ", str(type(stmt_Subscript.value))
+                        exit(1)
                 else:
                     data += "[" + str(stmt_Subscript.slice.value.n) + "]"
             elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
@@ -219,6 +228,7 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.value)
+                exit(1)
         elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
             self.addImport('lib/slice.dart')
 
@@ -229,6 +239,7 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "type not supported yet => ", str(type(stmt_Subscript.value))
+                exit(1)
             if isinstance(stmt_Subscript.slice.lower, _ast.Num):
                 data += str(stmt_Subscript.slice.lower.n) + ", "
             elif stmt_Subscript.slice.lower == None:
@@ -240,11 +251,13 @@ class MyParser(ast.NodeVisitor):
                     else:
                         print debug_warning
                         print "type not supported yet => ", str(type(stmt_Subscript.value))
+                        exit(1)
                 else:
                     data += "0, "
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.lower)
+                exit(1)
             if isinstance(stmt_Subscript.slice.upper, _ast.Num):
                 data += str(stmt_Subscript.slice.upper.n) + ", "
             elif stmt_Subscript.slice.upper == None:
@@ -256,11 +269,13 @@ class MyParser(ast.NodeVisitor):
                     else:
                         print debug_warning
                         print "type not supported yet => ", str(type(stmt_Subscript.value))
+                        exit(1)
                 else:
                     data += "0, "
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.upper)
+                exit(1)
             if isinstance(stmt_Subscript.slice.step, _ast.Num):
                 data += str(stmt_Subscript.slice.step.n) + ")"
             elif stmt_Subscript.slice.step == None:
@@ -268,9 +283,11 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_Subscript.slice.upper)
+                exit(1)
         else:
             print debug_warning
             print "Type not recognized => ", type(stmt_Subscript.slice)
+            exit(1)
         return data
 
     def visit_Print(self, stmt_print):
@@ -303,6 +320,7 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", str(type(stmt_print.values[i]))
+                exit(1)
 
             code += str(data) + ");"
             if (i + 1) < values:
@@ -347,6 +365,7 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", type(stmt_assign.value)
+                exit(1)
             if value != "":
                  code += str(value)
             code += ";"
@@ -373,13 +392,12 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", varType
+                exit(1)
         elif str(type(stmt_if.test))[13:-2] == "Name":
             if stmt_if.test.id == "True":
                 code += "true"
             elif stmt_if.test.id == "False":
                 code += "false"
-            else:
-                print type(stmt_if.test.id)
 
         if hasattr(stmt_if.test, 'ops'):
             code += operators[str(type(stmt_if.test.ops[0]))[8:-2]]
@@ -402,6 +420,7 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", varType
+                exit(1)
 
         code += ") {"
         for node in stmt_if.body:
@@ -458,6 +477,7 @@ class MyParser(ast.NodeVisitor):
         else:
             print debug_warning
             print "Type not recognized => ", varType
+            exit(1)
 
         code += operators[str(type(stmt_while.test.ops[0]))[8:-2]]
         varType = str(type(stmt_while.test.comparators[0]))[13:-2]
@@ -476,6 +496,7 @@ class MyParser(ast.NodeVisitor):
         else:
             print debug_warning
             print "Type not recognized => ", varType
+            exit(1)
 
         code += ") {"
 
@@ -493,35 +514,19 @@ class MyParser(ast.NodeVisitor):
         else:
             code += " " + stmt_aug_assign.target.id
 
-        if isinstance(stmt_aug_assign.op, _ast.Add):
-            code += " += "
-        elif isinstance(stmt_aug_assign.op, _ast.Sub):
-            code += " -= "
-        elif isinstance(stmt_aug_assign.op, _ast.Mult):
-            code += " *= "
-        elif isinstance(stmt_aug_assign.op, _ast.Div):
-            code += " /= "
-        elif isinstance(stmt_aug_assign.op, _ast.Mod):
-            code += " %= "
+        op = str(type(stmt_aug_assign.op))[8:-2]
+        if op in operators:
+            code += operators[op] + "="
         elif isinstance(stmt_aug_assign.op, _ast.Pow):
             self.addImport('dart:math')
             code += " = pow ("
             code += stmt_aug_assign.target.id
             code += ", "
             powFlag = True
-        elif isinstance(stmt_aug_assign.op, _ast.RShift):
-            code += " >>= "
-        elif isinstance(stmt_aug_assign.op, _ast.LShift):
-            code += " <<= "
-        elif isinstance(stmt_aug_assign.op, _ast.BitAnd):
-            code += " &= "
-        elif isinstance(stmt_aug_assign.op, _ast.BitXor):
-            code += " ^= "
-        elif isinstance(stmt_aug_assign.op, _ast.BitOr):
-            code += " |= "
         else:
             print debug_warning
-            print "Type not recognized"
+            print "Operator not implemented => " + op
+            exit(1)
 
         if isinstance(stmt_aug_assign.value, _ast.Num):
             code += str(stmt_aug_assign.value.n)
@@ -625,6 +630,7 @@ class MyParser(ast.NodeVisitor):
             else:
                 print debug_warning
                 print "Type not recognized => ", stmt_call.args[i]
+                exit(1)
 
             if p is not None:
                 if expCall:
