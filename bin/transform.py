@@ -78,7 +78,7 @@ class MyParser(ast.NodeVisitor):
                 if isinstance(stmt_call.args[i], _ast.Num):
                     resolved += str(stmt_call.args[i].n)
                 elif isinstance(stmt_call.args[i], _ast.Str):
-                    resolved += "'" + stmt_call.args[i].s + "'"
+                    resolved += "'" + self.escape(stmt_call.args[i].s) + "'"
                 elif isinstance(stmt_call.args[i], _ast.List):
                     resolved += self.parseList(stmt_call.args[i].elts)
                 elif isinstance(stmt_call.args[i], _ast.Name):
@@ -119,7 +119,7 @@ class MyParser(ast.NodeVisitor):
             elif isinstance(item, _ast.Name):
                 v = item.id
             elif isinstance(item, _ast.Str):
-                v = "'" + item.s + "'"
+                v = "'" + self.escape(item.s) + "'"
             elif isinstance(item, _ast.List):
                 v = self.parseList(item.elts)
             elif isinstance(item, _ast.BinOp):
@@ -160,7 +160,7 @@ class MyParser(ast.NodeVisitor):
                 elif isinstance(expr.left, _ast.Name):
                     exp += str(expr.left.id)
                 elif isinstance(expr.left, _ast.Str):
-                    exp += "'" + str(expr.left.s) + "'"
+                    exp += "'" + self.escape(expr.left.s) + "'"
                 elif isinstance(expr.left, _ast.Attribute):
                     exp += self.attrHandle(expr.left)
 
@@ -192,7 +192,7 @@ class MyParser(ast.NodeVisitor):
                 elif isinstance(expr.right, _ast.Name):
                     exp += str(expr.right.id)
                 elif isinstance(expr.right, _ast.Str):
-                    exp += "'" + str(expr.right.s) + "'"
+                    exp += "'" + self.escape(expr.right.s) + "'"
                 elif isinstance(expr.right, _ast.Attribute):
                     exp += self.attrHandle(expr.right)
         if powFlag:
@@ -351,7 +351,7 @@ class MyParser(ast.NodeVisitor):
             if isinstance(stmt_assign.value, _ast.Num):
                 value = stmt_assign.value.n
             elif isinstance(stmt_assign.value, _ast.Str):
-                value = "'" + stmt_assign.value.s + "'"
+                value = "'" + self.escape(stmt_assign.value.s) + "'"
             elif isinstance(stmt_assign.value, _ast.List):
                 value = self.parseList(stmt_assign.value.elts)
             elif isinstance(stmt_assign.value, _ast.Name):
@@ -618,7 +618,7 @@ class MyParser(ast.NodeVisitor):
             elif isinstance(stmt_call.args[i], _ast.Num):
                 p = stmt_call.args[i].n
             elif isinstance(stmt_call.args[i], _ast.Str):
-                p = "'" + stmt_call.args[i].s + "'"
+                p = "'" + self.escape(stmt_call.args[i].s) + "'"
             elif isinstance(stmt_call.args[i], _ast.List):
                 p = self.parseList(stmt_call.args[i].elts)
             elif isinstance(stmt_call.args[i], _ast.BinOp):
@@ -667,7 +667,7 @@ class MyParser(ast.NodeVisitor):
         elif isinstance(stmt_return.value, _ast.Num):
             v = stmt_return.value.n
         elif isinstance(stmt_return.value, _ast.Str):
-            v = "'" + stmt_return.value.s + "'"
+            v = "'" + self.escape(stmt_return.value.s) + "'"
         elif isinstance(stmt_return.value, _ast.List):
             v = self.parseList(stmt_return.value.elts)
         elif isinstance(stmt_return.value, _ast.BinOp):
