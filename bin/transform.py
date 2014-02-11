@@ -171,7 +171,7 @@ class MyParser(ast.NodeVisitor):
             exp += operators[op]
         elif isinstance(expr.op, _ast.Pow):
             self.addImport('dart:math')
-            exp = "pow (" + exp
+            exp = "pow(" + exp
             exp += ", "
             powFlag = True
         else:
@@ -335,6 +335,8 @@ class MyParser(ast.NodeVisitor):
     def visit_Assign(self, stmt_assign):
         global code, funVars, funMode
 
+        temp = ""
+
         for target in stmt_assign.targets:
             if isinstance(target, _ast.Attribute):
                 code += self.attrHandle(target) + " = "
@@ -346,7 +348,8 @@ class MyParser(ast.NodeVisitor):
                 else:
                     if symTab.__contains__(target.id) == False:
                         symTab.append(target.id)
-                        code += " var"
+                        temp = code
+                        code = " var"
 
                 code += " " + target.id + " = ";
 
@@ -372,6 +375,8 @@ class MyParser(ast.NodeVisitor):
             if value != "":
                  code += str(value)
             code += ";"
+
+            code += temp
 
     def visit_If(self, stmt_if):
         global code
@@ -508,7 +513,7 @@ class MyParser(ast.NodeVisitor):
 
         code += "}"
 
-    def  visit_AugAssign(self, stmt_aug_assign):
+    def visit_AugAssign(self, stmt_aug_assign):
         global code
         powFlag = False
 
@@ -519,10 +524,10 @@ class MyParser(ast.NodeVisitor):
 
         op = str(type(stmt_aug_assign.op))[8:-2]
         if op in operators:
-            code += operators[op] + "="
+            code += " " + operators[op].strip() + "= "
         elif isinstance(stmt_aug_assign.op, _ast.Pow):
             self.addImport('dart:math')
-            code += " = pow ("
+            code += " = pow("
             code += stmt_aug_assign.target.id
             code += ", "
             powFlag = True
@@ -602,14 +607,14 @@ class MyParser(ast.NodeVisitor):
 
         if classes.__contains__(stmt_call.func.id):
             if expCall:
-                func += "new "
+                func += "new"
             else:
-                code += "new "
+                code += "new"
 
         if expCall:
-            func += stmt_call.func.id + "("
+            func += " " + stmt_call.func.id + "("
         else:
-            code += stmt_call.func.id + "("
+            code += " " + stmt_call.func.id + "("
 
         alen = len(stmt_call.args)
         i = 0
