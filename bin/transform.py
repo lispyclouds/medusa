@@ -292,7 +292,7 @@ class MyParser(ast.NodeVisitor):
         elif isinstance(target, _ast.Attribute):
             reduced = self.attrHandle(target)
         elif isinstance(target, _ast.IfExp):
-            reduced = self.parseTernary(target)
+            self.parseTernary(target)
         elif isinstance(target, _ast.Call):
             if exp:
                 expCall = True
