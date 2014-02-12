@@ -145,6 +145,8 @@ class MyParser(ast.NodeVisitor):
     def parseExp(self, expr):
         global expCall, func
         powFlag = False
+        leftString = False
+        formatString = False
 
         exp = ""
 
@@ -164,21 +166,27 @@ class MyParser(ast.NodeVisitor):
                     exp += str(expr.left.id)
                 elif isinstance(expr.left, _ast.Str):
                     exp += "'" + self.escape(expr.left.s) + "'"
+                    leftString = True
                 elif isinstance(expr.left, _ast.Attribute):
                     exp += self.attrHandle(expr.left)
 
         op = str(type(expr.op))[8:-2]
-        if op in operators:
-            exp += operators[op]
-        elif isinstance(expr.op, _ast.Pow):
-            self.addImport('dart:math')
-            exp = "pow(" + exp
-            exp += ", "
-            powFlag = True
+        if leftString is True and op == "_ast.Mod":
+            self.addImport("lib/sprintf.dart")
+            exp = "sprintf(" + exp + ","
+            formatString = True
         else:
-            print debug_warning
-            print "Operator not implemented => " + op
-            exit(1)
+            if op in operators:
+                exp += operators[op]
+            elif isinstance(expr.op, _ast.Pow):
+                self.addImport('dart:math')
+                exp = "pow(" + exp
+                exp += ", "
+                powFlag = True
+            else:
+                print debug_warning
+                print "Operator not implemented => " + op
+                exit(1)
 
         if isinstance(expr.right, _ast.Call):
             expCall = True
@@ -198,6 +206,13 @@ class MyParser(ast.NodeVisitor):
                     exp += "'" + self.escape(expr.right.s) + "'"
                 elif isinstance(expr.right, _ast.Attribute):
                     exp += self.attrHandle(expr.right)
+                elif isinstance(expr.right, _ast.Tuple):
+                    exp += self.parseList(expr.right.elts) + ")"
+                else:
+                    print "Type still not implemented => ", str(type(expr.right))
+                    exit(1)
+
+
         if powFlag:
             exp += ")"
 
