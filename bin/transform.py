@@ -229,6 +229,116 @@ class MyParser(ast.NodeVisitor):
 
         return "(" + exp + ")" #Saxx
 
+    def makeTest(self, stmt_test):
+        global code
+
+        if hasattr(stmt_test, 'left'):
+            varType = str(type(stmt_test.left))[13:-2]
+
+            if varType == "Name":
+                if stmt_test.left.id == 'True':
+                    code += "true"
+                elif stmt_test.left.id == 'False':
+                    code += "false"
+                else:
+                    code += stmt_test.left.id
+            elif varType == "Str":
+                code += stmt_test.left.s
+            elif varType == "Num":
+                code += str(stmt_test.left.n)
+            elif varType == "BinOp":
+                code += self.parseExp(stmt_test.left)
+            else:
+                print debug_error
+                print "Type not recognized => ", varType
+                exit(1)
+        else:
+            if stmt_test.id == "True":
+                code += "true"
+            elif stmt_test.id == "False":
+                code += "false"
+
+        if hasattr(stmt_test, 'ops'):
+            code += operators[str(type(stmt_test.ops[0]))[8:-2]]
+
+        if hasattr(stmt_test, 'comparators'):
+            varType = str(type(stmt_test.comparators[0]))[13:-2]
+            if varType == "Name":
+                if stmt_test.comparators[0].id == 'True':
+                    code += "true"
+                elif stmt_test.comparators[0].id == 'False':
+                    code += "false"
+                else:
+                    code += stmt_test.comparators[0].id
+            elif varType == "Str":
+                code += stmt_test.comparators[0].s
+            elif varType == "Num":
+                code += str(stmt_test.comparators[0].n)
+            elif varType == "BinOp":
+                code += self.parseExp(stmt_test.comparators[0])
+            else:
+                print debug_error
+                print "Type not recognized => ", varType
+                exit(1)
+
+    def parseTernary(self, stmt_ternary):
+        global code
+
+        self.makeTest(stmt_ternary.test)
+
+        code += " ? "
+        data = ""
+
+        if isinstance(stmt_ternary.body, _ast.Str):
+            data = "'" + self.escape(stmt_ternary.body.s) + "'"
+        elif isinstance(stmt_ternary.body, _ast.Num):
+            data = stmt_ternary.body.n
+        elif isinstance(stmt_ternary.body, _ast.Name):
+            data = stmt_ternary.body.id
+        elif isinstance(stmt_ternary.body, _ast.List):
+            data = self.parseList(stmt_ternary.body.elts)
+        elif isinstance(stmt_ternary.body, _ast.BinOp):
+            data = self.parseExp(stmt_ternary.body)
+        elif isinstance(stmt_ternary.body, _ast.UnaryOp):
+            data = self.parseUnOp(stmt_ternary.body)
+        elif isinstance(stmt_ternary.body, _ast.Call):
+            self.visit_Call(stmt_ternary.body, True)
+        elif isinstance(stmt_ternary.body, _ast.Subscript):
+            data = self.subscriptHandle(stmt_ternary.body)
+        elif isinstance(stmt_ternary.body, _ast.Attribute):
+            data = self.attrHandle(stmt_ternary.body)
+        else:
+            print debug_error
+            print "Type not recognized => ", str(type(stmt_ternary.body))
+            exit(1)
+
+        code += str(data) + " : "
+
+        if isinstance(stmt_ternary.orelse, _ast.Str):
+            data = "'" + self.escape(stmt_ternary.orelse.s) + "'"
+        elif isinstance(stmt_ternary.orelse, _ast.Num):
+            data = stmt_ternary.orelse.n
+        elif isinstance(stmt_ternary.orelse, _ast.Name):
+            data = stmt_ternary.orelse.id
+        elif isinstance(stmt_ternary.orelse, _ast.List):
+            data = self.parseList(stmt_ternary.orelse.elts)
+        elif isinstance(stmt_ternary.orelse, _ast.BinOp):
+            data = self.parseExp(stmt_ternary.orelse)
+        elif isinstance(stmt_ternary.orelse, _ast.UnaryOp):
+            data = self.parseUnOp(stmt_ternary.orelse)
+        elif isinstance(stmt_ternary.orelse, _ast.Call):
+            self.visit_Call(stmt_ternary.orelse, True)
+        elif isinstance(stmt_ternary.orelse, _ast.Subscript):
+            data = self.subscriptHandle(stmt_ternary.orelse)
+        elif isinstance(stmt_ternary.orelse, _ast.Attribute):
+            data = self.attrHandle(stmt_ternary.orelse)
+        else:
+            print debug_error
+            print "Type not recognized => ", str(type(stmt_ternary.body))
+            exit(1)
+
+        code += str(data)
+
     def subscriptHandle(self, stmt_Subscript):
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
             if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
@@ -399,6 +509,8 @@ class MyParser(ast.NodeVisitor):
                 self.visit_Call(stmt_assign.value, True)
             elif isinstance(stmt_assign.value, _ast.Subscript):
                 value = self.subscriptHandle(stmt_assign.value)
+            elif isinstance(stmt_assign.value, _ast.IfExp):
+                self.parseTernary(stmt_assign.value)
             else:
                 print debug_error
                 print "Type not recognized => ", type(stmt_assign.value)
@@ -410,58 +522,14 @@ class MyParser(ast.NodeVisitor):
             code += temp
 
     def visit_If(self, stmt_if):
-        global code
+        global code, funMode
+
+        funMode = True
 
         code += " if ("
-        if hasattr(stmt_if.test, 'left'):
-            varType = str(type(stmt_if.test.left))[13:-2]
-            if varType == "Name":
-                if stmt_if.test.left.id == 'True':
-                    code += "true"
-                elif stmt_if.test.left.id == 'False':
-                    code += "false"
-                else:
-                    code += stmt_if.test.left.id
-            elif varType == "Str":
-                code += stmt_if.test.left.s
-            elif varType == "Num":
-                code += str(stmt_if.test.left.n)
-            elif varType == "BinOp":
-                code += self.parseExp(stmt_if.test.left)
-            else:
-                print debug_error
-                print "Type not recognized => ", varType
-                exit(1)
-        elif str(type(stmt_if.test))[13:-2] == "Name":
-            if stmt_if.test.id == "True":
-                code += "true"
-            elif stmt_if.test.id == "False":
-                code += "false"
-
-        if hasattr(stmt_if.test, 'ops'):
-            code += operators[str(type(stmt_if.test.ops[0]))[8:-2]]
-
-        if hasattr(stmt_if.test, 'comparators'):
-            varType = str(type(stmt_if.test.comparators[0]))[13:-2]
-            if varType == "Name":
-                if stmt_if.test.comparators[0].id == 'True':
-                    code += "true"
-                elif stmt_if.test.comparators[0].id == 'False':
-                    code += "false"
-                else:
-                    code += stmt_if.test.comparators[0].id
-            elif varType == "Str":
-                code += stmt_if.test.comparators[0].s
-            elif varType == "Num":
-                code += str(stmt_if.test.comparators[0].n)
-            elif varType == "BinOp":
-                code += self.parseExp(stmt_if.test.comparators[0])
-            else:
-                print debug_error
-                print "Type not recognized => ", varType
-                exit(1)
-
+        self.makeTest(stmt_if.test)
         code += ") {"
+
         for node in stmt_if.body:
             self.visit(node)
 
@@ -472,8 +540,12 @@ class MyParser(ast.NodeVisitor):
                 self.visit(node)
             code += " }"
 
+        funMode = False
+
     def visit_For(self, stmt_For):
         global code
+
+        funMode = True
 
         code += " for (var " + stmt_For.target.id + " in "
 
@@ -496,53 +568,23 @@ class MyParser(ast.NodeVisitor):
             for node in stmt_For.orelse:
                 self.visit(node)
 
+        funMode = False
+
     def visit_While(self, stmt_while):
         global code
 
+        funMode = True
+
         code += " while ("
-        varType = str(type(stmt_while.test.left))[13:-2]
-
-        if varType == "Name":
-            if stmt_while.test.left.id == 'True':
-                code += "true"
-            elif stmt_while.test.left.id == 'False':
-                code += "false"
-            else:
-                code += stmt_while.test.left.id
-        elif varType == "Str":
-           code += stmt_while.test.left.s
-        elif varType == "Num":
-            code += str(stmt_while.test.left.n)
-        else:
-            print debug_error
-            print "Type not recognized => ", varType
-            exit(1)
-
-        code += operators[str(type(stmt_while.test.ops[0]))[8:-2]]
-        varType = str(type(stmt_while.test.comparators[0]))[13:-2]
-
-        if varType == "Name":
-            if stmt_while.test.comparators[0].id == 'True':
-                code += "true"
-            elif stmt_while.test.comparators[0].id == 'False':
-                code += "false"
-            else:
-                code += stmt_while.test.comparators[0].id
-        elif varType == "Str":
-            code += stmt_while.test.comparators[0].s
-        elif varType == "Num":
-            code += str(stmt_while.test.comparators[0].n)
-        else:
-            print debug_error
-            print "Type not recognized => ", varType
-            exit(1)
-
+        self.makeTest(stmt_while.test)
         code += ") {"
 
         for node in stmt_while.body:
             self.visit(node)
 
         code += "}"
+
+        funMode = False
 
     def visit_AugAssign(self, stmt_aug_assign):
         global code
