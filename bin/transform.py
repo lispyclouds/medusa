@@ -49,6 +49,7 @@ class MyParser(ast.NodeVisitor):
         self.visit(tree)
 
     def escape(self, s):
+        s = s.replace('$', '\$')
         s = s.replace('\\', '\\\\')
         s = s.replace('\n', r'\n')
         s = s.replace('\t', r'\t')
