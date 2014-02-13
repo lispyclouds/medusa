@@ -282,26 +282,21 @@ class MyParser(ast.NodeVisitor):
             if isinstance(expr.left, _ast.BinOp):
                 exp += self.parseExp(expr.left)
             else:
-                if isinstance(expr.left, _ast.Num):
-                    exp += str(expr.left.n)
-                elif isinstance(expr.left, _ast.Name):
-                    exp += str(expr.left.id)
-                elif isinstance(expr.left, _ast.Str):
-                    exp += "'" + self.escape(expr.left.s) + "'"
+                exp = self.reducto(expr.left)
+
+                if isinstance(expr.left, _ast.Str):
                     leftString = True
-                elif isinstance(expr.left, _ast.Attribute):
-                    exp += self.attrHandle(expr.left)
-                elif isinstance(expr.left, _ast.UnaryOp):
-                    exp += self.parseUnOp(expr.left)
-                if not leftString:
-                    exp += self.reducto(expr.left)
+
         op = str(type(expr.op))[8:-2]
+
         if leftString is True and op == "_ast.Mod":
             self.addImport("lib/sprintf.dart")
+
             if not isinstance(expr.right, _ast.Dict):
                 exp = "sprintf(" + exp + ","
             else:
                 exp = "sprintf("
+
             formatString = True
         else:
             if op in operators:
@@ -315,6 +310,7 @@ class MyParser(ast.NodeVisitor):
                 print debug_warning
                 print "Operator not implemented => " + op
                 exit(1)
+
         if isinstance(expr.right, _ast.Call):
             expCall = True
             self.visit_Call(expr.right, True)
