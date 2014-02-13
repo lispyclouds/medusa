@@ -300,7 +300,6 @@ class MyParser(ast.NodeVisitor):
             self.addImport("lib/sprintf.dart")
             if not isinstance(expr.right, _ast.Dict):
                 exp = "sprintf(" + exp + ","
-                print exp
             else:
                 exp = "sprintf("
             formatString = True
