@@ -293,7 +293,8 @@ class MyParser(ast.NodeVisitor):
                     exp += self.attrHandle(expr.left)
                 elif isinstance(expr.left, _ast.UnaryOp):
                     exp += self.parseUnOp(expr.left)
-                exp += self.reducto(expr.left)
+                if not leftString:
+                    exp += self.reducto(expr.left)
         op = str(type(expr.op))[8:-2]
         if leftString is True and op == "_ast.Mod":
             self.addImport("lib/sprintf.dart")
