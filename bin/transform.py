@@ -358,12 +358,7 @@ class MyParser(ast.NodeVisitor):
                             "type not implemented => ", type(k)
 
                     for v in expr.right.values:
-                        if isinstance(v, _ast.Str):
-                            values.append(v.s)
-                        elif isinstance(v, _ast.Num):
-                            values.append(v.n)
-                        elif isinstance(v, _ast.Name):
-                            values.append(v.id)
+                        values.append(self.reducto(v))
                     myDict = dict(zip(key, values))
                     string = "with %(key) s and %(keys)s!"
                     indices = [(m.start(), m.end()) for m in re.finditer("%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]", string)]
@@ -386,7 +381,8 @@ class MyParser(ast.NodeVisitor):
                 else:
                     print "Type still not implemented => ", str(type(expr.right))
                     exit(1)
-                exp += self.reducto(expr.right)
+                if formatString is False:
+                    exp += self.reducto(expr.right)
         if powFlag:
             exp += ")"
 
