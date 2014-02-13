@@ -370,6 +370,7 @@ class MyParser(ast.NodeVisitor):
                 else:
                     print "Type still not implemented => ", str(type(expr.right))
                     exit(1)
+
                 if formatString is False:
                     exp += self.reducto(expr.right)
         if powFlag:
