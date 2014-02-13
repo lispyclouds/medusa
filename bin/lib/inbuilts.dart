@@ -3,6 +3,10 @@ library inbuilts;
 import "dart:io";
 import "dart:collection";
 
+int len(target) {
+    return target.length;
+}
+
 String str(data) {
     return data.toString();
 }

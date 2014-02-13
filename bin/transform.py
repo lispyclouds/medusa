@@ -8,7 +8,7 @@ imports = []
 funVars = []
 symTab = []
 classes = []
-inbuilts = ["input", "range", "raw_input", "str", "xrange"]
+inbuilts = ["input", "len", "range", "raw_input", "str", "xrange"]
 
 funMode = False
 expCall = False
@@ -82,255 +82,6 @@ class MyParser(ast.NodeVisitor):
             exit(1)
 
         return parsed
-
-    def attrHandle(self, stmt_call):
-        resolved = ""
-        myList = list()
-        myDict = dict()
-        if hasattr(stmt_call, "args"):
-            if isinstance(stmt_call.func.value, _ast.Str) and stmt_call.func.attr == "format":
-                for i in stmt_call.args:
-                    if isinstance(i, _ast.Num):
-                        myList.append(i.n)
-                    elif isinstance(i, _ast.Name):
-                        myList.append("$" + str(i.id))
-                    elif isinstance(i, _ast.Str):
-                        myList.append(i.s)
-                    else:
-                        print "Type not implemented => ", type(i)
-                        exit(1)
-
-                for i in stmt_call.keywords:
-                    if isinstance(i.value, _ast.Num):
-                        myDict[str(i.arg)] = i.value.n
-                    elif isinstance(i.value, _ast.Name):
-                        myDict[str(i.arg)] = "$" + str(i.value.id)
-                    elif isinstance(i.value, _ast.Str):
-                        myDict[str(i.arg)] = i.value.s
-                    else:
-                        print "Type not implemented => ", type(i.value)
-                        exit(1)
-
-                string = stmt_call.func.value.s
-                indices = [(m.start(), m.end()) for m in re.finditer("{\d}|{[a-zA-Z0-9_]+}", string)]
-                offset = 0
-                for (start, end) in indices:
-                    start += offset
-                    end += offset
-                    if string[start+1:end-1].isdigit():
-                        offset += len(str(myList[int(string[start+1:end-1])])) - len(str(string[start:end]))
-                        string = string.replace(string[start:end], str(myList[int(string[start+1:end-1])]))
-                    else:
-                        offset += len(str(myDict[string[start+1:end-1]])) - len(str(string[start:end]))
-                        string = string.replace(string[start:end], str(myDict[string[start+1:end-1]]))
-
-                resolved = "\"" + string + "\""
-                return resolved
-            else:
-                if stmt_call.func.value.id == "self":
-                    obj = "this"
-                else:
-                    obj = stmt_call.func.value.id
-
-            resolved += " " + obj + "." + stmt_call.func.attr + "("
-
-            alen = len(stmt_call.args)
-            i = 0
-
-            while (i < alen):
-                if isinstance(stmt_call.args[i], _ast.Num):
-                    resolved += str(stmt_call.args[i].n)
-                elif isinstance(stmt_call.args[i], _ast.Str):
-                    resolved += "'" + self.escape(stmt_call.args[i].s) + "'"
-                elif isinstance(stmt_call.args[i], _ast.List):
-                    resolved += self.parseList(stmt_call.args[i].elts)
-                elif isinstance(stmt_call.args[i], _ast.Name):
-                    resolved += stmt_call.args[i].id
-                elif isinstance(stmt_call.args[i], _ast.BinOp):
-                    resolved += self.parseExp(stmt_call.args[i])
-                elif isinstance(stmt_call.args[i], _ast.Call):
-                    self.visit_Call(stmt_call.args[i], True)
-
-                if (i + 1) < alen:
-                    resolved += ", "
-                i += 1
-
-            resolved += ")"
-
-        else:
-            if stmt_call.value.id == "self":
-                obj = "this"
-            else:
-                obj = stmt_call.value.id
-
-            resolved = " " + obj + "." + stmt_call.attr
-
-        return resolved
-
-    def parseList(self, theList):
-        global func, expCall
-
-        strList = "["
-        i = 0
-        l = len(theList)
-
-        while i < l:
-            item = theList[i]
-
-            if isinstance(item, _ast.Num):
-                v = item.n
-            elif isinstance(item, _ast.Name):
-                v = item.id
-            elif isinstance(item, _ast.Str):
-                v = "'" + self.escape(item.s) + "'"
-            elif isinstance(item, _ast.List):
-                v = self.parseList(item.elts)
-            elif isinstance(item, _ast.BinOp):
-                v = self.parseExp(item)
-            elif isinstance(item, _ast.UnaryOp):
-                v = self.parseUnOp(item)
-            elif isinstance(item, _ast.Call):
-                expCall = True
-                self.visit_Call(item, True)
-                expCall = False
-                v = func
-                func = ""
-
-            strList += str(v)
-            if (i + 1) < l:
-                strList += ", "
-            i += 1
-
-        strList += "]"
-        return strList
-
-    def parseExp(self, expr):
-        global expCall, func
-        powFlag = False
-        leftString = False
-        formatString = False
-
-        exp = ""
-        myDict = dict()
-
-        if isinstance(expr.left, _ast.Call):
-            expCall = True
-            self.visit_Call(expr.left, True)
-            expCall = False
-            exp += func
-            func = ""
-        else:
-            if isinstance(expr.left, _ast.BinOp):
-                exp += self.parseExp(expr.left)
-            else:
-                if isinstance(expr.left, _ast.Num):
-                    exp += str(expr.left.n)
-                elif isinstance(expr.left, _ast.Name):
-                    exp += str(expr.left.id)
-                elif isinstance(expr.left, _ast.Str):
-                    exp += "'" + self.escape(expr.left.s) + "'"
-                    leftString = True
-                elif isinstance(expr.left, _ast.Attribute):
-                    exp += self.attrHandle(expr.left)
-                elif isinstance(expr.left, _ast.UnaryOp):
-                    exp += self.parseUnOp(expr.left)
-
-        op = str(type(expr.op))[8:-2]
-        if leftString is True and op == "_ast.Mod":
-            self.addImport("lib/sprintf.dart")
-            if not isinstance(expr.right, _ast.Dict):
-                exp = "sprintf(" + exp + ","
-            else:
-                exp = "sprintf("
-            formatString = True
-        else:
-            if op in operators:
-                exp += operators[op]
-            elif isinstance(expr.op, _ast.Pow):
-                self.addImport('dart:math')
-                exp = "pow(" + exp
-                exp += ", "
-                powFlag = True
-            else:
-                print debug_warning
-                print "Operator not implemented => " + op
-                exit(1)
-        if isinstance(expr.right, _ast.Call):
-            expCall = True
-            self.visit_Call(expr.right, True)
-            expCall = False
-            exp += func
-            func = ""
-        else:
-            if isinstance(expr.right, _ast.BinOp):
-                if formatString is True:
-                    exp += "[" + self.parseExp(expr.right) + ".toString()])"
-                else:
-                    exp += self.parseExp(expr.right)
-            else:
-                if isinstance(expr.right, _ast.Num):
-                    if formatString is False:
-                        exp += str(expr.right.n)
-                    else:
-                        exp += "[\"" + str(expr.right.n) + "\"])"
-                elif isinstance(expr.right, _ast.Name):
-                    if formatString is False:
-                        exp += str(expr.right.id)
-                    else:
-                        exp += "[" + str(expr.right.id) + ".toString()])"
-                elif isinstance(expr.right, _ast.Str):
-                    if formatString is False:
-                        exp += "'" + self.escape(expr.right.s) + "'"
-                    else:
-                        exp += "['" + self.escape(expr.right.s) + "'])"
-                elif isinstance(expr.right, _ast.Attribute):
-                    exp += self.attrHandle(expr.right)
-                elif isinstance(expr.right, _ast.Tuple):
-                    exp += self.parseList(expr.right.elts) + ")"
-                elif isinstance(expr.right, _ast.UnaryOp):
-                    exp += self.parseUnOp(expr.right)
-                elif isinstance(expr.right, _ast.Dict):
-                    key = list()
-                    values = list()
-                    for k in expr.right.keys:
-                        if isinstance(k, _ast.Str):
-                            key.append(k.s)
-                        else:
-                            "type not implemented => ", type(k)
-
-                    for v in expr.right.values:
-                        if isinstance(v, _ast.Str):
-                            values.append(v.s)
-                        elif isinstance(v, _ast.Num):
-                            values.append(v.n)
-                        elif isinstance(v, _ast.Name):
-                            values.append(v.id)
-                    myDict = dict(zip(key, values))
-                    string = "with %(key) s and %(keys)s!"
-                    indices = [(m.start(), m.end()) for m in re.finditer("%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]", string)]
-                    myList = list()
-                    offset = 0
-                    for (start, end) in indices:
-                        space = 0
-                        start += offset
-                        end += offset
-                        if string[start:end][-2] == " ":
-                            space = 1
-                        if string[start + 2 : end - 2 - space]  not in ("", " "):
-                            if string[start:end][-1] == "s":
-                                myList.append(str(myDict[string[start + 2 : end - 2 - space]]))
-                            else:
-                                myList.append(myDict[string[start + 2 : end - 2 - space]])
-                        offset = -len(string[start+1:end-1])
-                        string = string.replace(string[start+1:end-1], "")
-                    exp += "\"" + string + "\", " + str(myList) + ")"
-                else:
-                    print "Type still not implemented => ", str(type(expr.right))
-                    exit(1)
-        if powFlag:
-            exp += ")"
-
-        return "(" + exp + ")" #Saxx
 
     def subscriptHandle(self, stmt_Subscript):
         if str(type(stmt_Subscript.slice))[13:-2] == "Index":
@@ -423,41 +174,335 @@ class MyParser(ast.NodeVisitor):
 
         return data
 
+    def attrHandle(self, stmt_call):
+        resolved = ""
+        myList = list()
+        myDict = dict()
+        if hasattr(stmt_call, "args"):
+            if isinstance(stmt_call.func.value, _ast.Str) and stmt_call.func.attr == "format":
+                for i in stmt_call.args:
+                    if isinstance(i, _ast.Num):
+                        myList.append(i.n)
+                    elif isinstance(i, _ast.Name):
+                        myList.append("$" + str(i.id))
+                    elif isinstance(i, _ast.Str):
+                        myList.append(i.s)
+                    else:
+                        print "Type not implemented => ", type(i)
+                        exit(1)
+
+                for i in stmt_call.keywords:
+                    if isinstance(i.value, _ast.Num):
+                        myDict[str(i.arg)] = i.value.n
+                    elif isinstance(i.value, _ast.Name):
+                        myDict[str(i.arg)] = "$" + str(i.value.id)
+                    elif isinstance(i.value, _ast.Str):
+                        myDict[str(i.arg)] = i.value.s
+                    else:
+                        print "Type not implemented => ", type(i.value)
+                        exit(1)
+
+                string = stmt_call.func.value.s
+                indices = [(m.start(), m.end()) for m in re.finditer("{\d}|{[a-zA-Z0-9_]+}", string)]
+                offset = 0
+                for (start, end) in indices:
+                    start += offset
+                    end += offset
+                    if string[start+1:end-1].isdigit():
+                        offset += len(str(myList[int(string[start+1:end-1])])) - len(str(string[start:end]))
+                        string = string.replace(string[start:end], str(myList[int(string[start+1:end-1])]))
+                    else:
+                        offset += len(str(myDict[string[start+1:end-1]])) - len(str(string[start:end]))
+                        string = string.replace(string[start:end], str(myDict[string[start+1:end-1]]))
+
+                resolved = "\"" + string + "\""
+                return resolved
+            else:
+                if stmt_call.func.value.id == "self":
+                    obj = "this"
+                else:
+                    obj = stmt_call.func.value.id
+
+            resolved += " " + obj + "." + stmt_call.func.attr + "("
+
+            alen = len(stmt_call.args)
+            i = 0
+
+            while (i < alen):
+                resolved += self.reducto(stmt_call.args[i])
+
+                if (i + 1) < alen:
+                    resolved += ", "
+                i += 1
+
+            resolved += ")"
+
+        else:
+            if stmt_call.value.id == "self":
+                obj = "this"
+            else:
+                obj = stmt_call.value.id
+
+            resolved = " " + obj + "." + stmt_call.attr
+
+        return resolved
+
+    def parseList(self, theList):
+        global func, expCall
+
+        strList = "["
+        i = 0
+        l = len(theList)
+
+        while i < l:
+            strList += self.reducto(theList[i], True)
+            if (i + 1) < l:
+                strList += ", "
+            i += 1
+
+        strList += "]"
+        return strList
+
+    def parseExp(self, expr):
+        global expCall, func
+        powFlag = False
+        leftString = False
+        formatString = False
+
+        exp = ""
+        myDict = dict()
+
+        if isinstance(expr.left, _ast.Call):
+            expCall = True
+            self.visit_Call(expr.left, True)
+            expCall = False
+            exp += func
+            func = ""
+        else:
+            if isinstance(expr.left, _ast.BinOp):
+                exp += self.parseExp(expr.left)
+            else:
+                if isinstance(expr.left, _ast.Num):
+                    exp += str(expr.left.n)
+                elif isinstance(expr.left, _ast.Name):
+                    exp += str(expr.left.id)
+                elif isinstance(expr.left, _ast.Str):
+                    exp += "'" + self.escape(expr.left.s) + "'"
+                    leftString = True
+                elif isinstance(expr.left, _ast.Attribute):
+                    exp += self.attrHandle(expr.left)
+                elif isinstance(expr.left, _ast.UnaryOp):
+                    exp += self.parseUnOp(expr.left)
+                exp += self.reducto(expr.left)
+        op = str(type(expr.op))[8:-2]
+        if leftString is True and op == "_ast.Mod":
+            self.addImport("lib/sprintf.dart")
+            if not isinstance(expr.right, _ast.Dict):
+                exp = "sprintf(" + exp + ","
+            else:
+                exp = "sprintf("
+            formatString = True
+        else:
+            if op in operators:
+                exp += operators[op]
+            elif isinstance(expr.op, _ast.Pow):
+                self.addImport('dart:math')
+                exp = "pow(" + exp
+                exp += ", "
+                powFlag = True
+            else:
+                print debug_warning
+                print "Operator not implemented => " + op
+                exit(1)
+        if isinstance(expr.right, _ast.Call):
+            expCall = True
+            self.visit_Call(expr.right, True)
+            expCall = False
+            exp += func
+            func = ""
+        else:
+            if isinstance(expr.right, _ast.BinOp):
+                if formatString is True:
+                    exp += "[" + self.parseExp(expr.right) + ".toString()])"
+                else:
+                    exp += self.parseExp(expr.right)
+            else:
+                if isinstance(expr.right, _ast.Num):
+                    if formatString is False:
+                        exp += str(expr.right.n)
+                    else:
+                        exp += "[\"" + str(expr.right.n) + "\"])"
+                elif isinstance(expr.right, _ast.Name):
+                    if formatString is False:
+                        exp += str(expr.right.id)
+                    else:
+                        exp += "[" + str(expr.right.id) + ".toString()])"
+                elif isinstance(expr.right, _ast.Str):
+                    if formatString is False:
+                        exp += "'" + self.escape(expr.right.s) + "'"
+                    else:
+                        exp += "['" + self.escape(expr.right.s) + "'])"
+                elif isinstance(expr.right, _ast.Attribute):
+                    exp += self.attrHandle(expr.right)
+                elif isinstance(expr.right, _ast.Tuple):
+                    exp += self.parseList(expr.right.elts) + ")"
+                elif isinstance(expr.right, _ast.UnaryOp):
+                    exp += self.parseUnOp(expr.right)
+                elif isinstance(expr.right, _ast.Dict):
+                    key = list()
+                    values = list()
+                    for k in expr.right.keys:
+                        if isinstance(k, _ast.Str):
+                            key.append(k.s)
+                        else:
+                            "type not implemented => ", type(k)
+
+                    for v in expr.right.values:
+                        if isinstance(v, _ast.Str):
+                            values.append(v.s)
+                        elif isinstance(v, _ast.Num):
+                            values.append(v.n)
+                        elif isinstance(v, _ast.Name):
+                            values.append(v.id)
+                    myDict = dict(zip(key, values))
+                    string = "with %(key) s and %(keys)s!"
+                    indices = [(m.start(), m.end()) for m in re.finditer("%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]", string)]
+                    myList = list()
+                    offset = 0
+                    for (start, end) in indices:
+                        space = 0
+                        start += offset
+                        end += offset
+                        if string[start:end][-2] == " ":
+                            space = 1
+                        if string[start + 2 : end - 2 - space]  not in ("", " "):
+                            if string[start:end][-1] == "s":
+                                myList.append(str(myDict[string[start + 2 : end - 2 - space]]))
+                            else:
+                                myList.append(myDict[string[start + 2 : end - 2 - space]])
+                        offset = -len(string[start+1:end-1])
+                        string = string.replace(string[start+1:end-1], "")
+                    exp += "\"" + string + "\", " + str(myList) + ")"
+                else:
+                    print "Type still not implemented => ", str(type(expr.right))
+                    exit(1)
+                exp += self.reducto(expr.right)
+        if powFlag:
+            exp += ")"
+
+        return "(" + exp + ")" #Saxx
+
+    def reducto(self, target, exp = False):
+        global func
+
+        reduced = ""
+
+        if isinstance(target, _ast.Num):
+            reduced = str(target.n)
+        elif isinstance(target, _ast.Str):
+            reduced = "'" + self.escape(target.s) + "'"
+        elif isinstance(target, _ast.List):
+            reduced = self.parseList(target.elts)
+        elif isinstance(target, _ast.Name):
+            reduced = target.id
+        elif isinstance(target, _ast.UnaryOp):
+            reduced = self.parseUnOp(target)
+        elif isinstance(target, _ast.BinOp):
+            reduced = self.parseExp(target)
+        elif isinstance(target, _ast.Subscript):
+            reduced = self.subscriptHandle(target)
+        elif isinstance(target, _ast.Attribute):
+            reduced = self.attrHandle(target)
+        elif isinstance(target, _ast.IfExp):
+            self.parseTernary(target)
+        elif isinstance(target, _ast.Call):
+            if exp:
+                expCall = True
+                self.visit_Call(target, True)
+                expCall = False
+                reduced = func
+                func = ""
+            else:
+                self.visit_Call(target, True)
+        else:
+            print debug_error
+            print "Type not recognized => ", str(type(target))
+            exit(1)
+
+        return str(reduced)
+
+    def makeTest(self, stmt_test):
+        global code
+
+        if hasattr(stmt_test, 'left'):
+            varType = str(type(stmt_test.left))[13:-2]
+
+            if varType == "Name":
+                if stmt_test.left.id == 'True':
+                    code += "true"
+                elif stmt_test.left.id == 'False':
+                    code += "false"
+                else:
+                    code += stmt_test.left.id
+            elif varType == "Str":
+                code += stmt_test.left.s
+            elif varType == "Num":
+                code += str(stmt_test.left.n)
+            elif varType == "BinOp":
+                code += self.parseExp(stmt_test.left)
+            else:
+                print debug_error
+                print "Type not recognized => ", varType
+                exit(1)
+        else:
+            if stmt_test.id == "True":
+                code += "true"
+            elif stmt_test.id == "False":
+                code += "false"
+
+        if hasattr(stmt_test, 'ops'):
+            code += operators[str(type(stmt_test.ops[0]))[8:-2]]
+
+        if hasattr(stmt_test, 'comparators'):
+            varType = str(type(stmt_test.comparators[0]))[13:-2]
+            if varType == "Name":
+                if stmt_test.comparators[0].id == 'True':
+                    code += "true"
+                elif stmt_test.comparators[0].id == 'False':
+                    code += "false"
+                else:
+                    code += stmt_test.comparators[0].id
+            elif varType == "Str":
+                code += stmt_test.comparators[0].s
+            elif varType == "Num":
+                code += str(stmt_test.comparators[0].n)
+            elif varType == "BinOp":
+                code += self.parseExp(stmt_test.comparators[0])
+            else:
+                print debug_error
+                print "Type not recognized => ", varType
+                exit(1)
+
+    def parseTernary(self, stmt_ternary):
+        global code
+
+        self.makeTest(stmt_ternary.test)
+        code += " ? " + self.reducto(stmt_ternary.body) + " : " + self.reducto(stmt_ternary.orelse)
+
     def visit_Print(self, stmt_print):
         global code
 
         self.addImport("dart:io")
 
-        data = ""
         i = 0
         values = len(stmt_print.values)
         while (i < values):
             code += " stdout.write("
+            printee = self.reducto(stmt_print.values[i])
+            if printee != "":
+                code += printee
+            code += ");"
 
-            if isinstance(stmt_print.values[i], _ast.Str):
-                data = "'" + self.escape(stmt_print.values[i].s) + "'"
-            elif isinstance(stmt_print.values[i], _ast.Num):
-                data = stmt_print.values[i].n
-            elif isinstance(stmt_print.values[i], _ast.Name):
-                data = stmt_print.values[i].id
-            elif isinstance(stmt_print.values[i], _ast.List):
-                data = self.parseList(stmt_print.values[i].elts)
-            elif isinstance(stmt_print.values[i], _ast.BinOp):
-                data = self.parseExp(stmt_print.values[i])
-            elif isinstance(stmt_print.values[i], _ast.UnaryOp):
-                data = self.parseUnOp(stmt_print.values[i])
-            elif isinstance(stmt_print.values[i], _ast.Call):
-                self.visit_Call(stmt_print.values[i], True)
-            elif isinstance(stmt_print.values[i], _ast.Subscript):
-                data = self.subscriptHandle(stmt_print.values[i])
-            elif isinstance(stmt_print.values[i], _ast.Attribute):
-                data = self.attrHandle(stmt_print.values[i])
-            else:
-                print debug_error
-                print "Type not recognized => ", str(type(stmt_print.values[i]))
-                exit(1)
-
-            code += str(data) + ");"
             if (i + 1) < values:
                 code += " stdout.write(' ');"
             else:
@@ -485,86 +530,23 @@ class MyParser(ast.NodeVisitor):
 
                 code += " " + target.id + " = ";
 
-            value = ""
-            if isinstance(stmt_assign.value, _ast.Num):
-                value = stmt_assign.value.n
-            elif isinstance(stmt_assign.value, _ast.Str):
-                value = "'" + self.escape(stmt_assign.value.s) + "'"
-            elif isinstance(stmt_assign.value, _ast.List):
-                value = self.parseList(stmt_assign.value.elts)
-            elif isinstance(stmt_assign.value, _ast.Name):
-                value = stmt_assign.value.id
-            elif isinstance(stmt_assign.value, _ast.BinOp):
-                value = self.parseExp(stmt_assign.value)
-            elif isinstance(stmt_assign.value, _ast.UnaryOp):
-                value = self.parseUnOp(stmt_assign.value)
-            elif isinstance(stmt_assign.value, _ast.Call):
-                self.visit_Call(stmt_assign.value, True)
-            elif isinstance(stmt_assign.value, _ast.Subscript):
-                value = self.subscriptHandle(stmt_assign.value)
-            else:
-                print debug_error
-                print "Type not recognized => ", type(stmt_assign.value)
-                exit(1)
+            value = self.reducto(stmt_assign.value)
+
             if value != "":
-                 code += str(value)
+                 code += value
             code += ";"
 
             code += temp
 
     def visit_If(self, stmt_if):
-        global code
+        global code, funMode
+
+        funMode = True
 
         code += " if ("
-        if hasattr(stmt_if.test, 'left'):
-            varType = str(type(stmt_if.test.left))[13:-2]
-            if varType == "Name":
-                if stmt_if.test.left.id == 'True':
-                    code += "true"
-                elif stmt_if.test.left.id == 'False':
-                    code += "false"
-                else:
-                    code += stmt_if.test.left.id
-            elif varType == "Str":
-                code += stmt_if.test.left.s
-            elif varType == "Num":
-                code += str(stmt_if.test.left.n)
-            elif varType == "BinOp":
-                code += self.parseExp(stmt_if.test.left)
-            else:
-                print debug_error
-                print "Type not recognized => ", varType
-                exit(1)
-        elif str(type(stmt_if.test))[13:-2] == "Name":
-            if stmt_if.test.id == "True":
-                code += "true"
-            elif stmt_if.test.id == "False":
-                code += "false"
-
-        if hasattr(stmt_if.test, 'ops'):
-            code += operators[str(type(stmt_if.test.ops[0]))[8:-2]]
-
-        if hasattr(stmt_if.test, 'comparators'):
-            varType = str(type(stmt_if.test.comparators[0]))[13:-2]
-            if varType == "Name":
-                if stmt_if.test.comparators[0].id == 'True':
-                    code += "true"
-                elif stmt_if.test.comparators[0].id == 'False':
-                    code += "false"
-                else:
-                    code += stmt_if.test.comparators[0].id
-            elif varType == "Str":
-                code += stmt_if.test.comparators[0].s
-            elif varType == "Num":
-                code += str(stmt_if.test.comparators[0].n)
-            elif varType == "BinOp":
-                code += self.parseExp(stmt_if.test.comparators[0])
-            else:
-                print debug_error
-                print "Type not recognized => ", varType
-                exit(1)
-
+        self.makeTest(stmt_if.test)
         code += ") {"
+
         for node in stmt_if.body:
             self.visit(node)
 
@@ -575,8 +557,12 @@ class MyParser(ast.NodeVisitor):
                 self.visit(node)
             code += " }"
 
+        funMode = False
+
     def visit_For(self, stmt_For):
         global code
+
+        funMode = True
 
         code += " for (var " + stmt_For.target.id + " in "
 
@@ -599,53 +585,23 @@ class MyParser(ast.NodeVisitor):
             for node in stmt_For.orelse:
                 self.visit(node)
 
+        funMode = False
+
     def visit_While(self, stmt_while):
         global code
 
+        funMode = True
+
         code += " while ("
-        varType = str(type(stmt_while.test.left))[13:-2]
-
-        if varType == "Name":
-            if stmt_while.test.left.id == 'True':
-                code += "true"
-            elif stmt_while.test.left.id == 'False':
-                code += "false"
-            else:
-                code += stmt_while.test.left.id
-        elif varType == "Str":
-           code += stmt_while.test.left.s
-        elif varType == "Num":
-            code += str(stmt_while.test.left.n)
-        else:
-            print debug_error
-            print "Type not recognized => ", varType
-            exit(1)
-
-        code += operators[str(type(stmt_while.test.ops[0]))[8:-2]]
-        varType = str(type(stmt_while.test.comparators[0]))[13:-2]
-
-        if varType == "Name":
-            if stmt_while.test.comparators[0].id == 'True':
-                code += "true"
-            elif stmt_while.test.comparators[0].id == 'False':
-                code += "false"
-            else:
-                code += stmt_while.test.comparators[0].id
-        elif varType == "Str":
-            code += stmt_while.test.comparators[0].s
-        elif varType == "Num":
-            code += str(stmt_while.test.comparators[0].n)
-        else:
-            print debug_error
-            print "Type not recognized => ", varType
-            exit(1)
-
+        self.makeTest(stmt_while.test)
         code += ") {"
 
         for node in stmt_while.body:
             self.visit(node)
 
         code += "}"
+
+        funMode = False
 
     def visit_AugAssign(self, stmt_aug_assign):
         global code
@@ -670,14 +626,7 @@ class MyParser(ast.NodeVisitor):
             print "Operator not implemented => " + op
             exit(1)
 
-        if isinstance(stmt_aug_assign.value, _ast.Num):
-            code += str(stmt_aug_assign.value.n)
-        elif isinstance(stmt_aug_assign.value, _ast.Name):
-            code += str(stmt_aug_assign.value.id)
-        elif isinstance(stmt_aug_assign.value, _ast.BinOp):
-            code += self.parseExp(stmt_aug_assign.value)
-        elif isinstance(stmt_aug_assign.value, _ast.Attribute):
-            code += self.attrHandle(stmt_aug_assign.value)
+        code += self.reducto(stmt_aug_assign.value)
 
         if powFlag:
             code += ")"
@@ -755,32 +704,13 @@ class MyParser(ast.NodeVisitor):
         p = ""
 
         while i < alen:
-            if isinstance(stmt_call.args[i], _ast.Name):
-                p = stmt_call.args[i].id
-            elif isinstance(stmt_call.args[i], _ast.Num):
-                p = stmt_call.args[i].n
-            elif isinstance(stmt_call.args[i], _ast.Str):
-                p = "'" + self.escape(stmt_call.args[i].s) + "'"
-            elif isinstance(stmt_call.args[i], _ast.List):
-                p = self.parseList(stmt_call.args[i].elts)
-            elif isinstance(stmt_call.args[i], _ast.BinOp):
-                p = self.parseExp(stmt_call.args[i])
-            elif isinstance(stmt_call.args[i], _ast.UnaryOp):
-                p = self.parseUnOp(stmt_call.args[i])
-            elif isinstance(stmt_call.args[i], _ast.Call):
-                p = self.visit_Call(stmt_call.args[i], True)
-            elif isinstance(stmt_call.args[i], _ast.Attribute):
-                p = self.attrHandle(stmt_call.args[i])
-            else:
-                print debug_error
-                print "Type not recognized => ", stmt_call.args[i]
-                exit(1)
+            p = self.reducto(stmt_call.args[i])
 
-            if p is not None:
+            if p != "":
                 if expCall:
-                    func += str(p)
+                    func += p
                 else:
-                    code += str(p)
+                    code += p
 
             if (i + 1) < alen:
                 if expCall:
@@ -808,23 +738,11 @@ class MyParser(ast.NodeVisitor):
                 v = "this"
             else:
                 v = stmt_return.value.id
-        elif isinstance(stmt_return.value, _ast.Num):
-            v = stmt_return.value.n
-        elif isinstance(stmt_return.value, _ast.Str):
-            v = "'" + self.escape(stmt_return.value.s) + "'"
-        elif isinstance(stmt_return.value, _ast.List):
-            v = self.parseList(stmt_return.value.elts)
-        elif isinstance(stmt_return.value, _ast.BinOp):
-            v = self.parseExp(stmt_return.value)
-        elif isinstance(stmt_return.value, _ast.UnaryOp):
-            v = self.parseUnOp(stmt_return.value)
-        elif isinstance(stmt_return.value, _ast.Call):
-            self.visit_Call(stmt_return.value, True)
-        elif isinstance(stmt_return.value, _ast.Attribute):
-            v = self.attrHandle(stmt_return.value)
+        else:
+            v = self.reducto(stmt_return.value)
 
         if v != "":
-            code += str(v)
+            code += v
         code += ";"
 
     def visit_ClassDef(self, stmt_class):
