@@ -12,11 +12,17 @@ slice(list, lower, higher, step) {
     if (lower < 0)
         lower = list.length + lower;
 
+    if (lower > list.length - 1)
+        lower = list.length - 1;
+
+    if (higher > list.length - 1)
+        higher = list.length - 1;
+
     if (step < 0) {
         for (i = lower; i > higher; i += step)
             c.add(list[i]);
     } else {
-        for(i = lower; i < higher; i += step)
+        for (i = lower; i < higher; i += step)
             c.add(list[i]);
     }
 
