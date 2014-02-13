@@ -2,7 +2,7 @@
 
 """authors: heisenberg, apoorv, akashgiri"""
 
-import ast, _ast, sys
+import ast, _ast, sys, re
 
 imports = []
 funVars = []
@@ -85,12 +85,52 @@ class MyParser(ast.NodeVisitor):
 
     def attrHandle(self, stmt_call):
         resolved = ""
-
+        myList = list()
+        myDict = dict()
         if hasattr(stmt_call, "args"):
-            if stmt_call.func.value.id == "self":
-                obj = "this"
+            if isinstance(stmt_call.func.value, _ast.Str) and stmt_call.func.attr == "format":
+                for i in stmt_call.args:
+                    if isinstance(i, _ast.Num):
+                        myList.append(i.n)
+                    elif isinstance(i, _ast.Name):
+                        myList.append("$" + str(i.id))
+                    elif isinstance(i, _ast.Str):
+                        myList.append(i.s)
+                    else:
+                        print "Type not implemented => ", type(i)
+                        exit(1)
+
+                for i in stmt_call.keywords:
+                    if isinstance(i.value, _ast.Num):
+                        myDict[str(i.arg)] = i.value.n
+                    elif isinstance(i.value, _ast.Name):
+                        myDict[str(i.arg)] = "$" + str(i.value.id)
+                    elif isinstance(i.value, _ast.Str):
+                        myDict[str(i.arg)] = i.value.s
+                    else:
+                        print "Type not implemented => ", type(i.value)
+                        exit(1)
+
+                string = stmt_call.func.value.s
+                indices = [(m.start(), m.end()) for m in re.finditer("{\d}|{[a-zA-Z0-9_]+}", string)]
+                offset = 0
+                for (start, end) in indices:
+                    start += offset
+                    end += offset
+                    if string[start+1:end-1].isdigit():
+                        offset += len(str(myList[int(string[start+1:end-1])])) - len(str(string[start:end]))
+                        string = string.replace(string[start:end], str(myList[int(string[start+1:end-1])]))
+                    else:
+                        offset += len(str(myDict[string[start+1:end-1]])) - len(str(string[start:end]))
+                        string = string.replace(string[start:end], str(myDict[string[start+1:end-1]]))
+
+                resolved = "\"" + string + "\""
+                return resolved
             else:
-                obj = stmt_call.func.value.id
+                if stmt_call.func.value.id == "self":
+                    obj = "this"
+                else:
+                    obj = stmt_call.func.value.id
 
             resolved += " " + obj + "." + stmt_call.func.attr + "("
 
@@ -171,6 +211,7 @@ class MyParser(ast.NodeVisitor):
         formatString = False
 
         exp = ""
+        myDict = dict()
 
         if isinstance(expr.left, _ast.Call):
             expCall = True
@@ -197,7 +238,10 @@ class MyParser(ast.NodeVisitor):
         op = str(type(expr.op))[8:-2]
         if leftString is True and op == "_ast.Mod":
             self.addImport("lib/sprintf.dart")
-            exp = "sprintf(" + exp + ","
+            if not isinstance(expr.right, _ast.Dict):
+                exp = "sprintf(" + exp + ","
+            else:
+                exp = "sprintf("
             formatString = True
         else:
             if op in operators:
@@ -211,9 +255,6 @@ class MyParser(ast.NodeVisitor):
                 print debug_warning
                 print "Operator not implemented => " + op
                 exit(1)
-            print debug_error
-            print "Operator not implemented => " + op
-            exit(1)
         if isinstance(expr.right, _ast.Call):
             expCall = True
             self.visit_Call(expr.right, True)
@@ -222,23 +263,70 @@ class MyParser(ast.NodeVisitor):
             func = ""
         else:
             if isinstance(expr.right, _ast.BinOp):
-                exp += self.parseExp(expr.right)
+                if formatString is True:
+                    exp += "[" + self.parseExp(expr.right) + ".toString()])"
+                else:
+                    exp += self.parseExp(expr.right)
             else:
                 if isinstance(expr.right, _ast.Num):
-                    exp += str(expr.right.n)
+                    if formatString is False:
+                        exp += str(expr.right.n)
+                    else:
+                        exp += "[\"" + str(expr.right.n) + "\"])"
                 elif isinstance(expr.right, _ast.Name):
-                    exp += str(expr.right.id)
+                    if formatString is False:
+                        exp += str(expr.right.id)
+                    else:
+                        exp += "[" + str(expr.right.id) + ".toString()])"
                 elif isinstance(expr.right, _ast.Str):
-                    exp += "'" + self.escape(expr.right.s) + "'"
+                    if formatString is False:
+                        exp += "'" + self.escape(expr.right.s) + "'"
+                    else:
+                        exp += "['" + self.escape(expr.right.s) + "'])"
                 elif isinstance(expr.right, _ast.Attribute):
                     exp += self.attrHandle(expr.right)
                 elif isinstance(expr.right, _ast.Tuple):
                     exp += self.parseList(expr.right.elts) + ")"
+                elif isinstance(expr.right, _ast.UnaryOp):
+                    exp += self.parseUnOp(expr.right)
+                elif isinstance(expr.right, _ast.Dict):
+                    key = list()
+                    values = list()
+                    for k in expr.right.keys:
+                        if isinstance(k, _ast.Str):
+                            key.append(k.s)
+                        else:
+                            "type not implemented => ", type(k)
+
+                    for v in expr.right.values:
+                        if isinstance(v, _ast.Str):
+                            values.append(v.s)
+                        elif isinstance(v, _ast.Num):
+                            values.append(v.n)
+                        elif isinstance(v, _ast.Name):
+                            values.append(v.id)
+                    myDict = dict(zip(key, values))
+                    string = "with %(key) s and %(keys)s!"
+                    indices = [(m.start(), m.end()) for m in re.finditer("%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]", string)]
+                    myList = list()
+                    offset = 0
+                    for (start, end) in indices:
+                        space = 0
+                        start += offset
+                        end += offset
+                        if string[start:end][-2] == " ":
+                            space = 1
+                        if string[start + 2 : end - 2 - space]  not in ("", " "):
+                            if string[start:end][-1] == "s":
+                                myList.append(str(myDict[string[start + 2 : end - 2 - space]]))
+                            else:
+                                myList.append(myDict[string[start + 2 : end - 2 - space]])
+                        offset = -len(string[start+1:end-1])
+                        string = string.replace(string[start+1:end-1], "")
+                    exp += "\"" + string + "\", " + str(myList) + ")"
                 else:
                     print "Type still not implemented => ", str(type(expr.right))
                     exit(1)
-                elif isinstance(expr.right, _ast.UnaryOp):
-                    exp += self.parseUnOp(expr.right)
         if powFlag:
             exp += ")"
 
