@@ -176,6 +176,7 @@ class MyParser(ast.NodeVisitor):
         resolved = ""
         myList = list()
         myDict = dict()
+
         if hasattr(stmt_call, "args"):
             if isinstance(stmt_call.func.value, _ast.Str) and stmt_call.func.attr == "format":
                 for i in stmt_call.args:
@@ -203,6 +204,7 @@ class MyParser(ast.NodeVisitor):
                 string = stmt_call.func.value.s
                 indices = [(m.start(), m.end()) for m in re.finditer("{\d}|{[a-zA-Z0-9_]+}", string)]
                 offset = 0
+
                 for (start, end) in indices:
                     start += offset
                     end += offset
@@ -280,17 +282,6 @@ class MyParser(ast.NodeVisitor):
             if isinstance(expr.left, _ast.BinOp):
                 exp += self.parseExp(expr.left)
             else:
-                if isinstance(expr.left, _ast.Num):
-                    exp += str(expr.left.n)
-                elif isinstance(expr.left, _ast.Name):
-                    exp += str(expr.left.id)
-                elif isinstance(expr.left, _ast.Str):
-                    exp += "'" + self.escape(expr.left.s) + "'"
-                    leftString = True
-                elif isinstance(expr.left, _ast.Attribute):
-                    exp += self.attrHandle(expr.left)
-                elif isinstance(expr.left, _ast.UnaryOp):
-                    exp += self.parseUnOp(expr.left)
                 exp += self.reducto(expr.left)
         op = str(type(expr.op))[8:-2]
         if leftString is True and op == "_ast.Mod":
