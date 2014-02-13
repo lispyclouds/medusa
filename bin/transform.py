@@ -41,8 +41,6 @@ outFile = open("out.dart", 'w')
 code = " void main() {"
 
 class MyParser(ast.NodeVisitor):
-    def __init__(self):
-        pass
 
     def parse(self, code):
         tree = ast.parse(code)
