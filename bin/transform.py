@@ -178,6 +178,7 @@ class MyParser(ast.NodeVisitor):
         resolved = ""
         myList = list()
         myDict = dict()
+
         if hasattr(stmt_call, "args"):
             if isinstance(stmt_call.func.value, _ast.Str) and stmt_call.func.attr == "format":
                 for i in stmt_call.args:
@@ -378,8 +379,6 @@ class MyParser(ast.NodeVisitor):
                 else:
                     print "Type still not implemented => ", str(type(expr.right))
                     exit(1)
-                if formatString is False:
-                    exp += self.reducto(expr.right)
         if powFlag:
             exp += ")"
 
