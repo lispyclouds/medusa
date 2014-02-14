@@ -178,6 +178,7 @@ class MyParser(ast.NodeVisitor):
         resolved = ""
         myList = list()
         myDict = dict()
+
         if hasattr(stmt_call, "args"):
             if isinstance(stmt_call.func.value, _ast.Str) and stmt_call.func.attr == "format":
                 for i in stmt_call.args:
