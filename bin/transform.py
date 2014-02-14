@@ -805,9 +805,9 @@ class MyParser(ast.NodeVisitor):
             self.visit(node)
         code += " }"
 
-        for handler in stmt_tryexcept[0].handlers:
-            if handler.type.id == "ZeroDivisionError":
-                continue
+        #for handler in stmt_tryexcept[0].handlers:
+        #    if handler.type.id == "ZeroDivisionError":
+        #        continue
 
         funMode = False
 
