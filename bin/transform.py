@@ -37,6 +37,9 @@ operators['_ast.Lt'] = " < "
 operators['_ast.LtE'] = " <= "
 operators['_ast.NotEq'] = " != "
 
+exceptions = dict()
+exceptions['ZeroDivisionError'] = ""
+
 outFile = open("out.dart", 'w')
 code = " void main() {"
 
@@ -216,8 +219,7 @@ class MyParser(ast.NodeVisitor):
                         offset += len(str(myDict[string[start+1:end-1]])) - len(str(string[start:end]))
                         string = string.replace(string[start:end], str(myDict[string[start+1:end-1]]))
 
-                resolved = "\"" + string + "\""
-                return resolved
+                return "\"" + string + "\""
             else:
                 if stmt_call.func.value.id == "self":
                     obj = "this"
@@ -511,11 +513,12 @@ class MyParser(ast.NodeVisitor):
                 code += self.attrHandle(target) + " = "
             else:
                 if funMode:
-                    if funVars.__contains__(target.id) == False:
-                        funVars.append(target.id)
-                        code += " var"
+                    if not symTab.__contains__(target.id):
+                        if not funVars.__contains__(target.id):
+                            funVars.append(target.id)
+                            code += " var"
                 else:
-                    if symTab.__contains__(target.id) == False:
+                    if not symTab.__contains__(target.id):
                         symTab.append(target.id)
                         temp = code
                         code = " var"
@@ -764,6 +767,31 @@ class MyParser(ast.NodeVisitor):
         code = temp + code + " }" + main
         funMode = False
         funVars = []
+
+    def visit_TryExcept(self, stmt_tryexcept):
+        global code, funMode
+
+        print debug_notification
+        print "Exceptions are not yet implemented at the moment :( Sorry!"
+        exit(0)
+
+        funMode = True
+
+        code += " try {"
+        for node in stmt_tryexcept[0].body:
+            self.visit(node)
+        code += " }"
+
+        for handler in stmt_tryexcept[0].handlers:
+            if handler.type.id == "ZeroDivisionError":
+                continue
+
+        funMode = False
+
+    def visit_TryFinally(self, stmt_tryfinally):
+        global code
+
+        self.visit_TryExcept(stmt_tryfinally.body)
 
 MyParser().parse(open(sys.argv[1]).read())
 
