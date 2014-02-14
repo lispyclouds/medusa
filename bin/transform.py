@@ -250,15 +250,17 @@ class MyParser(ast.NodeVisitor):
 
         return resolved
 
-    def parseList(self, theList):
+    def parseList(self, theList, formats = None):
         global func, expCall
-
         strList = "["
         i = 0
         l = len(theList)
 
         while i < l:
-            strList += self.reducto(theList[i], True)
+            if formats is not None and formats[i] == "%s":
+                strList += "(" + self.reducto(theList[i], True) + ").toString()"
+            else:
+                strList += self.reducto(theList[i], True)
             if (i + 1) < l:
                 strList += ", "
             i += 1
@@ -323,7 +325,8 @@ class MyParser(ast.NodeVisitor):
         else:
             if isinstance(expr.right, _ast.BinOp):
                 if formatString is True:
-                    exp += "[" + self.parseExp(expr.right) + ".toString()])"
+                    data = self.parseExp(expr.right)
+                    exp += "[(" + data + ").toString()])"
                 else:
                     exp += self.parseExp(expr.right)
             else:
@@ -345,7 +348,12 @@ class MyParser(ast.NodeVisitor):
                 elif isinstance(expr.right, _ast.Attribute):
                     exp += self.attrHandle(expr.right)
                 elif isinstance(expr.right, _ast.Tuple):
-                    exp += self.parseList(expr.right.elts) + ")"
+                    if formatString is True:
+                        string = str(expr.left.s)
+                        formats = [string[m.start():m.end()] for m in re.finditer("%\s?[diuoxXeEfFgGcrs]", string)]
+                        exp += self.parseList(expr.right.elts, formats) + ")"
+                    else:
+                        exp += self.parseList(expr.right.elts) + ")"
                 elif isinstance(expr.right, _ast.UnaryOp):
                     exp += self.parseUnOp(expr.right)
                 elif isinstance(expr.right, _ast.Dict):
@@ -360,7 +368,7 @@ class MyParser(ast.NodeVisitor):
                     for v in expr.right.values:
                         values.append(self.reducto(v))
                     myDict = dict(zip(key, values))
-                    string = "with %(key) s and %(keys)s!"
+                    string = str(expr.left.s)
                     indices = [(m.start(), m.end()) for m in re.finditer("%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]", string)]
                     myList = list()
                     offset = 0
@@ -377,7 +385,22 @@ class MyParser(ast.NodeVisitor):
                                 myList.append(myDict[string[start + 2 : end - 2 - space]])
                         offset = -len(string[start+1:end-1])
                         string = string.replace(string[start+1:end-1], "")
-                    exp += "\"" + string + "\", " + str(myList) + ")"
+                    formats = [string[m.start():m.end()] for m in re.finditer("%[diuoxXeEfFgGcrs]", string)]
+                    i = 0
+                    while i < len(formats):
+                        if formats[i] == "%s":
+                            myList[i] = "(" + myList[i] + ").toString()"
+                        i += 1
+                    exp += "\"" + string + "\", ["
+                    i = 0
+                    while i < len(myList):
+                        if i == len(myList) - 1:
+                            exp += str(myList[i])
+                        else:
+                            exp += str(myList[i]) + ", "
+                        i += 1
+                    exp += "])"
+
                 else:
                     print "Type still not implemented => ", str(type(expr.right))
                     exit(1)
