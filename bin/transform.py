@@ -8,7 +8,7 @@ imports = []
 funVars = []
 symTab = []
 classes = []
-inbuilts = ["input", "len", "range", "raw_input", "str", "xrange"]
+inbuilts = ["input", "len", "open", "range", "raw_input", "str", "xrange"]
 
 funMode = False
 expCall = False
@@ -818,17 +818,27 @@ class MyParser(ast.NodeVisitor):
         funMode = False
         funVars = []
 
-    def visit_TryExcept(self, stmt_tryexcept):
+    def visit_Raise(self, stmt_raise):
+        global code
+
+        code += " throw " + self.reducto(stmt_raise.type) + ";"
+
+    def visit_TryExcept(self, stmt_tryexcept, final = False):
         global code, funMode, funVars
 
         funMode = True
 
+        if not final:
+            nodes = stmt_tryexcept
+        else:
+            nodes = stmt_tryexcept[0]
+
         code += " try {"
-        for node in stmt_tryexcept.body:
+        for node in nodes.body:
             self.visit(node)
         code += " }"
 
-        for handler in stmt_tryexcept.handlers:
+        for handler in nodes.handlers:
             if handler.type.id == "ZeroDivisionError":
                 continue
 
@@ -847,12 +857,17 @@ class MyParser(ast.NodeVisitor):
     def visit_TryFinally(self, stmt_tryfinally):
         global code
 
-        self.visit_TryExcept(stmt_tryfinally.body)
+        self.visit_TryExcept(stmt_tryfinally.body, True)
+
+        code += " finally {"
+        for node in stmt_tryfinally.finalbody:
+            self.visit(node)
+        code += " }"
 
     def visit_Break(self, stmt_break):
         global code, broken
         if broken:
-            code += "def = true;break;"
+            code += " def = true; break;"
         else:
             code += "break;"
 
