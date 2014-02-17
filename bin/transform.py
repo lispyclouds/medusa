@@ -819,7 +819,7 @@ class MyParser(ast.NodeVisitor):
         funVars = []
 
     def visit_TryExcept(self, stmt_tryexcept):
-        global code, funMode
+        global code, funMode, funVars
 
         funMode = True
 
@@ -835,6 +835,7 @@ class MyParser(ast.NodeVisitor):
             code += " on " + exceptions[handler.type.id]
             if isinstance(handler.name, _ast.Name):
                 code += " catch(" + handler.name.id + ")"
+                funVars.append(handler.name.id)
             code += " {"
 
             for node in handler.body:
