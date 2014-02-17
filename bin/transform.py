@@ -12,6 +12,7 @@ inbuilts = ["input", "len", "range", "raw_input", "str", "xrange"]
 
 funMode = False
 expCall = False
+broken = False
 func = ""
 
 debug_notification = "**** Medusa Notification ****"
@@ -578,10 +579,11 @@ class MyParser(ast.NodeVisitor):
         funMode = False
 
     def visit_For(self, stmt_For):
-        global code
+        global code, broken, funMode
 
         funMode = True
-
+        broken = True
+        code += "var def = false;"
         code += " for (var " + stmt_For.target.id + " in "
 
         if isinstance(stmt_For.iter, _ast.Call):
@@ -599,10 +601,15 @@ class MyParser(ast.NodeVisitor):
 
         code += "}"
 
+
         if len(stmt_For.orelse) > 0:
+            code += "if(def == false){"
             for node in stmt_For.orelse:
                 self.visit(node)
 
+            code += "}"
+
+        broken = False
         funMode = False
 
     def visit_While(self, stmt_while):
@@ -615,6 +622,15 @@ class MyParser(ast.NodeVisitor):
         code += ") {"
 
         for node in stmt_while.body:
+            self.visit(node)
+
+        code += "}"
+
+        code += "if(!("
+        self.makeTest(stmt_while.test)
+        code += ")) {"
+
+        for node in stmt_while.orelse:
             self.visit(node)
 
         code += "}"
@@ -805,9 +821,9 @@ class MyParser(ast.NodeVisitor):
             self.visit(node)
         code += " }"
 
-        #for handler in stmt_tryexcept[0].handlers:
-        #    if handler.type.id == "ZeroDivisionError":
-        #        continue
+        for handler in stmt_tryexcept[0].handlers:
+           if handler.type.id == "ZeroDivisionError":
+               continue
 
         funMode = False
 
@@ -815,6 +831,13 @@ class MyParser(ast.NodeVisitor):
         global code
 
         self.visit_TryExcept(stmt_tryfinally.body)
+
+    def visit_Break(self, stmt_break):
+        global code, broken
+        if broken:
+            code += "def = true;break;"
+        else:
+            code += "break;"
 
 MyParser().parse(open(sys.argv[1]).read())
 
