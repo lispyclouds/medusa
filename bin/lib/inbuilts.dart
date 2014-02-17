@@ -3,6 +3,45 @@ library inbuilts;
 import "dart:io";
 import "dart:collection";
 
+class PyFile {
+    var fileName, handle;
+
+    PyFile(fileName) {
+        this.fileName = fileName;
+        handle = new File(fileName);
+    }
+
+    read() {
+        return handle.readAsStringSync();
+    }
+
+    close() {
+        return;
+    }
+}
+
+PyFile open(name, [mode]) {
+    var file = new PyFile(name);
+
+    if (!file.handle.existsSync())
+        throw new FileSystemException();
+
+    if (mode == null)
+        mode = "r";
+
+    switch (mode) {
+        case "r":
+            file.handle.openRead();
+            break;
+
+        case "w":
+            file.handle.openWrite();
+            break;
+    }
+
+    return file;
+}
+
 int len(target) {
     return target.length;
 }

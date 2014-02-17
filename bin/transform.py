@@ -743,9 +743,9 @@ class MyParser(ast.NodeVisitor):
                 code += "new"
 
         if expCall:
-            func += " " + stmt_call.func.id + "("
+            func += stmt_call.func.id + "("
         else:
-            code += " " + stmt_call.func.id + "("
+            code += stmt_call.func.id + "("
 
         alen = len(stmt_call.args)
         i = 0
@@ -836,8 +836,7 @@ class MyParser(ast.NodeVisitor):
         else:
             nodes = stmt_tryexcept[0]
 
-        code += "var from = true;"
-        code += " try {"
+        code += " var from = true; try {"
         for node in nodes.body:
             self.visit(node)
         code += " }"
@@ -850,19 +849,11 @@ class MyParser(ast.NodeVisitor):
             if isinstance(handler.name, _ast.Name):
                 code += " catch(" + handler.name.id + ")"
                 funVars.append(handler.name.id)
-            code += " {"
 
-            code += "from = false;"
-
+            code += " { from = false;"
             for node in handler.body:
                 self.visit(node)
             code += " }"
-
-        code += "if(from == true) {"
-        for node in stmt_tryexcept.orelse:
-            self.visit(node)
-
-        code += "}"
 
         funMode = False
 
@@ -875,6 +866,12 @@ class MyParser(ast.NodeVisitor):
         for node in stmt_tryfinally.finalbody:
             self.visit(node)
         code += " }"
+
+        if len(stmt_tryfinally.body[0].orelse) > 0:
+            code += " if (from == true) {"
+            for node in stmt_tryfinally.body[0].orelse:
+                self.visit(node)
+            code += " }"
 
     def visit_Break(self, stmt_break):
         global code, broken
