@@ -832,14 +832,14 @@ class MyParser(ast.NodeVisitor):
             if handler.type.id == "ZeroDivisionError":
                 continue
 
-            code += " on " + exceptions[handler.type.id] + " {"
+            code += " on " + exceptions[handler.type.id]
+            if isinstance(handler.name, _ast.Name):
+                code += " catch(" + handler.name.id + ")"
+            code += " {"
+
             for node in handler.body:
                 self.visit(node)
             code += " }"
-
-        for handler in stmt_tryexcept[0].handlers:
-           if handler.type.id == "ZeroDivisionError":
-               continue
 
         funMode = False
 
