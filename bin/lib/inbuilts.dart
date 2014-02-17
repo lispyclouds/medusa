@@ -12,20 +12,45 @@ class PyFile {
         this.name = name;
         this.mode = mode;
         softspace = true;
-        handle = new File(name);
+
+        switch (mode) {
+        case "r":
+            handle = new File(name).openSync(mode: FileMode.READ);
+            break;
+
+        case "w":
+            handle = new File(name).openSync(mode: FileMode.WRITE);
+            break;
+        }
     }
 
-    read() {
-        return handle.readAsStringSync();
+    read([bytes]) {
+        if (bytes == null)
+            bytes = handle.lengthSync();
+
+        return new String.fromCharCodes(handle.readSync(bytes));
+    }
+
+    readlines() {
+        return new File(name).readAsLinesSync();
     }
 
     write(data) {
-        handle.writeAsStringSync(data);
+        handle.writeStringSync(data);
+    }
+
+    writelines(lines) {
+        for (int i = 0; i < lines.length; i++)
+            handle.writeStringSync(lines[i] + "\n");
+    }
+
+    tell() {
+        return handle.positionSync();
     }
 
     close() {
         closed = true;
-        return;
+        handle.closeSync();
     }
 }
 
@@ -35,18 +60,8 @@ PyFile open(name, [mode]) {
 
     var file = new PyFile(name, mode);
 
-    if ((mode == "r" || mode == "rb") && !file.handle.existsSync())
+    if ((mode == "r" || mode == "rb") && !new File(name).existsSync())
         throw new FileSystemException();
-
-    switch (mode) {
-        case "r":
-            file.handle.openRead();
-            break;
-
-        case "w":
-            file.handle.openWrite();
-            break;
-    }
 
     return file;
 }

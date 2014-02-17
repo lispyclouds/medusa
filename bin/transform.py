@@ -224,7 +224,7 @@ class MyParser(ast.NodeVisitor):
                 return "\"" + string + "\""
             else:
                 if stmt_call.func.value.id == "self":
-                    obj = "this"
+                    obj = " this"
                 else:
                     obj = stmt_call.func.value.id
 
@@ -328,7 +328,7 @@ class MyParser(ast.NodeVisitor):
             if isinstance(expr.right, _ast.BinOp):
                 if formatString is True:
                     data = self.parseExp(expr.right)
-                    exp += "[(" + data + ").toString()])"
+                    exp += " [(" + data + ").toString()])"
                 else:
                     exp += self.parseExp(expr.right)
             else:
@@ -336,17 +336,17 @@ class MyParser(ast.NodeVisitor):
                     if formatString is False:
                         exp += str(expr.right.n)
                     else:
-                        exp += "[\"" + str(expr.right.n) + "\"])"
+                        exp += " [\"" + str(expr.right.n) + "\"])"
                 elif isinstance(expr.right, _ast.Name):
                     if formatString is False:
                         exp += str(expr.right.id)
                     else:
-                        exp += "[" + str(expr.right.id) + ".toString()])"
+                        exp += " [" + str(expr.right.id) + ".toString()])"
                 elif isinstance(expr.right, _ast.Str):
                     if formatString is False:
                         exp += "'" + self.escape(expr.right.s) + "'"
                     else:
-                        exp += "['" + self.escape(expr.right.s) + "'])"
+                        exp += " ['" + self.escape(expr.right.s) + "'])"
                 elif isinstance(expr.right, _ast.Attribute):
                     exp += self.attrHandle(expr.right)
                 elif isinstance(expr.right, _ast.Tuple):
