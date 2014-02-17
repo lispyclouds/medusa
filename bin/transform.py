@@ -553,12 +553,10 @@ class MyParser(ast.NodeVisitor):
                     if not symTab.__contains__(target.id):
                         if not funVars.__contains__(target.id):
                             funVars.append(target.id)
-                            code += " var"
+                            code += " var "
                 else:
                     if not symTab.__contains__(target.id):
                         symTab.append(target.id)
-                        temp = code
-                        code = " var"
 
                 code += " " + target.id + " = ";
 
@@ -888,6 +886,9 @@ class MyParser(ast.NodeVisitor):
 MyParser().parse(open(sys.argv[1]).read())
 
 code += " }"
+
+if len(symTab) > 0:
+    code = " var " + ", ".join(symTab) + ";" + code
 
 for imp in imports:
     code = "import '" + imp + "'; " + code

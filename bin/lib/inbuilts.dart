@@ -4,30 +4,39 @@ import "dart:io";
 import "dart:collection";
 
 class PyFile {
-    var fileName, handle;
+    var handle;
+    var closed, mode, name, softspace;
 
-    PyFile(fileName) {
-        this.fileName = fileName;
-        handle = new File(fileName);
+    PyFile(name, mode) {
+        closed = false;
+        this.name = name;
+        this.mode = mode;
+        softspace = true;
+        handle = new File(name);
     }
 
     read() {
         return handle.readAsStringSync();
     }
 
+    write(data) {
+        handle.writeAsStringSync(data);
+    }
+
     close() {
+        closed = true;
         return;
     }
 }
 
 PyFile open(name, [mode]) {
-    var file = new PyFile(name);
-
-    if (!file.handle.existsSync())
-        throw new FileSystemException();
-
     if (mode == null)
         mode = "r";
+
+    var file = new PyFile(name, mode);
+
+    if ((mode == "r" || mode == "rb") && !file.handle.existsSync())
+        throw new FileSystemException();
 
     switch (mode) {
         case "r":
