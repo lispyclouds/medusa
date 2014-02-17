@@ -429,7 +429,10 @@ class MyParser(ast.NodeVisitor):
         elif isinstance(target, _ast.List):
             reduced = self.parseList(target.elts)
         elif isinstance(target, _ast.Name):
-            reduced = target.id
+            if target.id == "False" or "True":
+                reduced = target.id.lower()
+            else:
+                reduced = target.id
         elif isinstance(target, _ast.UnaryOp):
             reduced = self.parseUnOp(target)
         elif isinstance(target, _ast.BinOp):
