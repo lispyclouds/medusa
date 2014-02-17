@@ -553,7 +553,7 @@ class MyParser(ast.NodeVisitor):
                     if not symTab.__contains__(target.id):
                         if not funVars.__contains__(target.id):
                             funVars.append(target.id)
-                            code += " var "
+                            code += " var"
                 else:
                     if not symTab.__contains__(target.id):
                         symTab.append(target.id)
@@ -594,7 +594,7 @@ class MyParser(ast.NodeVisitor):
 
         funMode = True
         broken = True
-        code += "var def = false;"
+        code += " var def = false;"
         code += " for (var " + stmt_For.target.id + " in "
 
         if isinstance(stmt_For.iter, _ast.Call):
@@ -637,7 +637,7 @@ class MyParser(ast.NodeVisitor):
 
         code += "}"
 
-        code += "if(!("
+        code += " if(!("
         self.makeTest(stmt_while.test)
         code += ")) {"
 
@@ -740,9 +740,9 @@ class MyParser(ast.NodeVisitor):
                 code += "new"
 
         if expCall:
-            func += stmt_call.func.id + "("
+            func += " " + stmt_call.func.id + "("
         else:
-            code += stmt_call.func.id + "("
+            code += " " + stmt_call.func.id + "("
 
         alen = len(stmt_call.args)
         i = 0
@@ -890,8 +890,10 @@ code += " }"
 if len(symTab) > 0:
     code = " var " + ", ".join(symTab) + ";" + code
 
+impStr = ""
 for imp in imports:
-    code = "import '" + imp + "'; " + code
+    impStr += "import '" + imp + "'; "
+code = impStr.strip() + code
 
 outFile.write(code)
 outFile.close()
