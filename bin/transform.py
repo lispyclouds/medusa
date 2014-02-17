@@ -38,7 +38,8 @@ operators['_ast.LtE'] = " <= "
 operators['_ast.NotEq'] = " != "
 
 exceptions = dict()
-exceptions['ZeroDivisionError'] = ""
+exceptions['IOError'] = "FileSystemException"
+exceptions['Exception'] = "Exception"
 
 outFile = open("out.dart", 'w')
 code = " void main() {"
@@ -367,11 +368,13 @@ class MyParser(ast.NodeVisitor):
 
                     for v in expr.right.values:
                         values.append(self.reducto(v))
+
                     myDict = dict(zip(key, values))
                     string = str(expr.left.s)
                     indices = [(m.start(), m.end()) for m in re.finditer("%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]", string)]
                     myList = list()
                     offset = 0
+
                     for (start, end) in indices:
                         space = 0
                         start += offset
@@ -385,14 +388,18 @@ class MyParser(ast.NodeVisitor):
                                 myList.append(myDict[string[start + 2 : end - 2 - space]])
                         offset = -len(string[start+1:end-1])
                         string = string.replace(string[start+1:end-1], "")
+
                     formats = [string[m.start():m.end()] for m in re.finditer("%[diuoxXeEfFgGcrs]", string)]
                     i = 0
+
                     while i < len(formats):
                         if formats[i] == "%s":
                             myList[i] = "(" + myList[i] + ").toString()"
                         i += 1
+
                     exp += "\"" + string + "\", ["
                     i = 0
+
                     while i < len(myList):
                         if i == len(myList) - 1:
                             exp += str(myList[i])
@@ -514,16 +521,20 @@ class MyParser(ast.NodeVisitor):
         i = 0
         values = len(stmt_print.values)
         while (i < values):
-            code += " stdout.write("
+            if (i + 1) < values:
+                code += " stdout.write("
+            else:
+                code += " stdout.writeln("
+
             printee = self.reducto(stmt_print.values[i])
+
             if printee != "":
                 code += printee
             code += ");"
 
             if (i + 1) < values:
                 code += " stdout.write(' ');"
-            else:
-                code += " stdout.write('\\n');";
+
             i += 1
 
     def visit_Assign(self, stmt_assign):
@@ -794,20 +805,21 @@ class MyParser(ast.NodeVisitor):
     def visit_TryExcept(self, stmt_tryexcept):
         global code, funMode
 
-        print debug_notification
-        print "Exceptions are not yet implemented at the moment :( Sorry!"
-        exit(0)
-
         funMode = True
 
         code += " try {"
-        for node in stmt_tryexcept[0].body:
+        for node in stmt_tryexcept.body:
             self.visit(node)
         code += " }"
 
-        #for handler in stmt_tryexcept[0].handlers:
-        #    if handler.type.id == "ZeroDivisionError":
-        #        continue
+        for handler in stmt_tryexcept.handlers:
+            if handler.type.id == "ZeroDivisionError":
+                continue
+
+            code += " on " + exceptions[handler.type.id] + " {"
+            for node in handler.body:
+                self.visit(node)
+            code += " }"
 
         funMode = False
 
