@@ -408,7 +408,6 @@ class MyParser(ast.NodeVisitor):
                             exp += str(myList[i]) + ", "
                         i += 1
                     exp += "])"
-
                 else:
                     print "Type still not implemented => ", str(type(expr.right))
                     exit(1)
@@ -852,6 +851,12 @@ class MyParser(ast.NodeVisitor):
 
             code += " { from = false;"
             for node in handler.body:
+                self.visit(node)
+            code += " }"
+
+        if not final and len(nodes.orelse) > 0:
+            code += " if (from == true) {"
+            for node in nodes.orelse:
                 self.visit(node)
             code += " }"
 
