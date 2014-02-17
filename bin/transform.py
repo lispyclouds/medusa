@@ -833,6 +833,7 @@ class MyParser(ast.NodeVisitor):
         else:
             nodes = stmt_tryexcept[0]
 
+        code += "var from = true;"
         code += " try {"
         for node in nodes.body:
             self.visit(node)
@@ -848,9 +849,17 @@ class MyParser(ast.NodeVisitor):
                 funVars.append(handler.name.id)
             code += " {"
 
+            code += "from = false;"
+
             for node in handler.body:
                 self.visit(node)
             code += " }"
+
+        code += "if(from == true) {"
+        for node in stmt_tryexcept.orelse:
+            self.visit(node)
+
+        code += "}"
 
         funMode = False
 
