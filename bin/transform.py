@@ -543,8 +543,6 @@ class MyParser(ast.NodeVisitor):
     def visit_Assign(self, stmt_assign):
         global code, funVars, funMode
 
-        temp = ""
-
         for target in stmt_assign.targets:
             if isinstance(target, _ast.Attribute):
                 code += self.attrHandle(target) + " = "
@@ -565,8 +563,6 @@ class MyParser(ast.NodeVisitor):
             if value != "":
                  code += value
             code += ";"
-
-            code += temp
 
     def visit_If(self, stmt_if):
         global code, funMode
