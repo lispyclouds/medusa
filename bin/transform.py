@@ -14,7 +14,7 @@ broken = False
 func = ""
 
 debug_notification = "**** Medusa Notification ****"
-debug_error = "**** Medusa Warning ****"
+debug_warning = "**** Medusa Warning ****"
 debugging_message = "**** Medusa Debug ****"
 debug_error = "**** Medusa Error ****"
 
@@ -606,12 +606,9 @@ class MyParser(ast.NodeVisitor):
             exit(1)
 
         code += " ) {"
-
         for node in stmt_For.body:
             self.visit(node)
-
         code += "}"
-
 
         if len(stmt_For.orelse) > 0:
             code += "if(def == false){"
@@ -717,14 +714,13 @@ class MyParser(ast.NodeVisitor):
     def visit_Call(self, stmt_call, myVar = False):
         global code, expCall, func, classes, inbuilts
 
-
         if isinstance(stmt_call.func, _ast.Attribute):
-            if expCall:
-                func += self.attrHandle(stmt_call)
-            else:
-                x = self.attrHandle(stmt_call)
-                code += x
+            attr = self.attrHandle(stmt_call)
 
+            if expCall:
+                func += attr
+            else:
+                code += attr
 
             if myVar == False:
                 if expCall:
@@ -845,15 +841,20 @@ class MyParser(ast.NodeVisitor):
             if handler.type.id == "ZeroDivisionError":
                 continue
 
-            code += " on " + exceptions[handler.type.id]
-            if isinstance(handler.name, _ast.Name):
-                code += " catch(" + handler.name.id + ")"
-                funVars.append(handler.name.id)
+            try:
+                code += " on " + exceptions[handler.type.id]
+                if isinstance(handler.name, _ast.Name):
+                    code += " catch(" + handler.name.id + ")"
+                    funVars.append(handler.name.id)
 
-            code += " { from = false;"
-            for node in handler.body:
-                self.visit(node)
-            code += " }"
+                code += " { from = false;"
+                for node in handler.body:
+                    self.visit(node)
+                code += " }"
+            except KeyError:
+                print debug_error
+                print "Exception handler not implemented for " + handler.type.id
+                exit(1)
 
         if not final and len(nodes.orelse) > 0:
             code += " if (from == true) {"
@@ -881,6 +882,7 @@ class MyParser(ast.NodeVisitor):
 
     def visit_Break(self, stmt_break):
         global code, broken
+
         if broken:
             code += " def = true; break;"
         else:
