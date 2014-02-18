@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """authors: heisenberg, apoorv, akashgiri"""
 
 import ast, _ast, sys, re
@@ -183,6 +181,7 @@ class MyParser(ast.NodeVisitor):
         resolved = ""
         myList = list()
         myDict = dict()
+        obj = ""
 
         if hasattr(stmt_call, "args"):
             if isinstance(stmt_call.func.value, _ast.Str) and stmt_call.func.attr == "format":
@@ -223,12 +222,17 @@ class MyParser(ast.NodeVisitor):
 
                 return "\"" + string + "\""
             else:
+                if isinstance(stmt_call.func.value, _ast.Call):
+                    self.visit_Call(stmt_call.func.value, True)
                 if stmt_call.func.value.id == "self":
                     obj = " this"
                 else:
-                    obj = stmt_call.func.value.id
+                    if stmt_call.func.value.id == "self":
+                        obj = "this"
+                    else:
+                        obj = stmt_call.func.value.id
 
-            resolved += " " + obj + "." + stmt_call.func.attr + "("
+            resolved += obj + "." + stmt_call.func.attr + "("
 
             alen = len(stmt_call.args)
             i = 0
@@ -248,7 +252,7 @@ class MyParser(ast.NodeVisitor):
             else:
                 obj = stmt_call.value.id
 
-            resolved = " " + obj + "." + stmt_call.attr
+            resolved = obj + "." + stmt_call.attr
 
         return resolved
 
@@ -713,11 +717,14 @@ class MyParser(ast.NodeVisitor):
     def visit_Call(self, stmt_call, myVar = False):
         global code, expCall, func, classes, inbuilts
 
+
         if isinstance(stmt_call.func, _ast.Attribute):
             if expCall:
                 func += self.attrHandle(stmt_call)
             else:
-                code += self.attrHandle(stmt_call)
+                x = self.attrHandle(stmt_call)
+                code += x
+
 
             if myVar == False:
                 if expCall:
@@ -731,9 +738,9 @@ class MyParser(ast.NodeVisitor):
 
         if classes.__contains__(stmt_call.func.id):
             if expCall:
-                func += "new"
+                func += " new "
             else:
-                code += "new"
+                code += " new "
 
         if expCall:
             func += " " + stmt_call.func.id + "("
