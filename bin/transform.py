@@ -224,6 +224,8 @@ class MyParser(ast.NodeVisitor):
             else:
                 if isinstance(stmt_call.func.value, _ast.Call):
                     self.visit_Call(stmt_call.func.value, True)
+                if stmt_call.func.value.id == "self":
+                    obj = " this"
                 else:
                     if stmt_call.func.value.id == "self":
                         obj = "this"
@@ -330,7 +332,7 @@ class MyParser(ast.NodeVisitor):
             if isinstance(expr.right, _ast.BinOp):
                 if formatString is True:
                     data = self.parseExp(expr.right)
-                    exp += "[(" + data + ").toString()])"
+                    exp += " [(" + data + ").toString()])"
                 else:
                     exp += self.parseExp(expr.right)
             else:
@@ -338,17 +340,17 @@ class MyParser(ast.NodeVisitor):
                     if formatString is False:
                         exp += str(expr.right.n)
                     else:
-                        exp += "[\"" + str(expr.right.n) + "\"])"
+                        exp += " [\"" + str(expr.right.n) + "\"])"
                 elif isinstance(expr.right, _ast.Name):
                     if formatString is False:
                         exp += str(expr.right.id)
                     else:
-                        exp += "[" + str(expr.right.id) + ".toString()])"
+                        exp += " [" + str(expr.right.id) + ".toString()])"
                 elif isinstance(expr.right, _ast.Str):
                     if formatString is False:
                         exp += "'" + self.escape(expr.right.s) + "'"
                     else:
-                        exp += "['" + self.escape(expr.right.s) + "'])"
+                        exp += " ['" + self.escape(expr.right.s) + "'])"
                 elif isinstance(expr.right, _ast.Attribute):
                     exp += self.attrHandle(expr.right)
                 elif isinstance(expr.right, _ast.Tuple):
@@ -559,8 +561,6 @@ class MyParser(ast.NodeVisitor):
                 else:
                     if not symTab.__contains__(target.id):
                         symTab.append(target.id)
-                        temp = code
-                        code = " var"
 
                 code += " " + target.id + " = ";
 
@@ -598,7 +598,7 @@ class MyParser(ast.NodeVisitor):
 
         funMode = True
         broken = True
-        code += "var def = false;"
+        code += " var def = false;"
         code += " for (var " + stmt_For.target.id + " in "
 
         if isinstance(stmt_For.iter, _ast.Call):
@@ -641,7 +641,7 @@ class MyParser(ast.NodeVisitor):
 
         code += "}"
 
-        code += "if(!("
+        code += " if(!("
         self.makeTest(stmt_while.test)
         code += ")) {"
 
@@ -747,9 +747,9 @@ class MyParser(ast.NodeVisitor):
                 code += " new "
 
         if expCall:
-            func += stmt_call.func.id + "("
+            func += " " + stmt_call.func.id + "("
         else:
-            code += stmt_call.func.id + "("
+            code += " " + stmt_call.func.id + "("
 
         alen = len(stmt_call.args)
         i = 0
@@ -894,8 +894,13 @@ MyParser().parse(open(sys.argv[1]).read())
 
 code += " }"
 
+if len(symTab) > 0:
+    code = " var " + ", ".join(symTab) + ";" + code
+
+impStr = ""
 for imp in imports:
-    code = "import '" + imp + "'; " + code
+    impStr += "import '" + imp + "'; "
+code = impStr.strip() + code
 
 outFile.write(code)
 outFile.close()
