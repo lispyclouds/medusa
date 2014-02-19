@@ -48,6 +48,25 @@ class PyFile {
         return handle.positionSync();
     }
 
+    seek(position, [whence]) {
+        if (whence == null)
+            whence = 0;
+
+        switch(whence) {
+        case 0:
+            handle.setPositionSync(position);
+            break;
+
+        case 1:
+            handle.setPositionSync(handle.positionSync() + position);
+            break;
+
+        case 2:
+            handle.setPositionSync(handle.lengthSync() + position);
+            break;
+        }
+    }
+
     close() {
         closed = true;
         handle.closeSync();
