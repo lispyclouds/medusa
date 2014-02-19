@@ -66,6 +66,73 @@ PyFile open(name, [mode]) {
     return file;
 }
 
+class TupleClass{
+    var tuple = [];
+
+    TupleClass(iterable) {
+        if (iterable is TupleClass)
+            this.tuple = iterable.tuple;
+        else {
+            for (var item in iterable)
+                tuple.add(item);
+        }
+    }
+
+    toString() {
+        var i = 0;
+        var str = "(";
+
+        for (i = 0; i < tuple.length; i++) {
+            str += tuple[i].toString();
+            if (i < tuple.length - 1 || tuple.length == 1)
+                str += ", ";
+        }
+        str += ")";
+
+        return str;
+    }
+
+    operator [](i) => tuple[i];
+
+    operator []=(i, j) {
+        throw "Assignment not possible in Tuple";
+    }
+
+    operator +(tupleObj) {
+        if (tupleObj is TupleClass) {
+            var newTupObj = new TupleClass(this.tuple);
+
+            for (var item in tupleObj.tuple)
+                newTupObj.tuple.add(item);
+
+            return newTupObj;
+        }
+        else
+            throw "Invalid operand for concatenation";
+    }
+
+    operator *(integer) {
+        if (integer is int) {
+            var newTupObj = new TupleClass([]);
+
+            for (var i = 0; i < integer; i++) {
+                for (var item in this.tuple)
+                    newTupObj.tuple.add(item);
+            }
+
+            return newTupObj;
+        }
+        else
+            throw "Invalid Multiplier";
+    }
+
+}
+
+TupleClass tuple(iterable) {
+    return new TupleClass(iterable);
+}
+
+
 getType(variable){
     if(variable is num)
         return 0;
