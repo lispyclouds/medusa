@@ -85,6 +85,179 @@ PyFile open(name, [mode]) {
     return file;
 }
 
+class TupleClass{
+    var tuple = [];
+
+    TupleClass(iterable) {
+        if (iterable is TupleClass)
+            this.tuple = iterable.tuple;
+        else {
+            for (var item in iterable)
+                tuple.add(item);
+        }
+    }
+
+    toString() {
+        var i = 0;
+        var str = "(";
+
+        for (i = 0; i < tuple.length; i++) {
+            str += tuple[i].toString();
+            if (i < tuple.length - 1 || tuple.length == 1)
+                str += ", ";
+        }
+        str += ")";
+
+        return str;
+    }
+
+    operator [](i) => tuple[i];
+
+    operator []=(i, j) {
+        throw "Assignment not possible in Tuple";
+    }
+
+    operator +(tupleObj) {
+        if (tupleObj is TupleClass) {
+            var newTupObj = new TupleClass(this.tuple);
+
+            for (var item in tupleObj.tuple)
+                newTupObj.tuple.add(item);
+
+            return newTupObj;
+        }
+        else
+            throw "Invalid operand for concatenation";
+    }
+
+    operator *(integer) {
+        if (integer is int) {
+            var newTupObj = new TupleClass([]);
+
+            for (var i = 0; i < integer; i++) {
+                for (var item in this.tuple)
+                    newTupObj.tuple.add(item);
+            }
+
+            return newTupObj;
+        }
+        else
+            throw "Invalid Multiplier";
+    }
+
+}
+
+TupleClass tuple(iterable) {
+    return new TupleClass(iterable);
+}
+
+
+getType(variable){
+    if(variable is num)
+        return 0;
+    else if(variable is String)
+        return 1;
+    else if(variable is List)
+        return 2;
+    else if(variable is bool)
+        return 3;
+    else if(variable is Map)
+        return 4;
+    else
+        return -1;
+}
+
+abs(n){
+    if(n is num){
+        if(n < 0)
+            return (n * -1);
+        else
+            return n;
+    }
+    else{
+        return "Type is not a Number";
+    }
+}
+
+all(iterable){
+    var i;
+    for(i in iterable){
+        switch(getType(i)){
+            case -1:
+                return i;
+            case 0:
+                if(i == 0)
+                    return false;
+                break;
+            case 1:
+                if(i == "")
+                    return false;
+                break;
+            case 2:
+                if(i.length == 0)
+                    return false;
+                break;
+            case 3:
+                if(i == false)
+                    return false;
+                break;
+            case 4:
+                var keys = i.keys;
+                if(keys.length == 0)
+                    return false;
+                break;
+        }
+    }
+    return true;
+}
+
+any(iterable){
+    var i;
+    for(i in iterable){
+        switch(getType(i)){
+            case -1:
+                return i;
+            case 0:
+                if(i != 0)
+                    return true;
+                break;
+            case 1:
+                if(i != "")
+                    return true;
+                break;
+            case 2:
+                if(i.length != 0)
+                    return true;
+                break;
+            case 3:
+                if(i == true)
+                    return true;
+                break;
+            case 4:
+                var keys = i.keys;
+                if(keys.length != 0)
+                    return true;
+                break;
+        }
+    }
+    return false;
+}
+
+bin(integer){
+    if(integer is int){
+        var num1 = 0;
+        var x = 0;
+        while(integer > 0){
+            x = integer % 2;
+            num1 = num1*10 + x;
+            integer ~/= 2;
+        }
+        return num1;
+    }
+    else
+        return "Type is not Int";
+}
+
 int len(target) {
     return target.length;
 }

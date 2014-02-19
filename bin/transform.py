@@ -6,7 +6,7 @@ imports = []
 funVars = []
 symTab = []
 classes = []
-inbuilts = ["input", "len", "open", "range", "raw_input", "str", "xrange"]
+inbuilts = ["abs", "all", "any", "bin","input", "len", "open", "range", "raw_input", "str", "xrange"]
 
 funMode = False
 expCall = False
