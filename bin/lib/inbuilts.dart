@@ -85,7 +85,7 @@ PyFile open(name, [mode]) {
     return file;
 }
 
-class TupleClass{
+class TupleClass {
     var tuple = [];
 
     TupleClass(iterable) {
@@ -98,8 +98,7 @@ class TupleClass{
     }
 
     toString() {
-        var i = 0;
-        var str = "(";
+        var i = 0, str = "(";
 
         for (i = 0; i < tuple.length; i++) {
             str += tuple[i].toString();
@@ -145,6 +144,10 @@ class TupleClass{
             throw "Invalid Multiplier";
     }
 
+    getList() {
+        return tuple;
+    }
+
 }
 
 TupleClass tuple(iterable) {
@@ -152,7 +155,7 @@ TupleClass tuple(iterable) {
 }
 
 
-getType(variable){
+getType(variable) {
     if(variable is num)
         return 0;
     else if(variable is String)
@@ -167,7 +170,7 @@ getType(variable){
         return -1;
 }
 
-abs(n){
+abs(n) {
     if(n is num){
         if(n < 0)
             return (n * -1);
@@ -179,7 +182,7 @@ abs(n){
     }
 }
 
-all(iterable){
+all(iterable) {
     var i;
     for(i in iterable){
         switch(getType(i)){
@@ -211,7 +214,7 @@ all(iterable){
     return true;
 }
 
-any(iterable){
+any(iterable) {
     var i;
     for(i in iterable){
         switch(getType(i)){
@@ -243,7 +246,7 @@ any(iterable){
     return false;
 }
 
-bin(integer){
+bin(integer) {
     if(integer is int){
         var num1 = 0;
         var x = 0;
@@ -283,7 +286,7 @@ num input([message]) {
         value = num.parse(stdin.readLineSync(encoding: SYSTEM_ENCODING));
         return value;
     } catch (ex) {
-        print("Fatal Error: Non numeric characters in input");
+        print("Fatal Error: Non numeric characters in input; Try raw_input()");
         exit(1);
     }
 }
