@@ -3,7 +3,6 @@ library inbuilts;
 import "dart:io";
 import "dart:collection";
 import "sprintf.dart";
-import "dart:core";
 
 class PyFile {
     var handle;
@@ -155,6 +154,32 @@ class TupleClass {
 TupleClass tuple(iterable) {
     return new TupleClass(iterable);
 }
+
+class PyString {
+    var _str;
+
+    PyString(string) {
+        _str = string;
+    }
+
+    zfill(width) {
+        var toPad = width - _str.length, pad = "";
+
+        for (var i = 0; i < toPad; i++)
+            pad += "0";
+
+        return new PyString(pad + _str);
+    }
+
+    toString() {
+        return _str;
+    }
+
+    operator +(str) {
+        return new PyString(_str + str.toString());
+    }
+}
+
 
 getType(variable) {
     if(variable is num)

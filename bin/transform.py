@@ -37,7 +37,7 @@ class PyParser(ast.NodeVisitor):
         s = s.replace('\r', r'\r')
         s = s.replace('$', '\$')
 
-        return "'" + s + "'"
+        return  "'" + s + "'"
 
     def addImport(self, module):
         global dartImports
@@ -86,7 +86,8 @@ class PyParser(ast.NodeVisitor):
         return str(stmt_num.n)
 
     def visit_Str(self, stmt_str):
-        return self.escape(stmt_str.s)
+        self.addImport("lib/inbuilts.dart")
+        return "new PyString(" + self.escape(stmt_str.s) + ")"
 
     def visit_Add(self, stmt_add):
         return "+"
@@ -102,7 +103,6 @@ class PyParser(ast.NodeVisitor):
 
     def visit_Pow(self, stmt_pow):
         self.addImport('dart:math')
-
         return ","
 
     def visit_RShift(self, stmt_rshift):
@@ -242,7 +242,6 @@ class PyParser(ast.NodeVisitor):
         else:
             print "Unimplemented TYpe =>", type(stmt_Subscript.slice)
             exit(1)
-
 
     def subsituteVisit(self, node):
         if node is not None:
@@ -446,7 +445,7 @@ class PyParser(ast.NodeVisitor):
             code += op + "=" + right
 
         parsedType = "code"
-        return code
+        return code + ";"
 
     def visit_Break(self, stmt_break):
         global broken
