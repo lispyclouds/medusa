@@ -169,7 +169,8 @@ class PyParser(ast.NodeVisitor):
             if isinstance(stmt_binop.right, _ast.Tuple) or isinstance(stmt_binop.right, _ast.Dict):
                 exp = "$getFormattedString(" + left + "," + right + ")"
             else:
-                exp = "$getFormattedString(" + left + ",[" + right + "])"
+                self.addImport('lib/inbuilts.dart')
+                exp = "$getFormattedString(" + left + ",tuple([" + right + "]))"
         else:
             exp = "(" + left + op + right + ")"
 

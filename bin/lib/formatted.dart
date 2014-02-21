@@ -1,12 +1,15 @@
 library formatted;
 
-$getFormattedString(string, collection){
+import "inbuilts.dart";
+import "sprintf.dart";
+
+$getFormattedString(string, collection) {
     if(collection is TupleClass){
         RegExp exp = new RegExp(r"%\s?[diuoxXeEfFgGcrs]");
         Iterable<Match> matches = exp.allMatches(string);
         var i = 0;
         var List = collection.getList();
-        for(var m in matches){
+        for(var m in matches) {
             String match = m.group(0);
             if(match == "%s" || match == "% s")
                 List[i] = List[i].toString();
@@ -19,8 +22,7 @@ $getFormattedString(string, collection){
             i++;
         }
         return sprintf(string, List);
-    }
-    else if(collection is Map){
+    } else if(collection is Map) {
         RegExp exp = new RegExp(r"%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]");
         var List = [];
         Iterable<Match> matches = exp.allMatches(string);
@@ -55,7 +57,7 @@ $getFormattedString(string, collection){
     }
 }
 
-$withFormat(string, list, dictionary){
+$withFormat(string, list, dictionary) {
     RegExp exp = new RegExp(r"{\d+}|{[a-zA-Z0-9_]+}");
     Iterable<Match> matches = exp.allMatches(string);
     var i = 0;
