@@ -180,9 +180,11 @@ class PyParser(ast.NodeVisitor):
 
     def visit_Dict(self, stmt_dict):
         global parsedType
+
         keyLen = len(stmt_dict.keys)
         valueLen = len(stmt_dict.values)
         code = "{"
+
         if keyLen == valueLen:
             i = 0
             while i < keyLen:
@@ -191,9 +193,11 @@ class PyParser(ast.NodeVisitor):
                     code += ","
                 i += 1
             code += "}"
+
             return code
         else:
-            print "Not Possible"
+            print "Invalid Dictionary"
+            exit(0)
 
     def visit_Tuple(self, stmt_tuple):
         global parsedType
