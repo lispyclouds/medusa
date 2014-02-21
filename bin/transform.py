@@ -163,13 +163,37 @@ class PyParser(ast.NodeVisitor):
         op = self.visit(stmt_binop.op)
         right = self.visit(stmt_binop.right)
 
-        exp = "(" + left + op + right + ")"
+        if isinstance(stmt_binop.left, _ast.Str) and op == '%':
+            self.addImport('lib/inbuilts.dart')
+            if isinstance(stmt_binop.right, _ast.Tuple) or isinstance(stmt_binop.right, _ast.Dict):
+                exp = "new FormattedPrint.getFormattedString(" + left + "," + right + ")"
+            else:
+                exp = "new FormattedPrint.getFormattedString(" + left + ",[" + right + "])"
+        else:
+            exp = "(" + left + op + right + ")"
 
         if op == ",":
             exp = "(pow" + exp + ")"
 
         parsedType = "code"
         return exp
+
+    def visit_Dict(self, stmt_dict):
+        global parsedType
+        keyLen = len(stmt_dict.keys)
+        valueLen = len(stmt_dict.values)
+        code = "{"
+        if keyLen == valueLen:
+            i = 0
+            while i < keyLen:
+                code += self.visit(stmt_dict.keys[i]) + ":" + self.visit(stmt_dict.values[i])
+                if i < keyLen - 1:
+                    code += ","
+                i += 1
+            code += "}"
+            return code
+        else:
+            print "Not Possible"
 
     def visit_Tuple(self, stmt_tuple):
         global parsedType
