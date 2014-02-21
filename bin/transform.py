@@ -166,9 +166,9 @@ class PyParser(ast.NodeVisitor):
         if isinstance(stmt_binop.left, _ast.Str) and op == '%':
             self.addImport('lib/inbuilts.dart')
             if isinstance(stmt_binop.right, _ast.Tuple) or isinstance(stmt_binop.right, _ast.Dict):
-                exp = "new FormattedPrint.getFormattedString(" + left + "," + right + ")"
+                exp = "new FormattedPrint().getFormattedString(" + left + "," + right + ")"
             else:
-                exp = "new FormattedPrint.getFormattedString(" + left + ",[" + right + "])"
+                exp = "new FormattedPrint().getFormattedString(" + left + ",[" + right + "])"
         else:
             exp = "(" + left + op + right + ")"
 
