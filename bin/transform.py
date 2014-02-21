@@ -18,6 +18,7 @@ parsedCode = []
 classyMode = False
 funMode = False
 broken = False
+formats = False
 parsedType = ""
 
 exceptions = dict()
@@ -49,7 +50,7 @@ class PyParser(ast.NodeVisitor):
 
         for node in stmt_module.body:
             parsed = self.visit(node)
-
+            #print parsed
             if parsedType == "class":
                 parsedClasses.append(parsed)
             elif parsedType == "function":
@@ -164,11 +165,11 @@ class PyParser(ast.NodeVisitor):
         right = self.visit(stmt_binop.right)
 
         if isinstance(stmt_binop.left, _ast.Str) and op == '%':
-            self.addImport('lib/inbuilts.dart')
+            self.addImport('lib/formatted.dart')
             if isinstance(stmt_binop.right, _ast.Tuple) or isinstance(stmt_binop.right, _ast.Dict):
-                exp = "new FormattedPrint().getFormattedString(" + left + "," + right + ")"
+                exp = "$getFormattedString(" + left + "," + right + ")"
             else:
-                exp = "new FormattedPrint().getFormattedString(" + left + ",[" + right + "])"
+                exp = "$getFormattedString(" + left + ",[" + right + "])"
         else:
             exp = "(" + left + op + right + ")"
 
@@ -336,6 +337,8 @@ class PyParser(ast.NodeVisitor):
 
         code = self.visit(stmt_call.func)
 
+        keyDict = {}
+
         if code in pyInbuilts:
             self.addImport("lib/inbuilts.dart")
         elif code in pyClasses:
@@ -344,14 +347,21 @@ class PyParser(ast.NodeVisitor):
         alen = len(stmt_call.args)
         i = 0
 
-        code += "("
+        code += "[" if formats else "("
         while i < alen:
             code += self.visit(stmt_call.args[i])
 
             if (i + 1) < alen:
                 code += ","
             i += 1
-        code += ")"
+        code += "]" if formats else ")"
+
+        for node in stmt_call.keywords:
+            arg = node.arg
+            value = self.visit(node.value)
+            keyDict[arg] = value
+
+        code += ("," + str(keyDict) + ")") if formats else ""
 
         parsedType = "code"
         return code
@@ -566,9 +576,15 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Attribute(self, stmt_attribute):
-        global parsedType
+        global parsedType, formats
 
-        code = self.visit(stmt_attribute.value) + "." + stmt_attribute.attr
+        value = self.visit(stmt_attribute.value)
+        if isinstance(stmt_attribute.value, _ast.Str):
+            self.addImport('lib/formatted.dart')
+            code = "$withFormat(" + value + ", "
+            formats = True
+        else:
+            code = value + "." + stmt_attribute.attr
 
         parsedType = "code"
         return code
