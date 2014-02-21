@@ -19,7 +19,7 @@ slice(list, lower, higher, step) {
         higher = list.length - 1;
 
     if (step < 0) {
-        for (i = lower; i > higher; i += step)
+        for (i = lower; i >= higher; i += step)
             c.add(list[i]);
     } else {
         for (i = lower; i < higher; i += step)
