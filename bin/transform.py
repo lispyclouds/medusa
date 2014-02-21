@@ -197,7 +197,7 @@ class PyParser(ast.NodeVisitor):
             return code
         else:
             print "Invalid Dictionary"
-            exit(0)
+            exit(1)
 
     def visit_Tuple(self, stmt_tuple):
         global parsedType
@@ -238,7 +238,8 @@ class PyParser(ast.NodeVisitor):
             data = str(listVar) + index
             return data
         else:
-            print type(stmt_Subscript.slice)
+            print "Unimplemented TYpe =>", type(stmt_Subscript.slice)
+            exit(1)
 
 
     def subsituteVisit(self, node):
