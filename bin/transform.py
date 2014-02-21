@@ -1,52 +1,30 @@
-"""authors: heisenberg, apoorv, akashgiri"""
+""" Fast Python Transform by heisenberg, apoorv, akashgiri """
 
 import ast, _ast, sys, re
 
-imports = []
-funVars = []
-symTab = []
-classes = []
-inbuilts = ["abs", "all", "any", "bin","input", "len", "open", "range", "raw_input", "str", "xrange"]
+dartImports = []
+dartLocalVars = []
+dartClassVars = []
+dartGlobalVars = []
 
+pyGlobalVars = []
+pyClasses = []
+pyInbuilts = ["abs", "all", "any", "bin", "input", "len", "open", "range", "raw_input", "str", "xrange"]
+
+parsedClasses = []
+parsedFunctions = []
+parsedCode = []
+
+classyMode = False
 funMode = False
-expCall = False
 broken = False
-func = ""
-
-debug_notification = "**** Medusa Notification ****"
-debug_warning = "**** Medusa Warning ****"
-debugging_message = "**** Medusa Debug ****"
-debug_error = "**** Medusa Error ****"
-
-operators = dict()
-operators['_ast.Add'] = " + "
-operators['_ast.Sub'] = " - "
-operators['_ast.Mult'] = " * "
-operators['_ast.Div'] = " ~/ "
-operators['_ast.RShift'] = " >> "
-operators['_ast.LShift'] = " << "
-operators['_ast.BitAnd'] = " & "
-operators['_ast.BitXor'] = " ^ "
-operators['_ast.BitOr'] = " | "
-operators['_ast.Mod'] = " % "
-operators['_ast.Eq'] = " == "
-operators['_ast.Gt'] = " > "
-operators['_ast.GtE'] = " >= "
-operators['_ast.Lt'] = " < "
-operators['_ast.LtE'] = " <= "
-operators['_ast.NotEq'] = " != "
+parsedType = ""
 
 exceptions = dict()
 exceptions['IOError'] = "FileSystemException"
 exceptions['Exception'] = "Exception"
 
-outFile = open("out.dart", 'w')
-code = " void main() {"
-
-class MyParser(ast.NodeVisitor):
-    def __init__(self):
-        pass
-
+class PyParser(ast.NodeVisitor):
     def parse(self, code):
         tree = ast.parse(code)
         self.visit(tree)
@@ -58,634 +36,223 @@ class MyParser(ast.NodeVisitor):
         s = s.replace('\r', r'\r')
         s = s.replace('$', '\$')
 
-        return s
+        return "'" + s + "'"
 
     def addImport(self, module):
-        global imports
+        global dartImports
 
-        if imports.__contains__(module) == False:
-            imports.append(module)
+        if dartImports.__contains__(module) == False:
+            dartImports.append(module)
 
-    def parseUnOp(self, stmt_unop):
-        parsed = ""
+    def visit_Module(self, stmt_module):
+        global parsedType, parsedClasses, parsedFunctions, parsedCode
 
-        if isinstance(stmt_unop.op, _ast.UAdd):
-            parsed = "+"
-        elif isinstance(stmt_unop.op, _ast.USub):
-            parsed = "-"
-        else:
-            parsed = "~"
+        for node in stmt_module.body:
+            parsed = self.visit(node)
 
-        if isinstance(stmt_unop.operand, _ast.Name):
-            parsed += str(stmt_unop.operand.id)
-        elif isinstance(stmt_unop.operand, _ast.Num):
-            parsed += str(stmt_unop.operand.n)
-        else:
-            print debug_error, "Bad operand for unary operator"
-            exit(1)
-
-        return parsed
-
-    def subscriptHandle(self, stmt_Subscript):
-        if str(type(stmt_Subscript.slice))[13:-2] == "Index":
-            if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
-                data = self.subscriptHandle(stmt_Subscript.value)
-            elif str(type(stmt_Subscript.value))[13:-2] == "Name":
-                data = str(stmt_Subscript.value.id)
+            if parsedType == "class":
+                parsedClasses.append(parsed)
+            elif parsedType == "function":
+                parsedFunctions.append(parsed)
+            elif  parsedType == "code":
+                parsedCode.append(parsed)
             else:
-                print debug_error
-                print "type not supported yet => ", str(type(stmt_Subscript.value))
-                exit(1)
-            if str(type(stmt_Subscript.slice.value))[13:-2] == "Num":
-                num = stmt_Subscript.slice.value.n
-                if num < 0:
-                    if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
-                        data += "[" + self.subscriptHandle(stmt_Subscript.value) + ".length " + str(num) +" ]"
-                    elif str(type(stmt_Subscript.value))[13:-2] == "Name":
-                        data += "[" + stmt_Subscript.value.id + ".length" + str(num) + "]"
-                    else:
-                        print debug_error
-                        print "Type not supported => ", str(type(stmt_Subscript.value))
-                        exit(1)
-                else:
-                    data += "[" + str(stmt_Subscript.slice.value.n) + "]"
-            elif str(type(stmt_Subscript.slice.value))[13:-2] == "Name":
-                data += "[" + stmt_Subscript.slice.value.id + "]"
-            else:
-                print debug_error
-                print "Type not recognized => ", type(stmt_Subscript.slice.value)
-                exit(1)
-        elif str(type(stmt_Subscript.slice))[13:-2] == "Slice":
-            self.addImport('lib/slice.dart')
+                print "Not Implemented => ", type(node)
 
-            if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
-                data = "slice(" + self.subscriptHandle(stmt_Subscript.value) + ", "
-            elif str(type(stmt_Subscript.value))[13:-2] == "Name":
-                data = "slice(" + stmt_Subscript.value.id + ", "
-            else:
-                print debug_error
-                print "type not supported yet => ", str(type(stmt_Subscript.value))
-                exit(1)
-            if isinstance(stmt_Subscript.slice.lower, _ast.Num):
-                data += str(stmt_Subscript.slice.lower.n) + ", "
-            elif stmt_Subscript.slice.lower == None:
-                if stmt_Subscript.slice.step.n < 0:
-                    if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
-                        data += self.subscriptHandle(stmt_Subscript.value) + ".length, "
-                    elif str(type(stmt_Subscript.value))[13:-2] == "Name":
-                        data += stmt_Subscript.value.id + ".length, "
-                    else:
-                        print debug_error
-                        print "type not supported yet => ", str(type(stmt_Subscript.value))
-                        exit(1)
-                else:
-                    data += "0, "
-            else:
-                print debug_error
-                print "Type not recognized => ", type(stmt_Subscript.slice.lower)
-                exit(1)
-            if isinstance(stmt_Subscript.slice.upper, _ast.Num):
-                data += str(stmt_Subscript.slice.upper.n) + ", "
-            elif stmt_Subscript.slice.upper == None:
-                if stmt_Subscript.slice.step.n > 0:
-                    if str(type(stmt_Subscript.value))[13:-2] == "Subscript":
-                        data += self.subscriptHandle(stmt_Subscript.value) + ".length, "
-                    elif str(type(stmt_Subscript.value))[13:-2] == "Name":
-                        data += stmt_Subscript.value.id + ".length, "
-                    else:
-                        print debug_error
-                        print "type not supported yet => ", str(type(stmt_Subscript.value))
-                        exit(1)
-                else:
-                    data += "0, "
-            else:
-                print debug_error
-                print "Type not recognized => ", type(stmt_Subscript.slice.upper)
-                exit(1)
-            if isinstance(stmt_Subscript.slice.step, _ast.Num):
-                data += str(stmt_Subscript.slice.step.n) + ")"
-            elif stmt_Subscript.slice.step == None:
-                data += "1)"
-            else:
-                print debug_error
-                print "Type not recognized => ", type(stmt_Subscript.slice.upper)
-                exit(1)
-        else:
-            print debug_error
-            print "Type not recognized => ", type(stmt_Subscript.slice)
-            exit(1)
+    def visit_UAdd(self, stmt_uadd):
+        return "+"
 
+    def visit_USub(self, stmt_usub):
+        return "-"
+
+    def visit_Invert(self, stmt_invert):
+        return "~"
+
+    def visit_Name(self, stmt_name):
+        global parsedType
+
+        name = stmt_name.id
+
+        if name is "False" or name is "True":
+            name = name.lower()
+        elif name is "self":
+            name = "this"
+
+        parsedType = "code"
+        return str(name)
+
+    def visit_Num(self, stmt_num):
+        return str(stmt_num.n)
+
+    def visit_Str(self, stmt_str):
+        return self.escape(stmt_str.s)
+
+    def visit_Add(self, stmt_add):
+        return "+"
+
+    def visit_Sub(self, stmt_sub):
+        return "-"
+
+    def visit_Mult(self, stmt_mult):
+        return "*"
+
+    def visit_Div(self, stmt_div):
+        return "~/"
+
+    def visit_Pow(self, stmt_pow):
+        self.addImport('dart:math')
+
+        return ","
+
+    def visit_RShift(self, stmt_rshift):
+        return ">>"
+
+    def visit_LShift(self, stmt_lshift):
+        return "<<"
+
+    def visit_BitAnd(self, stmt_bitand):
+        return "&"
+
+    def visit_BitXor(self, stmt_bitxor):
+        return "^"
+
+    def visit_BitOr(self, stmt_bitor):
+        return "|"
+
+    def visit_Mod(self, stmt_mod):
+        return "%"
+
+    def visit_Eq(self, stmt_eq):
+        return "=="
+
+    def visit_Gt(self, stmt_gt):
+        return ">"
+
+    def visit_Lt(self, stmt_lt):
+        return "<"
+
+    def visit_GtE(self, stmt_gte):
+        return ">="
+
+    def visit_LtE(self, stmt_lte):
+        return "<="
+
+    def visit_NotEq(self, stmt_neq):
+        return "!="
+
+    def visit_IfExp(self, stmt_ternary):
+        global parsedType
+
+        stmt = self.visit(stmt_ternary.test) + "?" + self.visit(stmt_ternary.body) + ":" + self.visit(stmt_ternary.orelse)
+
+        parsedType = "code"
+        return stmt
+
+    def visit_UnaryOp(self, stmt_unop):
+        global parsedType
+
+        data = self.visit(stmt_unop.op) + self.visit(stmt_unop.operand)
+
+        parsedType = "code"
         return data
 
-    def attrHandle(self, stmt_call):
-        resolved = ""
-        myList = list()
-        myDict = dict()
-        obj = ""
+    def visit_BinOp(self, stmt_binop):
+        global parsedType
 
-        if hasattr(stmt_call, "args"):
-            if isinstance(stmt_call.func.value, _ast.Str) and stmt_call.func.attr == "format":
-                for i in stmt_call.args:
-                    if isinstance(i, _ast.Num):
-                        myList.append(i.n)
-                    elif isinstance(i, _ast.Name):
-                        myList.append("$" + str(i.id))
-                    elif isinstance(i, _ast.Str):
-                        myList.append(i.s)
-                    else:
-                        print "Type not implemented => ", type(i)
-                        exit(1)
+        left = self.visit(stmt_binop.left)
+        op = self.visit(stmt_binop.op)
+        right = self.visit(stmt_binop.right)
 
-                for i in stmt_call.keywords:
-                    if isinstance(i.value, _ast.Num):
-                        myDict[str(i.arg)] = i.value.n
-                    elif isinstance(i.value, _ast.Name):
-                        myDict[str(i.arg)] = "$" + str(i.value.id)
-                    elif isinstance(i.value, _ast.Str):
-                        myDict[str(i.arg)] = i.value.s
-                    else:
-                        print "Type not implemented => ", type(i.value)
-                        exit(1)
+        exp = "(" + left + op + right + ")"
 
-                string = stmt_call.func.value.s
-                indices = [(m.start(), m.end()) for m in re.finditer("{\d}|{[a-zA-Z0-9_]+}", string)]
-                offset = 0
-                for (start, end) in indices:
-                    start += offset
-                    end += offset
-                    if string[start+1:end-1].isdigit():
-                        offset += len(str(myList[int(string[start+1:end-1])])) - len(str(string[start:end]))
-                        string = string.replace(string[start:end], str(myList[int(string[start+1:end-1])]))
-                    else:
-                        offset += len(str(myDict[string[start+1:end-1]])) - len(str(string[start:end]))
-                        string = string.replace(string[start:end], str(myDict[string[start+1:end-1]]))
+        if op == ",":
+            exp = "(pow" + exp + ")"
 
-                return "\"" + string + "\""
-            else:
-                if isinstance(stmt_call.func.value, _ast.Call):
-                    self.visit_Call(stmt_call.func.value, True)
-                if stmt_call.func.value.id == "self":
-                    obj = " this"
-                else:
-                    if stmt_call.func.value.id == "self":
-                        obj = "this"
-                    else:
-                        obj = stmt_call.func.value.id
+        parsedType = "code"
+        return exp
 
-            resolved += obj + "." + stmt_call.func.attr + "("
+    def visit_Tuple(self, stmt_tuple):
+        global parsedType
 
-            alen = len(stmt_call.args)
-            i = 0
+        self.addImport('lib/inbuilts.dart')
 
-            while (i < alen):
-                resolved += self.reducto(stmt_call.args[i])
-
-                if (i + 1) < alen:
-                    resolved += ", "
-                i += 1
-
-            resolved += ")"
-
-        else:
-            if stmt_call.value.id == "self":
-                obj = "this"
-            else:
-                obj = stmt_call.value.id
-
-            resolved = obj + "." + stmt_call.attr
-
-        return resolved
-
-    def parseList(self, theList, formats = None):
-        global func, expCall
-        strList = "["
+        code = "tuple(["
         i = 0
-        l = len(theList)
+        alen = len(stmt_tuple.elts)
+        while i < alen:
+            code += self.visit(stmt_tuple.elts[i])
 
-        while i < l:
-            if formats is not None and formats[i] == "%s":
-                strList += "(" + self.reducto(theList[i], True) + ").toString()"
-            else:
-                strList += self.reducto(theList[i], True)
-            if (i + 1) < l:
-                strList += ", "
+            if (i + 1) < alen:
+                code += ","
             i += 1
+        code += "])"
 
-        strList += "]"
-        return strList
+        parsedType = "code"
+        return code
 
-    def parseExp(self, expr):
-        global expCall, func
-        powFlag = False
-        leftString = False
-        formatString = False
+    def visit_Compare(self, stmt_test):
+        global parsedType
 
-        exp = ""
-        myDict = dict()
+        stmt = self.visit(stmt_test.left) + self.visit(stmt_test.ops[0]) + self.visit(stmt_test.comparators[0])
 
-        if isinstance(expr.left, _ast.Call):
-            expCall = True
-            self.visit_Call(expr.left, True)
-            expCall = False
-            exp += func
-            func = ""
-        else:
-            if isinstance(expr.left, _ast.BinOp):
-                exp += self.parseExp(expr.left)
+        parsedType = "code"
+        return stmt
+
+    def visit_ClassDef(self, stmt_class):
+        global parsedType, dartLocalVars, dartClassVars, classyMode
+
+        if stmt_class.name not in pyClasses:
+            pyClasses.append(stmt_class.name)
+
+        code = "class " + stmt_class.name
+        if len(stmt_class.bases) == 1:
+            if stmt_class.bases[0].id == "object":
+                base = "Object"
             else:
-                exp = self.reducto(expr.left)
-
-                if isinstance(expr.left, _ast.Str):
-                    leftString = True
-
-        op = str(type(expr.op))[8:-2]
-
-        if leftString is True and op == "_ast.Mod":
-            self.addImport("lib/sprintf.dart")
-
-            if not isinstance(expr.right, _ast.Dict):
-                exp = "sprintf(" + exp + ","
-            else:
-                exp = "sprintf("
-
-            formatString = True
-        else:
-            if op in operators:
-                exp += operators[op]
-            elif isinstance(expr.op, _ast.Pow):
-                self.addImport('dart:math')
-                exp = "pow(" + exp
-                exp += ", "
-                powFlag = True
-            else:
-                print debug_warning
-                print "Operator not implemented => " + op
-                exit(1)
-
-        if isinstance(expr.right, _ast.Call):
-            expCall = True
-            self.visit_Call(expr.right, True)
-            expCall = False
-            exp += func
-            func = ""
-        else:
-            if isinstance(expr.right, _ast.BinOp):
-                if formatString is True:
-                    data = self.parseExp(expr.right)
-                    exp += " [(" + data + ").toString()])"
-                else:
-                    exp += self.parseExp(expr.right)
-            else:
-                if isinstance(expr.right, _ast.Num):
-                    if formatString is False:
-                        exp += str(expr.right.n)
-                    else:
-                        exp += " [\"" + str(expr.right.n) + "\"])"
-                elif isinstance(expr.right, _ast.Name):
-                    if formatString is False:
-                        exp += str(expr.right.id)
-                    else:
-                        exp += " [" + str(expr.right.id) + ".toString()])"
-                elif isinstance(expr.right, _ast.Str):
-                    if formatString is False:
-                        exp += "'" + self.escape(expr.right.s) + "'"
-                    else:
-                        exp += " ['" + self.escape(expr.right.s) + "'])"
-                elif isinstance(expr.right, _ast.Attribute):
-                    exp += self.attrHandle(expr.right)
-                elif isinstance(expr.right, _ast.Tuple):
-                    if formatString is True:
-                        string = str(expr.left.s)
-                        formats = [string[m.start():m.end()] for m in re.finditer("%\s?[diuoxXeEfFgGcrs]", string)]
-                        exp += self.parseList(expr.right.elts, formats) + ")"
-                    else:
-                        exp += self.parseList(expr.right.elts) + ")"
-                elif isinstance(expr.right, _ast.UnaryOp):
-                    exp += self.parseUnOp(expr.right)
-                elif isinstance(expr.right, _ast.Dict):
-                    key = list()
-                    values = list()
-                    for k in expr.right.keys:
-                        if isinstance(k, _ast.Str):
-                            key.append(k.s)
-                        else:
-                            "type not implemented => ", type(k)
-
-                    for v in expr.right.values:
-                        values.append(self.reducto(v))
-
-                    myDict = dict(zip(key, values))
-                    string = str(expr.left.s)
-                    indices = [(m.start(), m.end()) for m in re.finditer("%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]", string)]
-                    myList = list()
-                    offset = 0
-
-                    for (start, end) in indices:
-                        space = 0
-                        start += offset
-                        end += offset
-                        if string[start:end][-2] == " ":
-                            space = 1
-                        if string[start + 2 : end - 2 - space]  not in ("", " "):
-                            if string[start:end][-1] == "s":
-                                myList.append(str(myDict[string[start + 2 : end - 2 - space]]))
-                            else:
-                                myList.append(myDict[string[start + 2 : end - 2 - space]])
-                        offset = -len(string[start+1:end-1])
-                        string = string.replace(string[start+1:end-1], "")
-
-                    formats = [string[m.start():m.end()] for m in re.finditer("%[diuoxXeEfFgGcrs]", string)]
-                    i = 0
-
-                    while i < len(formats):
-                        if formats[i] == "%s":
-                            myList[i] = "(" + myList[i] + ").toString()"
-                        i += 1
-
-                    exp += "\"" + string + "\", ["
-                    i = 0
-
-                    while i < len(myList):
-                        if i == len(myList) - 1:
-                            exp += str(myList[i])
-                        else:
-                            exp += str(myList[i]) + ", "
-                        i += 1
-                    exp += "])"
-                else:
-                    print "Type still not implemented => ", str(type(expr.right))
-                    exit(1)
-        if powFlag:
-            exp += ")"
-
-        return "(" + exp + ")" #Saxx
-
-    def reducto(self, target, exp = False):
-        global func
-
-        reduced = ""
-
-        if isinstance(target, _ast.Num):
-            reduced = str(target.n)
-        elif isinstance(target, _ast.Str):
-            reduced = "'" + self.escape(target.s) + "'"
-        elif isinstance(target, _ast.List):
-            reduced = self.parseList(target.elts)
-        elif isinstance(target, _ast.Name):
-            if target.id == "False" or "True":
-                reduced = target.id.lower()
-            else:
-                reduced = target.id
-        elif isinstance(target, _ast.UnaryOp):
-            reduced = self.parseUnOp(target)
-        elif isinstance(target, _ast.BinOp):
-            reduced = self.parseExp(target)
-        elif isinstance(target, _ast.Subscript):
-            reduced = self.subscriptHandle(target)
-        elif isinstance(target, _ast.Attribute):
-            reduced = self.attrHandle(target)
-        elif isinstance(target, _ast.IfExp):
-            self.parseTernary(target)
-        elif isinstance(target, _ast.Call):
-            if exp:
-                expCall = True
-                self.visit_Call(target, True)
-                expCall = False
-                reduced = func
-                func = ""
-            else:
-                self.visit_Call(target, True)
-        else:
-            print debug_error
-            print "Type not recognized => ", str(type(target))
+                base = str(stmt_class.bases[0].id)
+            code += " extends " + base
+        elif len(stmt_class.bases) > 1:
+            print "Multiple Inheritace is unsupported at the moment :( Sorry!"
             exit(1)
+        code += "{"
 
-        return str(reduced)
-
-    def makeTest(self, stmt_test):
-        global code
-
-        if hasattr(stmt_test, 'left'):
-            varType = str(type(stmt_test.left))[13:-2]
-
-            if varType == "Name":
-                if stmt_test.left.id == 'True':
-                    code += "true"
-                elif stmt_test.left.id == 'False':
-                    code += "false"
-                else:
-                    code += stmt_test.left.id
-            elif varType == "Str":
-                code += stmt_test.left.s
-            elif varType == "Num":
-                code += str(stmt_test.left.n)
-            elif varType == "BinOp":
-                code += self.parseExp(stmt_test.left)
-            else:
-                print debug_error
-                print "Type not recognized => ", varType
-                exit(1)
-        else:
-            if stmt_test.id == "True":
-                code += "true"
-            elif stmt_test.id == "False":
-                code += "false"
-
-        if hasattr(stmt_test, 'ops'):
-            code += operators[str(type(stmt_test.ops[0]))[8:-2]]
-
-        if hasattr(stmt_test, 'comparators'):
-            varType = str(type(stmt_test.comparators[0]))[13:-2]
-            if varType == "Name":
-                if stmt_test.comparators[0].id == 'True':
-                    code += "true"
-                elif stmt_test.comparators[0].id == 'False':
-                    code += "false"
-                else:
-                    code += stmt_test.comparators[0].id
-            elif varType == "Str":
-                code += stmt_test.comparators[0].s
-            elif varType == "Num":
-                code += str(stmt_test.comparators[0].n)
-            elif varType == "BinOp":
-                code += self.parseExp(stmt_test.comparators[0])
-            else:
-                print debug_error
-                print "Type not recognized => ", varType
-                exit(1)
-
-    def parseTernary(self, stmt_ternary):
-        global code
-
-        self.makeTest(stmt_ternary.test)
-        code += " ? " + self.reducto(stmt_ternary.body) + " : " + self.reducto(stmt_ternary.orelse)
-
-    def visit_Print(self, stmt_print):
-        global code
-
-        self.addImport("dart:io")
-
-        i = 0
-        values = len(stmt_print.values)
-        while (i < values):
-            if (i + 1) < values:
-                code += " stdout.write("
-            else:
-                code += " stdout.writeln("
-
-            printee = self.reducto(stmt_print.values[i])
-
-            if printee != "":
-                code += printee
-            code += ");"
-
-            if (i + 1) < values:
-                code += " stdout.write(' ');"
-
-            i += 1
-
-    def visit_Assign(self, stmt_assign):
-        global code, funVars, funMode
-
-        for target in stmt_assign.targets:
-            if isinstance(target, _ast.Attribute):
-                code += self.attrHandle(target) + " = "
-            else:
-                if funMode:
-                    if not symTab.__contains__(target.id):
-                        if not funVars.__contains__(target.id):
-                            funVars.append(target.id)
-                            code += " var"
-                else:
-                    if not symTab.__contains__(target.id):
-                        symTab.append(target.id)
-
-                code += " " + target.id + " = ";
-
-            value = self.reducto(stmt_assign.value)
-
-            if value != "":
-                 code += value
-            code += ";"
-
-    def visit_If(self, stmt_if):
-        global code, funMode
-
-        funMode = True
-
-        code += " if ("
-        self.makeTest(stmt_if.test)
-        code += ") {"
-
-        for node in stmt_if.body:
-            self.visit(node)
-
-        code += " }"
-        if len(stmt_if.orelse) > 0:
-            code += " else {"
-            for node in stmt_if.orelse:
-                self.visit(node)
-            code += " }"
-
-        funMode = False
-
-    def visit_For(self, stmt_For):
-        global code, broken, funMode
-
-        funMode = True
-        broken = True
-        code += " var def = false;"
-        code += " for (var " + stmt_For.target.id + " in "
-
-        if isinstance(stmt_For.iter, _ast.Call):
-            self.visit_Call(stmt_For.iter, True)
-        elif isinstance(stmt_For.iter, _ast.Name):
-            code += stmt_For.iter.id
-        else:
-            print "This type of for loop not yet handled"
-            exit(1)
-
-        code += " ) {"
-        for node in stmt_For.body:
-            self.visit(node)
+        classyMode = True
+        for node in stmt_class.body:
+            code += self.visit(node)
         code += "}"
+        classyMode = False
+        dartClassVars = []
 
-        if len(stmt_For.orelse) > 0:
-            code += "if(def == false){"
-            for node in stmt_For.orelse:
-                self.visit(node)
+        parsedType = "class"
+        return code
 
-            code += "}"
+    def visit_Global(self, stmt_global):
+        global dartLocalVars
 
-        broken = False
-        funMode = False
+        for name in stmt_global.names:
+            dartLocalVars.append(name)
 
-    def visit_While(self, stmt_while):
-        global code
-
-        funMode = True
-
-        code += " while ("
-        self.makeTest(stmt_while.test)
-        code += ") {"
-
-        for node in stmt_while.body:
-            self.visit(node)
-
-        code += "}"
-
-        code += " if(!("
-        self.makeTest(stmt_while.test)
-        code += ")) {"
-
-        for node in stmt_while.orelse:
-            self.visit(node)
-
-        code += "}"
-
-        funMode = False
-
-    def visit_AugAssign(self, stmt_aug_assign):
-        global code
-        powFlag = False
-
-        if isinstance(stmt_aug_assign.target, _ast.Attribute):
-            code += self.attrHandle(stmt_aug_assign.target)
-        else:
-            code += " " + stmt_aug_assign.target.id
-
-        op = str(type(stmt_aug_assign.op))[8:-2]
-        if op in operators:
-            code += " " + operators[op].strip() + "= "
-        elif isinstance(stmt_aug_assign.op, _ast.Pow):
-            self.addImport('dart:math')
-            code += " = pow("
-            code += stmt_aug_assign.target.id
-            code += ", "
-            powFlag = True
-        else:
-            print debug_error
-            print "Operator not implemented => " + op
-            exit(1)
-
-        code += self.reducto(stmt_aug_assign.value)
-
-        if powFlag:
-            code += ")"
-
-        code += ";"
+        return ""
 
     def visit_FunctionDef(self, stmt_function):
-        global code, funVars, funMode
+        global dartLocalVars, funMode, parsedType
 
-        temp = code
+        body = ""
         code = ""
+        defs = ""
+
         funMode = True
+        for node in stmt_function.body:
+            body += self.visit(node)
+        funMode = False
+
+        if len(dartLocalVars) > 0:
+            defs = "var " + ",".join(dartLocalVars) + ";"
 
         if stmt_function.name == "__init__":
-            code = " " + classes[-1] + "("
+            code = pyClasses[-1] + "(" + code
         else:
-            code = " " + stmt_function.name + "("
+            code = stmt_function.name + "(" + code
 
         i = 0
         alen = len(stmt_function.args.args)
@@ -695,210 +262,274 @@ class MyParser(ast.NodeVisitor):
                 continue
 
             code += stmt_function.args.args[i].id
-            funVars.append(stmt_function.args.args[i].id)
+            dartLocalVars.append(stmt_function.args.args[i].id)
 
             if (i + 1) < alen:
-                code += ", "
+                code += ","
             i += 1
-        code += ") {"
+        code += "){" + defs + body + "}"
 
-        for node in stmt_function.body:
-            self.visit(node)
+        dartLocalVars = []
+        parsedType = "function"
+        return code
 
-        funMode = False
-        code += " }"
-        funVars = []
+    def visit_Call(self, stmt_call):
+        global pyClasses, pyInbuilts, forceCall, parsedType
 
-        code = code + temp
+        code = self.visit(stmt_call.func)
 
-    def visit_Call(self, stmt_call, myVar = False):
-        global code, expCall, func, classes, inbuilts
-
-        if isinstance(stmt_call.func, _ast.Attribute):
-            attr = self.attrHandle(stmt_call)
-
-            if expCall:
-                func += attr
-            else:
-                code += attr
-
-            if myVar == False:
-                if expCall:
-                    func += ";"
-                else:
-                    code += ";"
-            return
-
-        if stmt_call.func.id in inbuilts:
+        if code in pyInbuilts:
             self.addImport("lib/inbuilts.dart")
-
-        if classes.__contains__(stmt_call.func.id):
-            if expCall:
-                func += " new "
-            else:
-                code += " new "
-
-        if expCall:
-            func += " " + stmt_call.func.id + "("
-        else:
-            code += " " + stmt_call.func.id + "("
+        elif code in pyClasses:
+            code = "new " + code
 
         alen = len(stmt_call.args)
         i = 0
-        p = ""
 
+        code += "("
         while i < alen:
-            p = self.reducto(stmt_call.args[i])
-
-            if p != "":
-                if expCall:
-                    func += p
-                else:
-                    code += p
+            code += self.visit(stmt_call.args[i])
 
             if (i + 1) < alen:
-                if expCall:
-                    func += ", "
-                else:
-                    code += ", "
+                code += ","
             i += 1
+        code += ")"
 
-        if expCall:
-            func += ")"
-        else:
-            code += ")"
+        parsedType = "code"
+        return code
 
-        if myVar == False:
-            code += ";"
+    def visit_Expr(self, stmt_expr):
+        global parsedType
+
+        parsedType = "code"
+        return self.visit(stmt_expr.value) + ";"
 
     def visit_Return(self, stmt_return):
-        global code
+        global parsedType
 
-        code += " return "
-        v = ""
+        code = "return " + self.visit(stmt_return.value) + ";"
 
-        if isinstance(stmt_return.value, _ast.Name):
-            if stmt_return.value.id == "self":
-                v = "this"
+        parsedType = "code"
+        return code
+
+    def visit_Print(self, stmt_print):
+        global parsedType
+
+        self.addImport("dart:io")
+
+        code = ""
+        i = 0
+        values = len(stmt_print.values)
+
+        while (i < values):
+            if (i + 1) < values:
+                code += "stdout.write("
             else:
-                v = stmt_return.value.id
-        else:
-            v = self.reducto(stmt_return.value)
+                code += "stdout.writeln("
 
-        if v != "":
-            code += v
+            printee = self.visit(stmt_print.values[i])
+            if printee is not None:
+                code += printee
+            code += ");"
+
+            if (i + 1) < values:
+                code += "stdout.write(' ');"
+            i += 1
+
+        parsedType = "code"
+        return code
+
+    def visit_Assign(self, stmt_assign):
+        global dartLocalVars, funMode, parsedType, pyGlobalVars, classyMode
+
+        code = ""
+        for target in stmt_assign.targets:
+            if isinstance(target, _ast.Attribute):
+                code += self.visit(target) + "="
+            else:
+                if funMode and target.id not in dartLocalVars:
+                    dartLocalVars.append(target.id)
+                elif classyMode and target.id not in dartClassVars:
+                    dartClassVars.append(target.id)
+                    code += "var "
+                else:
+                    if target.id not in dartGlobalVars:
+                        dartGlobalVars.append(target.id)
+
+                code += target.id + "=";
+            code += self.visit(stmt_assign.value)
         code += ";"
 
-    def visit_ClassDef(self, stmt_class):
-        global code, funMode
+        parsedType = "code"
+        return code
 
-        main = code
-        code = ""
-        funMode = True
+    def visit_AugAssign(self, stmt_aug_assign):
+        global powFlag, parsedType
 
-        code = " class " + stmt_class.name
-        if classes.__contains__(stmt_class.name) == False:
-            classes.append(stmt_class.name)
+        left = self.visit(stmt_aug_assign.target)
+        op = self.visit(stmt_aug_assign.op)
+        right = self.visit(stmt_aug_assign.value)
 
-        if len(stmt_class.bases) == 1:
-            code += " extends " + str(stmt_class.bases[0].id)
-        elif len(stmt_class.bases) > 1:
-            print "Multiple Inheritace is unsupported at the moment :( Sorry!"
-            exit(1)
-        code += " {"
+        code = left
+        if op == ",":
+            code += "=pow(" + left + "," + right + ")"
+        else:
+            code += op + "=" + right
 
-        temp = code
-        code = ""
+        parsedType = "code"
+        return code
 
-        for node in stmt_class.body:
-            self.visit(node)
+    def visit_Break(self, stmt_break):
+        global broken
 
-        code = temp + code + " }" + main
-        funMode = False
-        funVars = []
+        return "$broken=true;break;" if broken else "break;"
+
+    def visit_If(self, stmt_if):
+        global parsedType
+
+        code = "if(" + self.visit(stmt_if.test) + "){"
+        for node in stmt_if.body:
+            code += self.visit(node)
+        code += "}"
+
+        if len(stmt_if.orelse) > 0:
+            code += "else{"
+            for node in stmt_if.orelse:
+                code += self.visit(node)
+            code += "}"
+
+        parsedType = "code"
+        return code
+
+    def visit_While(self, stmt_while):
+        global parsedType
+
+        code = "while(" + self.visit(stmt_while.test) + "){"
+        for node in stmt_while.body:
+            code += self.visit(node)
+        code += "}"
+
+        code += "if(!(" + self.visit(stmt_while.test) + ")){"
+        for node in stmt_while.orelse:
+            code += self.visit(node)
+        code += "}"
+
+        parsedType = "code"
+        return code
+
+    def visit_For(self, stmt_for):
+        global broken, parsedType
+
+        broken = True
+        code = "var $broken=false;for(var " + stmt_for.target.id + " in " + self.visit(stmt_for.iter) + "){"
+        for node in stmt_for.body:
+            code += self.visit(node)
+        code += "}"
+
+        if len(stmt_for.orelse) > 0:
+            code += "if($broken==false){"
+            for node in stmt_for.orelse:
+                code += self.visit(node)
+            code += "}"
+        broken = False
+
+        parsedType = "code"
+        return code
 
     def visit_Raise(self, stmt_raise):
-        global code
-
-        code += " throw " + self.reducto(stmt_raise.type) + ";"
+        return "throw " + self.visit(stmt_raise.type) + ";"
 
     def visit_TryExcept(self, stmt_tryexcept, final = False):
-        global code, funMode, funVars
-
-        funMode = True
+        global dartLocalVars, parsedType
 
         if not final:
             nodes = stmt_tryexcept
         else:
             nodes = stmt_tryexcept[0]
 
-        code += " var from = true; try {"
+        handled = False
+
+        tBlock = ""
+        code = ""
+
         for node in nodes.body:
-            self.visit(node)
-        code += " }"
+            tBlock += self.visit(node)
 
         for handler in nodes.handlers:
             if handler.type.id == "ZeroDivisionError":
+                print "Ignoring ZeroDivisionError catch block cause Medusa CAN DIVIDE BY ZERO baby! B)"
                 continue
 
+            handled = True
             try:
-                code += " on " + exceptions[handler.type.id]
+                code += "on " + exceptions[handler.type.id]
                 if isinstance(handler.name, _ast.Name):
                     code += " catch(" + handler.name.id + ")"
-                    funVars.append(handler.name.id)
+                    dartLocalVars.append(handler.name.id)
 
-                code += " { from = false;"
+                code += "{$tried=false;"
                 for node in handler.body:
-                    self.visit(node)
-                code += " }"
+                    code += self.visit(node)
+                code += "}"
             except KeyError:
                 print debug_error
                 print "Exception handler not implemented for " + handler.type.id
                 exit(1)
 
-        if not final and len(nodes.orelse) > 0:
-            code += " if (from == true) {"
-            for node in nodes.orelse:
-                self.visit(node)
-            code += " }"
+        if handled:
+            code = "var $tried=true;try{" + tBlock + "}" + code
+        else:
+            code = tBlock
 
-        funMode = False
+        if not final and len(nodes.orelse) > 0:
+            code += "if($tried){"
+            for node in nodes.orelse:
+                code += self.visit(node)
+            code += "}"
+
+        parsedType = "code"
+        return code;
 
     def visit_TryFinally(self, stmt_tryfinally):
-        global code
+        global parsedType
 
-        self.visit_TryExcept(stmt_tryfinally.body, True)
-
-        code += " finally {"
+        code = self.visit_TryExcept(stmt_tryfinally.body, True) + "finally{"
         for node in stmt_tryfinally.finalbody:
-            self.visit(node)
-        code += " }"
+            code += self.visit(node)
+        code += "}"
 
         if len(stmt_tryfinally.body[0].orelse) > 0:
-            code += " if (from == true) {"
+            code += "if($tried){"
             for node in stmt_tryfinally.body[0].orelse:
-                self.visit(node)
-            code += " }"
+                code += self.visit(node)
+            code += "}"
 
-    def visit_Break(self, stmt_break):
-        global code, broken
+        parsedType = "code"
+        return code
 
-        if broken:
-            code += " def = true; break;"
-        else:
-            code += "break;"
+    def visit_Attribute(self, stmt_attribute):
+        global parsedType
 
-MyParser().parse(open(sys.argv[1]).read())
+        code = self.visit(stmt_attribute.value) + "." + stmt_attribute.attr
 
-code += " }"
+        parsedType = "code"
+        return code
 
-if len(symTab) > 0:
-    code = " var " + ", ".join(symTab) + ";" + code
+PyParser().parse(open(sys.argv[1]).read())
 
-impStr = ""
-for imp in imports:
-    impStr += "import '" + imp + "'; "
-code = impStr.strip() + code
+stitched = ""
+for module in dartImports:
+    stitched += "import '" + module + "';"
+stitched += "var " + ",".join(dartGlobalVars) + ";"
+for parsedClass in parsedClasses:
+    stitched += parsedClass
+for parsedFunction in parsedFunctions:
+    stitched += parsedFunction
+stitched += "main(){"
+for code in parsedCode:
+    stitched += code
+stitched += "}"
 
-outFile.write(code)
+outFile = open("out.dart", 'w')
+outFile.write(stitched)
 outFile.close()
