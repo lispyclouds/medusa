@@ -372,7 +372,7 @@ class PyParser(ast.NodeVisitor):
 
         code = left
         if op == ",":
-            code += "=pow(" + left + "," + right + ")"
+            code += "=pow(" + left + op + right + ")"
         else:
             code += op + "=" + right
 
@@ -520,7 +520,8 @@ PyParser().parse(open(sys.argv[1]).read())
 stitched = ""
 for module in dartImports:
     stitched += "import '" + module + "';"
-stitched += "var " + ",".join(dartGlobalVars) + ";"
+if len(dartGlobalVars):
+    stitched += "var " + ",".join(dartGlobalVars) + ";"
 for parsedClass in parsedClasses:
     stitched += parsedClass
 for parsedFunction in parsedFunctions:
