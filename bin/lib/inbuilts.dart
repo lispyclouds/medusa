@@ -221,7 +221,7 @@ class $PyString extends IterableBase {
                 }
                 i++;
             }
-            return new $PyString(sprintf(string, list));
+            return new $PyString($sprintf(string, list));
         } else if(collection is Map) {
             RegExp exp = new RegExp(r"%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]");
             var List = [];
@@ -253,7 +253,7 @@ class $PyString extends IterableBase {
                 key = "";
                 newString += string[currentIndex++];
             }
-            return new $PyString(sprintf(newString, List));
+            return new $PyString($sprintf(newString, List));
         }
     }
 

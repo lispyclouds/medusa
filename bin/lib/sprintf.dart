@@ -10,4 +10,4 @@ part 'src/sprintf_impl.dart';
 
 typedef SPrintF(String fmt, var args);
 
-var sprintf = new PrintFormat();
+var $sprintf = new PrintFormat();
