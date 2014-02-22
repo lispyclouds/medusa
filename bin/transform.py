@@ -88,7 +88,7 @@ class PyParser(ast.NodeVisitor):
 
     def visit_Str(self, stmt_str):
         self.addImport("lib/inbuilts.dart")
-        return "new PyString(" + self.escape(stmt_str.s) + ")"
+        return "new $PyString(" + self.escape(stmt_str.s) + ")"
 
     def visit_Add(self, stmt_add):
         return "+"
@@ -566,12 +566,12 @@ class PyParser(ast.NodeVisitor):
         global parsedType, formats
 
         value = self.visit(stmt_attribute.value)
-        if isinstance(stmt_attribute.value, _ast.Str):
-            self.addImport('lib/formatted.dart')
-            code = "$withFormat(" + value + ", "
-            formats = True
-        else:
-            code = value + "." + stmt_attribute.attr
+        # if isinstance(stmt_attribute.value, _ast.Str):
+        #     self.addImport('lib/formatted.dart')
+        #     code = "$withFormat(" + value + ", "
+        #     formats = True
+        # else:
+        code = value + "." + stmt_attribute.attr
 
         parsedType = "code"
         return code

@@ -2,7 +2,6 @@ library inbuilts;
 
 import "dart:io";
 import "dart:collection";
-import "sprintf.dart";
 
 class PyFile {
     var handle;
@@ -29,11 +28,11 @@ class PyFile {
         if (bytes == null)
             bytes = handle.lengthSync();
 
-        return new String.fromCharCodes(handle.readSync(bytes));
+        return new $PyString(new String.fromCharCodes(handle.readSync(bytes)));
     }
 
     readlines() {
-        return new File(name).readAsLinesSync();
+        return new $PyString(new File(name).readAsLinesSync());
     }
 
     write(data) {
@@ -76,10 +75,11 @@ class PyFile {
 
 PyFile open(name, [mode]) {
     name = name.toString();
-    mode = mode.toString();
 
     if (mode == null)
         mode = "r";
+    else
+        mode = mode.toString();
 
     var file = new PyFile(name, mode);
 
@@ -151,17 +151,16 @@ class TupleClass {
     getList() {
         return tuple;
     }
-
 }
 
 TupleClass tuple(iterable) {
     return new TupleClass(iterable);
 }
 
-class PyString {
+class $PyString {
     var _str;
 
-    PyString(string) {
+    $PyString(string) {
         _str = string;
     }
 
@@ -169,9 +168,9 @@ class PyString {
         var capzed = _str.toLowerCase();
 
         if (capzed.length > 0)
-            return new PyString(capzed.replaceFirst(capzed[0], capzed[0].toUpperCase()));
+            return new $PyString(capzed.replaceFirst(capzed[0], capzed[0].toUpperCase()));
         else
-            return new PyString(capzed);
+            return new $PyString(capzed);
     }
 
     zfill(width) {
@@ -184,7 +183,7 @@ class PyString {
         for (var i = 0; i < toPad; i++)
             pad += "0";
 
-        return new PyString(pad + _str);
+        return new $PyString(pad + _str);
     }
 
     toString() {
@@ -196,14 +195,14 @@ class PyString {
     }
 
     operator +(str) {
-        return new PyString(_str + str.toString());
+        return new $PyString(_str + str.toString());
     }
 }
 
 getType(variable) {
     if(variable is num)
         return 0;
-    else if(variable is String)
+    else if(variable is $PyString)
         return 1;
     else if(variable is List)
         return 2;
@@ -318,7 +317,7 @@ raw_input([message]) {
     if (message != null)
         stdout.write(message);
 
-    return new PyString(stdin.readLineSync(encoding: SYSTEM_ENCODING));
+    return new $PyString(stdin.readLineSync(encoding: SYSTEM_ENCODING));
 }
 
 input([message]) {
