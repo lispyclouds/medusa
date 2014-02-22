@@ -164,16 +164,7 @@ class PyParser(ast.NodeVisitor):
         left = self.visit(stmt_binop.left)
         op = self.visit(stmt_binop.op)
         right = self.visit(stmt_binop.right)
-
-        if isinstance(stmt_binop.left, _ast.Str) and op is '%':
-            self.addImport('lib/formatted.dart')
-            if isinstance(stmt_binop.right, _ast.Tuple) or isinstance(stmt_binop.right, _ast.Dict):
-                exp = "$getFormattedString(" + left + "," + right + ")"
-            else:
-                self.addImport('lib/inbuilts.dart')
-                exp = "$getFormattedString(" + left + ",tuple([" + right + "]))"
-        else:
-            exp = "(" + left + op + right + ")"
+        exp = "(" + left + op + right + ")"
 
         if op == ",":
             exp = "(pow" + exp + ")"
@@ -566,12 +557,11 @@ class PyParser(ast.NodeVisitor):
         global parsedType, formats
 
         value = self.visit(stmt_attribute.value)
-        # if isinstance(stmt_attribute.value, _ast.Str):
-        #     self.addImport('lib/formatted.dart')
-        #     code = "$withFormat(" + value + ", "
-        #     formats = True
-        # else:
-        code = value + "." + stmt_attribute.attr
+        if isinstance(stmt_attribute.value, _ast.Str):
+            formats = True
+            code = value + "." + stmt_attribute.attr + "("
+        else:
+            code = value + "." + stmt_attribute.attr
 
         parsedType = "code"
         return code
