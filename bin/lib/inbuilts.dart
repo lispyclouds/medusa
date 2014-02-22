@@ -73,7 +73,7 @@ class PyFile {
     }
 }
 
-PyFile open(name, [mode]) {
+$PyFile open(name, [mode]) {
     name = name.toString();
 
     if (mode == null)
@@ -81,7 +81,7 @@ PyFile open(name, [mode]) {
     else
         mode = mode.toString();
 
-    var file = new PyFile(name, mode);
+    var file = new $PyFile(name, mode);
 
     if ((mode == "r" || mode == "rb") && !new File(name).existsSync())
         throw new FileSystemException();
@@ -89,11 +89,11 @@ PyFile open(name, [mode]) {
     return file;
 }
 
-class TupleClass {
+class $TupleClass {
     var tuple = [];
 
-    TupleClass(iterable) {
-        if (iterable is TupleClass)
+    $TupleClass(iterable) {
+        if (iterable is $TupleClass)
             this.tuple = iterable.tuple;
         else {
             for (var item in iterable)
@@ -111,7 +111,7 @@ class TupleClass {
         }
         str += ")";
 
-        return str;
+        new $PyString(return str);
     }
 
     operator [](i) => tuple[i];
@@ -121,8 +121,8 @@ class TupleClass {
     }
 
     operator +(tupleObj) {
-        if (tupleObj is TupleClass) {
-            var newTupObj = new TupleClass(this.tuple);
+        if (tupleObj is $TupleClass) {
+            var newTupObj = new $TupleClass(this.tuple);
 
             for (var item in tupleObj.tuple)
                 newTupObj.tuple.add(item);
@@ -135,7 +135,7 @@ class TupleClass {
 
     operator *(integer) {
         if (integer is int) {
-            var newTupObj = new TupleClass([]);
+            var newTupObj = new $TupleClass([]);
 
             for (var i = 0; i < integer; i++) {
                 for (var item in this.tuple)
@@ -153,8 +153,8 @@ class TupleClass {
     }
 }
 
-TupleClass tuple(iterable) {
-    return new TupleClass(iterable);
+tuple(iterable) {
+    return new $TupleClass(iterable);
 }
 
 class $PyString {
@@ -174,10 +174,9 @@ class $PyString {
     }
 
     zfill(width) {
-        if (!(width is num)) {
-            print("TypeError: an integer is required");
-            exit(1);
-        }
+        if (!(width is num))
+            throw "TypeError: an integer is required";
+
         var toPad = width - _str.length, pad = "";
 
         for (var i = 0; i < toPad; i++)
@@ -310,7 +309,7 @@ len(target) {
 }
 
 str(data) {
-    return data.toString();
+    return new $PyString(data.toString());
 }
 
 raw_input([message]) {
@@ -335,8 +334,8 @@ input([message]) {
     }
 }
 
-class Range extends Object with IterableMixin<int> {
-    Range(int this.start, [int this.stop, int this.step = 1]) {
+class $Range extends Object with IterableMixin<int> {
+    $Range(int this.start, [int this.stop, int this.step = 1]) {
         if (stop == null ) {
             stop = start;
             start = 0;
@@ -347,7 +346,7 @@ class Range extends Object with IterableMixin<int> {
     }
 
     Iterator<int> get iterator {
-        return new RangeIterator(start, stop, step);
+        return new $RangeIterator(start, stop, step);
     }
 
     int get length {
@@ -409,13 +408,13 @@ class Range extends Object with IterableMixin<int> {
     final int step;
 }
 
-class RangeIterator implements Iterator<int> {
+class $RangeIterator implements Iterator<int> {
 
     int _pos;
     final int _stop;
     final int _step;
 
-    RangeIterator(int pos, int stop, int step) : _stop = stop, _pos = pos-step, _step = step;
+    $RangeIterator(int pos, int stop, int step) : _stop = stop, _pos = pos-step, _step = step;
 
     int get current {
         return _pos;
@@ -430,6 +429,6 @@ class RangeIterator implements Iterator<int> {
     }
 }
 
-Range range(int start_inclusive, [int stop_exclusive, int step = 1]) => new Range(start_inclusive, stop_exclusive, step);
-Range xrange(int start_inclusive, [int stop_exclusive, int step = 1]) => new Range(start_inclusive, stop_exclusive, step);
-Range indices(lengthable) => new Range(0, lengthable.length);
+range(int start_inclusive, [int stop_exclusive, int step = 1]) => new $Range(start_inclusive, stop_exclusive, step);
+xrange(int start_inclusive, [int stop_exclusive, int step = 1]) => new $Range(start_inclusive, stop_exclusive, step);
+indices(lengthable) => new $Range(0, lengthable.length);
