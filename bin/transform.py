@@ -22,8 +22,9 @@ formats = False
 parsedType = ""
 
 exceptions = dict()
-exceptions['IOError'] = "FileSystemException"
 exceptions['Exception'] = "Exception"
+exceptions['IOError'] = "FileSystemException"
+exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
 
 class PyParser(ast.NodeVisitor):
     def parse(self, code):
@@ -42,7 +43,7 @@ class PyParser(ast.NodeVisitor):
     def addImport(self, module):
         global dartImports
 
-        if dartImports.__contains__(module) == False:
+        if module not in dartImports:
             dartImports.append(module)
 
     def visit_Module(self, stmt_module):
@@ -51,11 +52,11 @@ class PyParser(ast.NodeVisitor):
         for node in stmt_module.body:
             parsed = self.visit(node)
             #print parsed
-            if parsedType == "class":
+            if parsedType is "class":
                 parsedClasses.append(parsed)
-            elif parsedType == "function":
+            elif parsedType is "function":
                 parsedFunctions.append(parsed)
-            elif  parsedType == "code":
+            elif parsedType is "code":
                 parsedCode.append(parsed)
             else:
                 print "Not Implemented => ", type(node)
@@ -164,7 +165,7 @@ class PyParser(ast.NodeVisitor):
         op = self.visit(stmt_binop.op)
         right = self.visit(stmt_binop.right)
 
-        if isinstance(stmt_binop.left, _ast.Str) and op == '%':
+        if isinstance(stmt_binop.left, _ast.Str) and op is '%':
             self.addImport('lib/formatted.dart')
             if isinstance(stmt_binop.right, _ast.Tuple) or isinstance(stmt_binop.right, _ast.Dict):
                 exp = "$getFormattedString(" + left + "," + right + ")"
@@ -515,20 +516,12 @@ class PyParser(ast.NodeVisitor):
         else:
             nodes = stmt_tryexcept[0]
 
-        handled = False
-
-        tBlock = ""
-        code = ""
-
+        code = "var $tried=true;try{"
         for node in nodes.body:
-            tBlock += self.visit(node)
+            code += self.visit(node)
+        code += "}"
 
         for handler in nodes.handlers:
-            if handler.type.id == "ZeroDivisionError":
-                print "Ignoring ZeroDivisionError catch block cause Medusa CAN DIVIDE BY ZERO baby! B)"
-                continue
-
-            handled = True
             try:
                 code += "on " + exceptions[handler.type.id]
                 if isinstance(handler.name, _ast.Name):
@@ -540,14 +533,8 @@ class PyParser(ast.NodeVisitor):
                     code += self.visit(node)
                 code += "}"
             except KeyError:
-                print debug_error
-                print "Exception handler not implemented for " + handler.type.id
+                print "Fatal Error: Exception handler not implemented for " + handler.type.id
                 exit(1)
-
-        if handled:
-            code = "var $tried=true;try{" + tBlock + "}" + code
-        else:
-            code = tBlock
 
         if not final and len(nodes.orelse) > 0:
             code += "if($tried){"

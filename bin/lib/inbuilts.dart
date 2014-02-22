@@ -75,6 +75,9 @@ class PyFile {
 }
 
 PyFile open(name, [mode]) {
+    name = name.toString();
+    mode = mode.toString();
+
     if (mode == null)
         mode = "r";
 
@@ -162,7 +165,20 @@ class PyString {
         _str = string;
     }
 
+    capitalize() {
+        var capzed = _str.toLowerCase();
+
+        if (capzed.length > 0)
+            return new PyString(capzed.replaceFirst(capzed[0], capzed[0].toUpperCase()));
+        else
+            return new PyString(capzed);
+    }
+
     zfill(width) {
+        if (!(width is num)) {
+            print("TypeError: an integer is required");
+            exit(1);
+        }
         var toPad = width - _str.length, pad = "";
 
         for (var i = 0; i < toPad; i++)
@@ -175,11 +191,14 @@ class PyString {
         return _str;
     }
 
+    operator ==(str) {
+        return _str == str.toString();
+    }
+
     operator +(str) {
         return new PyString(_str + str.toString());
     }
 }
-
 
 getType(variable) {
     if(variable is num)
@@ -287,22 +306,22 @@ bin(integer) {
         return "Type is not Int";
 }
 
-int len(target) {
+len(target) {
     return target.length;
 }
 
-String str(data) {
+str(data) {
     return data.toString();
 }
 
-String raw_input([message]) {
+raw_input([message]) {
     if (message != null)
         stdout.write(message);
 
-    return stdin.readLineSync(encoding: SYSTEM_ENCODING);
+    return new PyString(stdin.readLineSync(encoding: SYSTEM_ENCODING));
 }
 
-num input([message]) {
+input([message]) {
     if (message != null)
         stdout.write(message);
 
