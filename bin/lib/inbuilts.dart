@@ -3,11 +3,11 @@ library inbuilts;
 import "dart:io";
 import "dart:collection";
 
-class PyFile {
+class $PyFile {
     var handle;
     var closed, mode, name, softspace;
 
-    PyFile(name, mode) {
+    $PyFile(name, mode) {
         closed = false;
         this.name = name;
         this.mode = mode;
