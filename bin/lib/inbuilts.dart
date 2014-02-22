@@ -158,11 +158,15 @@ tuple(iterable) {
     return new $TupleClass(iterable);
 }
 
-class $PyString {
+class $PyString extends IterableBase {
     var _str;
 
     $PyString(string) {
         _str = string;
+    }
+
+    get iterator {
+        return _str.split('').iterator;
     }
 
     capitalize() {
@@ -280,6 +284,23 @@ class $PyString {
             currentIndex = m.end;
         }
         return new $PyString(newString);
+    }
+    operator *(mul) {
+        if (mul is! int)
+            throw "Invalid multplier for String";
+
+        var pdt = "";
+        for (var i = 0; i < mul; i++)
+            pdt += _str;
+
+        return new $PyString(pdt);
+    }
+
+    operator [](index) {
+        if (index is! int)
+            throw "Invalid index for String";
+
+        return new $PyString(_str[index]);
     }
 }
 

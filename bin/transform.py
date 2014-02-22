@@ -220,14 +220,14 @@ class PyParser(ast.NodeVisitor):
             upper = self.subsituteVisit(stmt_Subscript.slice.upper)
             step = self.subsituteVisit(stmt_Subscript.slice.step)
             step = 1 if step is None or step == "None" else int(step)
-            lower = (str(listVar) + ".length, " if step < 0 else "0, ") if lower is None  else str(lower) + ", "
-            upper = (str(listVar) + ".length, " if step > 0 else "0, ") if upper is None  else str(upper) + ", "
-            data = "slice( " + str(listVar) + ", " + str(lower) + str(upper) + str(step) + ")"
+            lower = (str(listVar) + ".length," if step < 0 else "0,") if lower is None  else str(lower) + ","
+            upper = (str(listVar) + ".length," if step > 0 else "0,") if upper is None  else str(upper) + ","
+            data = "$slice(" + str(listVar) + "," + str(lower) + str(upper) + str(step) + ")"
             return data
         elif isinstance(stmt_Subscript.slice, _ast.Index):
             listVar = self.visit(stmt_Subscript.value)
             index = self.visit(stmt_Subscript.slice.value)
-            index = (str(listVar) + ".length " + str(index)) if int(index) < 0 else index
+            index = (str(listVar) + ".length" + str(index)) if int(index) < 0 else index
             index = "[" + str(index) + "]"
             data = str(listVar) + index
             return data
@@ -570,7 +570,7 @@ PyParser().parse(open(sys.argv[1]).read())
 
 stitched = ""
 for module in dartImports:
-    stitched += "import '" + module + "';"
+    stitched += "import'" + module + "';"
 if len(dartGlobalVars):
     stitched += "var " + ",".join(dartGlobalVars) + ";"
 for parsedClass in parsedClasses:
