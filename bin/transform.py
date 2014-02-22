@@ -231,7 +231,7 @@ class PyParser(ast.NodeVisitor):
             step = 1 if step is None or step == "None" else int(step)
             lower = (str(listVar) + ".length, " if step < 0 else "0, ") if lower is None  else str(lower) + ", "
             upper = (str(listVar) + ".length, " if step > 0 else "0, ") if upper is None  else str(upper) + ", "
-            data = "slice( " + str(listVar) + ", " + str(lower) + str(upper) + str(step) + ")"
+            data = "$slice( " + str(listVar) + ", " + str(lower) + str(upper) + str(step) + ")"
             return data
         elif isinstance(stmt_Subscript.slice, _ast.Index):
             listVar = self.visit(stmt_Subscript.value)

@@ -2,7 +2,7 @@ library slice;
 
 import "dart:collection";
 
-slice(list, lower, higher, step) {
+$slice(list, lower, higher, step) {
     var c = [];
     var i = 0;
 

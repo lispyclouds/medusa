@@ -157,11 +157,15 @@ tuple(iterable) {
     return new $TupleClass(iterable);
 }
 
-class $PyString {
+class $PyString extends IterableBase {
     var _str;
 
     $PyString(string) {
         _str = string;
+    }
+
+    get iterator {
+        return _str.split('').iterator;
     }
 
     capitalize() {
