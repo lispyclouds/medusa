@@ -198,7 +198,7 @@ class $PyString {
     }
 }
 
-getType(variable) {
+$getType(variable) {
     if(variable is num)
         return 0;
     else if(variable is $PyString)
@@ -228,7 +228,7 @@ abs(n) {
 all(iterable) {
     var i;
     for(i in iterable){
-        switch(getType(i)){
+        switch($getType(i)){
             case -1:
                 return i;
             case 0:
@@ -260,7 +260,7 @@ all(iterable) {
 any(iterable) {
     var i;
     for(i in iterable){
-        switch(getType(i)){
+        switch($getType(i)){
             case -1:
                 return i;
             case 0:
