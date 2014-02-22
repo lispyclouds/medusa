@@ -200,6 +200,24 @@ class $PyString extends IterableBase {
     operator +(str) {
         return new $PyString(_str + str.toString());
     }
+
+    operator *(mul) {
+        if (mul is! int)
+            throw "Invalid multplier for String";
+
+        var pdt = "";
+        for (var i = 0; i < mul; i++)
+            pdt += _str;
+
+        return new $PyString(pdt);
+    }
+
+    operator [](index) {
+        if (index is! int)
+            throw "Invalid index for String";
+
+        return new $PyString(_str[index]);
+    }
 }
 
 $getType(variable) {
