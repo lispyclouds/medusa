@@ -19,6 +19,7 @@ classyMode = False
 funMode = False
 broken = False
 formats = False
+fromTest = False
 parsedType = ""
 
 exceptions = dict()
@@ -79,6 +80,8 @@ class PyParser(ast.NodeVisitor):
             name = name.lower()
         elif name is "self":
             name = "this"
+        elif name is "None":
+            name = "null"
 
         parsedType = "code"
         return str(name)
@@ -142,6 +145,12 @@ class PyParser(ast.NodeVisitor):
     def visit_NotEq(self, stmt_neq):
         return "!="
 
+    def visit_And(self, stmt_and):
+        return "$and(["
+
+    def visit_Or(self, stmt_or):
+        return "$or(["
+
     def visit_IfExp(self, stmt_ternary):
         global parsedType
 
@@ -172,6 +181,45 @@ class PyParser(ast.NodeVisitor):
         parsedType = "code"
         return exp
 
+    def visit_BoolOp(self, stmt_boolop):
+        global parsedType
+
+        self.addImport('lib/inbuilts.dart');
+        code = self.visit(stmt_boolop.op)
+        alen = len(stmt_boolop.values)
+        i = 0
+        while i < alen:
+            code += self.visit(stmt_boolop.values[i])
+            if i < alen - 1:
+                code += ","
+            i += 1
+
+        code += "])"
+
+        if fromTest:
+            code = "$checkValue(" + code + ")"
+
+        parsedType = "code"
+        return code
+
+    def visit_List(self, stmt_list):
+        global parsedType
+
+        code = "["
+
+        alen = len(stmt_list.elts)
+        i = 0
+        while i < alen:
+            code += self.visit(stmt_list.elts[i])
+            if i < alen - 1:
+                code += ","
+            i += 1
+
+        code += "]"
+
+        parsedType = "code"
+        return code
+
     def visit_Dict(self, stmt_dict):
         global parsedType
 
@@ -188,6 +236,7 @@ class PyParser(ast.NodeVisitor):
                 i += 1
             code += "}"
 
+            parsedType = "code"
             return code
         else:
             print "Invalid Dictionary"
@@ -445,8 +494,9 @@ class PyParser(ast.NodeVisitor):
         return "$broken=true;break;" if broken else "break;"
 
     def visit_If(self, stmt_if):
-        global parsedType
+        global parsedType, fromTest
 
+        fromTest = True
         code = "if(" + self.visit(stmt_if.test) + "){"
         for node in stmt_if.body:
             code += self.visit(node)
@@ -458,6 +508,7 @@ class PyParser(ast.NodeVisitor):
                 code += self.visit(node)
             code += "}"
 
+        fromTest = False
         parsedType = "code"
         return code
 
