@@ -151,6 +151,11 @@ class PyParser(ast.NodeVisitor):
     def visit_Or(self, stmt_or):
         return "$or(["
 
+    def visit_In(self, stmt_in):
+        return ".contains"
+
+
+
     def visit_IfExp(self, stmt_ternary):
         global parsedType
 

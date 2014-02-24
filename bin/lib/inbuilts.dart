@@ -152,6 +152,10 @@ class $TupleClass {
     getList() {
         return tuple;
     }
+
+    contains(comparator){
+        return tuple.contains(comparator);
+    }
 }
 
 tuple(iterable) {
@@ -334,31 +338,8 @@ abs(n) {
 all(iterable) {
     var i;
     for(i in iterable){
-        switch($getType(i)){
-            case -1:
-                return i;
-            case 0:
-                if(i == 0)
-                    return false;
-                break;
-            case 1:
-                if(i == "")
-                    return false;
-                break;
-            case 2:
-                if(i.length == 0)
-                    return false;
-                break;
-            case 3:
-                if(i == false)
-                    return false;
-                break;
-            case 4:
-                var keys = i.keys;
-                if(keys.length == 0)
-                    return false;
-                break;
-        }
+        if(!$checkValue(i))
+            return false;
     }
     return true;
 }
@@ -366,31 +347,8 @@ all(iterable) {
 any(iterable) {
     var i;
     for(i in iterable){
-        switch($getType(i)){
-            case -1:
-                return i;
-            case 0:
-                if(i != 0)
-                    return true;
-                break;
-            case 1:
-                if(i != "")
-                    return true;
-                break;
-            case 2:
-                if(i.length != 0)
-                    return true;
-                break;
-            case 3:
-                if(i == true)
-                    return true;
-                break;
-            case 4:
-                var keys = i.keys;
-                if(keys.length != 0)
-                    return true;
-                break;
-        }
+        if($checkValue(i))
+            return true;
     }
     return false;
 }
