@@ -152,6 +152,10 @@ class $TupleClass {
     getList() {
         return tuple;
     }
+
+    contains(comparator){
+        return tuple.contains(comparator);
+    }
 }
 
 tuple(iterable) {
@@ -334,31 +338,8 @@ abs(n) {
 all(iterable) {
     var i;
     for(i in iterable){
-        switch($getType(i)){
-            case -1:
-                return i;
-            case 0:
-                if(i == 0)
-                    return false;
-                break;
-            case 1:
-                if(i == "")
-                    return false;
-                break;
-            case 2:
-                if(i.length == 0)
-                    return false;
-                break;
-            case 3:
-                if(i == false)
-                    return false;
-                break;
-            case 4:
-                var keys = i.keys;
-                if(keys.length == 0)
-                    return false;
-                break;
-        }
+        if(!$checkValue(i))
+            return false;
     }
     return true;
 }
@@ -366,31 +347,8 @@ all(iterable) {
 any(iterable) {
     var i;
     for(i in iterable){
-        switch($getType(i)){
-            case -1:
-                return i;
-            case 0:
-                if(i != 0)
-                    return true;
-                break;
-            case 1:
-                if(i != "")
-                    return true;
-                break;
-            case 2:
-                if(i.length != 0)
-                    return true;
-                break;
-            case 3:
-                if(i == true)
-                    return true;
-                break;
-            case 4:
-                var keys = i.keys;
-                if(keys.length != 0)
-                    return true;
-                break;
-        }
+        if($checkValue(i))
+            return true;
     }
     return false;
 }
@@ -438,6 +396,61 @@ input([message]) {
         print("Fatal Error: Non numeric characters in input; Try raw_input()");
         exit(1);
     }
+}
+
+$checkValue(value){
+    var i = value;
+    switch($getType(i)){
+        case -1:
+            if(i != null)
+                return true;
+            break;
+        case 0:
+            if(i != 0)
+                return true;
+            break;
+        case 1:
+            if(i != "")
+                return true;
+            break;
+        case 2:
+            if(i.length != 0)
+                return true;
+            break;
+        case 3:
+            if(i == true)
+                return true;
+            break;
+        case 4:
+            var keys = i.keys;
+            if(keys.length != 0)
+                return true;
+            break;
+    }
+    return false;
+}
+
+$and(list){
+    var condition;
+    for(var i = 0; i < list.length; i++){
+        if(!$checkValue(list[i])){
+            if(list[i] == null)
+                return "None";
+            return list[i];
+        }
+    }
+    return list[list.length - 1];
+}
+
+$or(list){
+    var condition;
+    for(var i = 0; i < list.length; i++){
+        if($checkValue(list[i]))
+            return list[i];
+    }
+    if(list[list.length - 1] == null)
+        return "None";
+    return list[list.length - 1];
 }
 
 class $Range extends Object with IterableMixin<int> {
