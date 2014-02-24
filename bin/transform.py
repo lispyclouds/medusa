@@ -325,10 +325,9 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Call(self, stmt_call):
-        global pyClasses, pyInbuilts, forceCall, parsedType
+        global pyClasses, pyInbuilts, forceCall, parsedType, formats
 
         code = self.visit(stmt_call.func)
-
         keyDict = {}
 
         if code in pyInbuilts:
@@ -339,7 +338,7 @@ class PyParser(ast.NodeVisitor):
         alen = len(stmt_call.args)
         i = 0
 
-        code += "[" if formats else "("
+        code += "([" if formats else "("
         while i < alen:
             code += self.visit(stmt_call.args[i])
 
@@ -355,6 +354,7 @@ class PyParser(ast.NodeVisitor):
 
         code += ("," + str(keyDict) + ")") if formats else ""
 
+        formats = False
         parsedType = "code"
         return code
 
@@ -557,12 +557,10 @@ class PyParser(ast.NodeVisitor):
         global parsedType, formats
 
         value = self.visit(stmt_attribute.value)
-        if isinstance(stmt_attribute.value, _ast.Str):
+        if isinstance(stmt_attribute.value, _ast.Str) and stmt_attribute.attr is "format":
             formats = True
-            code = value + "." + stmt_attribute.attr + "("
-        else:
-            code = value + "." + stmt_attribute.attr
 
+        code = value + "." + stmt_attribute.attr
         parsedType = "code"
         return code
 
