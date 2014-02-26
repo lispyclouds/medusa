@@ -90,7 +90,7 @@ $PyFile open(name, [mode]) {
     return file;
 }
 
-class $TupleClass {
+class $TupleClass extends IterableBase{
     var tuple = [];
 
     $TupleClass(iterable) {
@@ -112,7 +112,7 @@ class $TupleClass {
         }
         str += ")";
 
-        new $PyString(return str);
+        return str;
     }
 
     operator [](i) => tuple[i];
@@ -155,6 +155,10 @@ class $TupleClass {
 
     contains(comparator){
         return tuple.contains(comparator);
+    }
+
+    get iterator{
+        return tuple.iterator;
     }
 }
 

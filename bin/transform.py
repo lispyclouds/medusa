@@ -51,6 +51,7 @@ class PyParser(ast.NodeVisitor):
         global parsedType, parsedClasses, parsedFunctions, parsedCode
 
         for node in stmt_module.body:
+            parsedType = "code"
             parsed = self.visit(node)
             #print parsed
             if parsedType is "class":
@@ -154,27 +155,20 @@ class PyParser(ast.NodeVisitor):
     def visit_In(self, stmt_in):
         return ".contains"
 
-
+    def visit_NotIn(self, stmt_notin):
+        return "NotIn"
 
     def visit_IfExp(self, stmt_ternary):
-        global parsedType
-
         stmt = self.visit(stmt_ternary.test) + "?" + self.visit(stmt_ternary.body) + ":" + self.visit(stmt_ternary.orelse)
 
-        parsedType = "code"
         return stmt
 
     def visit_UnaryOp(self, stmt_unop):
-        global parsedType
-
         data = self.visit(stmt_unop.op) + self.visit(stmt_unop.operand)
 
-        parsedType = "code"
         return data
 
     def visit_BinOp(self, stmt_binop):
-        global parsedType
-
         left = self.visit(stmt_binop.left)
         op = self.visit(stmt_binop.op)
         right = self.visit(stmt_binop.right)
@@ -183,12 +177,9 @@ class PyParser(ast.NodeVisitor):
         if op == ",":
             exp = "(pow" + exp + ")"
 
-        parsedType = "code"
         return exp
 
     def visit_BoolOp(self, stmt_boolop):
-        global parsedType
-
         self.addImport('lib/inbuilts.dart');
         code = self.visit(stmt_boolop.op)
         alen = len(stmt_boolop.values)
@@ -204,12 +195,9 @@ class PyParser(ast.NodeVisitor):
         if fromTest:
             code = "$checkValue(" + code + ")"
 
-        parsedType = "code"
         return code
 
     def visit_List(self, stmt_list):
-        global parsedType
-
         code = "["
 
         alen = len(stmt_list.elts)
@@ -222,12 +210,37 @@ class PyParser(ast.NodeVisitor):
 
         code += "]"
 
-        parsedType = "code"
         return code
 
-    def visit_Dict(self, stmt_dict):
-        global parsedType
+    def visit_ListComp(self, stmt_listcomp):
+        alen = len(stmt_listcomp.generators)
+        i = 0
+        code = ""
+        while i < alen:
+            code += self.visit(stmt_listcomp.generators[i].iter)
+            code += ".map((" + self.visit(stmt_listcomp.generators[i].target)
+            code += "){"
+            if len(stmt_listcomp.generators[i].ifs) > 0:
+                code += "if(" + self.visit(stmt_listcomp.generators[i].ifs[0]) + "){"
+            i += 1
 
+        i = alen - 1
+        code += "$listGenerator.add(" + self.visit(stmt_listcomp.elt) + ");"
+        while i >= 0:
+            if len(stmt_listcomp.generators[i].ifs) > 0:
+                code += "}"
+            if i == 0:
+                code += "return $listGenerator;}).toList()[0]"
+            else:
+                code += "}).toList();"
+            i -= 1
+
+        return code
+
+    def visit_GeneratorExp(self, stmt_generatorexp):
+        return "new $PyString(\"" + str(stmt_generatorexp) + "\")"
+
+    def visit_Dict(self, stmt_dict):
         keyLen = len(stmt_dict.keys)
         valueLen = len(stmt_dict.values)
         code = "{"
@@ -241,15 +254,12 @@ class PyParser(ast.NodeVisitor):
                 i += 1
             code += "}"
 
-            parsedType = "code"
             return code
         else:
             print "Invalid Dictionary"
             exit(1)
 
     def visit_Tuple(self, stmt_tuple):
-        global parsedType
-
         self.addImport('lib/inbuilts.dart')
 
         code = "tuple(["
@@ -263,7 +273,6 @@ class PyParser(ast.NodeVisitor):
             i += 1
         code += "])"
 
-        parsedType = "code"
         return code
 
     def visit_Subscript(self, stmt_Subscript):
@@ -296,12 +305,18 @@ class PyParser(ast.NodeVisitor):
             return None
 
     def visit_Compare(self, stmt_test):
-        global parsedType
+        left = self.visit(stmt_test.left)
+        op = self.visit(stmt_test.ops[0])
+        right = self.visit(stmt_test.comparators[0])
 
-        stmt = self.visit(stmt_test.left) + self.visit(stmt_test.ops[0]) + self.visit(stmt_test.comparators[0])
+        if op == ".contains":
+            code = right + op + "(" + left + ")"
+        elif op == "NotIn":
+            code = "!" + right + ".contains(" + left + ")"
+        else:
+            code = left + op + right
 
-        parsedType = "code"
-        return stmt
+        return code
 
     def visit_ClassDef(self, stmt_class):
         global parsedType, dartLocalVars, dartClassVars, classyMode
@@ -383,7 +398,7 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Call(self, stmt_call):
-        global pyClasses, pyInbuilts, forceCall, parsedType, formats
+        global pyClasses, pyInbuilts, forceCall, formats
 
         code = self.visit(stmt_call.func)
         keyDict = {}
@@ -413,26 +428,16 @@ class PyParser(ast.NodeVisitor):
         code += ("," + str(keyDict) + ")") if formats else ""
 
         formats = False
-        parsedType = "code"
         return code
 
     def visit_Expr(self, stmt_expr):
-        global parsedType
-
-        parsedType = "code"
         return self.visit(stmt_expr.value) + ";"
 
     def visit_Return(self, stmt_return):
-        global parsedType
-
         code = "return " + self.visit(stmt_return.value) + ";"
-
-        parsedType = "code"
         return code
 
     def visit_Print(self, stmt_print):
-        global parsedType
-
         self.addImport("dart:io")
 
         code = ""
@@ -454,11 +459,10 @@ class PyParser(ast.NodeVisitor):
                 code += "stdout.write(' ');"
             i += 1
 
-        parsedType = "code"
         return code
 
     def visit_Assign(self, stmt_assign):
-        global dartLocalVars, funMode, parsedType, pyGlobalVars, classyMode
+        global dartLocalVars, funMode, pyGlobalVars, classyMode
 
         code = ""
         for target in stmt_assign.targets:
@@ -474,15 +478,14 @@ class PyParser(ast.NodeVisitor):
                     if target.id not in dartGlobalVars:
                         dartGlobalVars.append(target.id)
 
-                code += target.id + "=";
+                code += target.id + "="
             code += self.visit(stmt_assign.value)
         code += ";"
 
-        parsedType = "code"
         return code
 
     def visit_AugAssign(self, stmt_aug_assign):
-        global powFlag, parsedType
+        global powFlag
 
         left = self.visit(stmt_aug_assign.target)
         op = self.visit(stmt_aug_assign.op)
@@ -494,7 +497,6 @@ class PyParser(ast.NodeVisitor):
         else:
             code += op + "=" + right
 
-        parsedType = "code"
         return code + ";"
 
     def visit_Break(self, stmt_break):
@@ -503,7 +505,7 @@ class PyParser(ast.NodeVisitor):
         return "$broken=true;break;" if broken else "break;"
 
     def visit_If(self, stmt_if):
-        global parsedType, fromTest
+        global fromTest
 
         fromTest = True
         code = "if(" + self.visit(stmt_if.test) + "){"
@@ -518,12 +520,9 @@ class PyParser(ast.NodeVisitor):
             code += "}"
 
         fromTest = False
-        parsedType = "code"
         return code
 
     def visit_While(self, stmt_while):
-        global parsedType
-
         code = "while(" + self.visit(stmt_while.test) + "){"
         for node in stmt_while.body:
             code += self.visit(node)
@@ -534,11 +533,10 @@ class PyParser(ast.NodeVisitor):
             code += self.visit(node)
         code += "}"
 
-        parsedType = "code"
         return code
 
     def visit_For(self, stmt_for):
-        global broken, parsedType
+        global broken
 
         broken = True
         code = "var $broken=false;for(var " + stmt_for.target.id + " in " + self.visit(stmt_for.iter) + "){"
@@ -552,15 +550,13 @@ class PyParser(ast.NodeVisitor):
                 code += self.visit(node)
             code += "}"
         broken = False
-
-        parsedType = "code"
         return code
 
     def visit_Raise(self, stmt_raise):
         return "throw " + self.visit(stmt_raise.type) + ";"
 
     def visit_TryExcept(self, stmt_tryexcept, final = False):
-        global dartLocalVars, parsedType
+        global dartLocalVars
 
         if not final:
             nodes = stmt_tryexcept
@@ -593,12 +589,9 @@ class PyParser(ast.NodeVisitor):
                 code += self.visit(node)
             code += "}"
 
-        parsedType = "code"
         return code;
 
     def visit_TryFinally(self, stmt_tryfinally):
-        global parsedType
-
         code = self.visit_TryExcept(stmt_tryfinally.body, True) + "finally{"
         for node in stmt_tryfinally.finalbody:
             code += self.visit(node)
@@ -610,18 +603,16 @@ class PyParser(ast.NodeVisitor):
                 code += self.visit(node)
             code += "}"
 
-        parsedType = "code"
         return code
 
     def visit_Attribute(self, stmt_attribute):
-        global parsedType, formats
+        global formats
 
         value = self.visit(stmt_attribute.value)
         if isinstance(stmt_attribute.value, _ast.Str) and stmt_attribute.attr is "format":
             formats = True
 
         code = value + "." + stmt_attribute.attr
-        parsedType = "code"
         return code
 
 PyParser().parse(open(sys.argv[1]).read())
@@ -631,6 +622,7 @@ for module in dartImports:
     stitched += "import'" + module + "';"
 if len(dartGlobalVars):
     stitched += "var " + ",".join(dartGlobalVars) + ";"
+    stitched += "var $listGenerator = [];"
 for parsedClass in parsedClasses:
     stitched += parsedClass
 for parsedFunction in parsedFunctions:
