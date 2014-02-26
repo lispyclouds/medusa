@@ -20,7 +20,6 @@ funMode = False
 broken = False
 formats = False
 fromTest = False
-parsedType = ""
 
 exceptions = dict()
 exceptions['Exception'] = "Exception"

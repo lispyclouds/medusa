@@ -293,6 +293,7 @@ class $PyString extends IterableBase {
         }
         return new $PyString(newString);
     }
+
     operator *(mul) {
         if (mul is! int)
             throw "Invalid multplier for String";
