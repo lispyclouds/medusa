@@ -332,11 +332,15 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Global(self, stmt_global):
-        global dartLocalVars
+        global dartGlobalVars
 
         for name in stmt_global.names:
-            dartLocalVars.append(name)
+            if name not in dartGlobalVars:
+                dartGlobalVars.append(name)
 
+        return ""
+
+    def visit_Pass(self, stmt_pass):
         return ""
 
     def visit_FunctionDef(self, stmt_function):
