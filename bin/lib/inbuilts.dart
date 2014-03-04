@@ -2,7 +2,6 @@ library inbuilts;
 
 import "dart:io";
 import "dart:collection";
-import "sprintf.dart";
 
 class $PyFile {
     var handle;
@@ -90,11 +89,11 @@ $PyFile open(name, [mode]) {
     return file;
 }
 
-class $TupleClass extends IterableBase{
+class $PyTuple extends IterableBase {
     var tuple = [];
 
-    $TupleClass(iterable) {
-        if (iterable is $TupleClass)
+    $PyTuple(iterable) {
+        if (iterable is $PyTuple)
             this.tuple = iterable.tuple;
         else {
             for (var item in iterable)
@@ -122,8 +121,8 @@ class $TupleClass extends IterableBase{
     }
 
     operator +(tupleObj) {
-        if (tupleObj is $TupleClass) {
-            var newTupObj = new $TupleClass(this.tuple);
+        if (tupleObj is $PyTuple) {
+            var newTupObj = new $PyTuple(this.tuple);
 
             for (var item in tupleObj.tuple)
                 newTupObj.tuple.add(item);
@@ -136,7 +135,7 @@ class $TupleClass extends IterableBase{
 
     operator *(integer) {
         if (integer is int) {
-            var newTupObj = new $TupleClass([]);
+            var newTupObj = new $PyTuple([]);
 
             for (var i = 0; i < integer; i++) {
                 for (var item in this.tuple)
@@ -163,7 +162,7 @@ class $TupleClass extends IterableBase{
 }
 
 tuple(iterable) {
-    return new $TupleClass(iterable);
+    return new $PyTuple(iterable);
 }
 
 class $PyString extends IterableBase {
@@ -212,7 +211,7 @@ class $PyString extends IterableBase {
 
     operator % (collection) {
         var string = this.toString();
-        if(collection is $TupleClass){
+        if(collection is $PyTuple){
             RegExp exp = new RegExp(r"%\s?[diuoxXeEfFgGcrs]");
             Iterable<Match> matches = exp.allMatches(string);
             var i = 0;
@@ -273,7 +272,8 @@ class $PyString extends IterableBase {
         var currentIndex = 0;
         var newString = "";
         var key;
-        for(var m in matches){
+
+        for (var m in matches) {
             String match = m.group(0);
             key = "";
             while(currentIndex < m.start)
@@ -313,36 +313,138 @@ class $PyString extends IterableBase {
     }
 }
 
-class $PyDict {
+class $PyList extends IterableBase {
+    var _list = [];
 
+    get iterator {
+        return _list.iterator;
+    }
+
+    $PyList(iterable) {
+        switch ($getType(iterable)) {
+            case 2:
+                _list = iterable.toList();
+                break;
+            case 4:
+                _list = iterable.keys;
+                break;
+            case 5:
+                _list = iterable.tuple;
+                break;
+            case 6:
+                _list = iterable;
+                break;
+        }
+    }
+
+    toList() {
+        return _list;
+    }
+
+    append(item) {
+        _list.add(item);
+    }
+
+    extend(list) {
+        for (var item in list)
+            _list.add(item);
+    }
+
+    insert(pos, item) {
+        _list.insert(pos, item);
+    }
+
+    remove(item) {
+        _list.remove(item);
+    }
+
+    pop([pos]) {
+        var v;
+
+        if (pos == null) {
+            v = _list.last;
+            _list.removeLast();
+        } else {
+            v = _list[pos];
+            _list.removeAt(pos);
+        }
+
+        return v;
+    }
+
+    index(item) {
+        return _list.indexOf(item);
+    }
+
+    count(item) {;
+        var c = 0;
+
+        for (var elem in _list) {
+            if (elem == item)
+                c++;
+        }
+
+        return c;
+    }
+
+    sort() {
+        _list.sort();
+    }
+
+    reverse() {
+        _list = _list.reversed.toList();
+    }
+
+    toString() {
+        return _list.toString();
+    }
+
+    operator +(iterable) {
+        extend(iterable);
+
+        return this;
+    }
+
+    operator [](index) {
+        return _list[index];
+    }
+
+    operator []=(pos, item) {
+        _list[pos] = item;
+    }
 }
 
+class $PyDict extends IterableBase {
+}
 
 $getType(variable) {
-    if(variable is num)
+    if (variable is num)
         return 0;
-    else if(variable is $PyString)
+    else if (variable is $PyString)
         return 1;
-    else if(variable is List)
+    else if (variable is $PyList)
         return 2;
-    else if(variable is bool)
+    else if (variable is bool)
         return 3;
-    else if(variable is Map)
+    else if (variable is $PyDict)
         return 4;
+    else if (variable is $PyTuple)
+        return 5;
+    else if (variable is List)
+        return 6;
     else
         return -1;
 }
 
 abs(n) {
-    if(n is num){
+    if(n is num) {
         if(n < 0)
             return (n * -1);
         else
             return n;
     }
-    else{
+    else
         return "Type is not a Number";
-    }
 }
 
 all(iterable) {
@@ -367,9 +469,9 @@ bin(integer) {
     if(integer is int){
         var num1 = 0;
         var x = 0;
-        while(integer > 0){
+        while (integer > 0) {
             x = integer % 2;
-            num1 = num1*10 + x;
+            num1 = num1 * 10 + x;
             integer ~/= 2;
         }
         return num1;

@@ -197,7 +197,9 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_List(self, stmt_list):
-        code = "["
+        self.addImport("lib/inbuilts.dart");
+
+        code = "new $PyList(["
 
         alen = len(stmt_list.elts)
         i = 0
@@ -207,7 +209,7 @@ class PyParser(ast.NodeVisitor):
                 code += ","
             i += 1
 
-        code += "]"
+        code += "])"
 
         return code
 
@@ -460,7 +462,7 @@ class PyParser(ast.NodeVisitor):
 
         code = ""
         for target in stmt_assign.targets:
-            if isinstance(target, _ast.Attribute):
+            if isinstance(target, _ast.Attribute) or isinstance(target, _ast.Subscript):
                 code += self.visit(target) + "="
             else:
                 if funMode and target.id not in dartLocalVars:
@@ -616,7 +618,7 @@ for module in dartImports:
     stitched += "import'" + module + "';"
 if len(dartGlobalVars):
     stitched += "var " + ",".join(dartGlobalVars) + ";"
-    stitched += "var $listGenerator = [];"
+stitched += "var $listGenerator=[];"
 for parsedClass in parsedClasses:
     stitched += parsedClass
 for parsedFunction in parsedFunctions:
