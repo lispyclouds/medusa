@@ -313,6 +313,11 @@ class $PyString extends IterableBase {
     }
 }
 
+class $PyDict {
+
+}
+
+
 $getType(variable) {
     if(variable is num)
         return 0;
