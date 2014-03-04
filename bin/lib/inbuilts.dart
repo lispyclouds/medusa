@@ -457,6 +457,11 @@ $or(list){
     return list[list.length - 1];
 }
 
+$generator(var function){
+    var list = function();
+    return list;
+}
+
 class $Range extends Object with IterableMixin<int> {
     $Range(int this.start, [int this.stop, int this.step = 1]) {
         if (stop == null ) {
