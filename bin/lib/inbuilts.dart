@@ -414,6 +414,10 @@ class $PyList extends IterableBase {
     }
 }
 
+list(iterable) {
+    return new $PyList(iterable);
+}
+
 class $PyDict extends IterableBase {
 }
 
