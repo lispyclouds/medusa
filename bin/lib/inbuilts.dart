@@ -201,6 +201,10 @@ class $PyString extends IterableBase {
         return _str;
     }
 
+    toList() {
+        return _str.split('');
+    }
+
     operator ==(str) {
         return _str == str.toString();
     }
@@ -322,6 +326,7 @@ class $PyList extends IterableBase {
 
     $PyList(iterable) {
         switch ($getType(iterable)) {
+            case 1:
             case 2:
                 _list = iterable.toList();
                 break;
@@ -415,7 +420,7 @@ class $PyList extends IterableBase {
 }
 
 list(iterable) {
-    return new $PyList(iterable);
+    return new $PyList(iterable);;
 }
 
 class $PyDict extends IterableBase {
