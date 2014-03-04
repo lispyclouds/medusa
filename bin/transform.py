@@ -212,32 +212,27 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_ListComp(self, stmt_listcomp):
-        alen = len(stmt_listcomp.generators)
-        i = 0
-        code = ""
-        while i < alen:
-            code += self.visit(stmt_listcomp.generators[i].iter)
-            code += ".map((" + self.visit(stmt_listcomp.generators[i].target)
-            code += "){"
-            if len(stmt_listcomp.generators[i].ifs) > 0:
-                code += "if(" + self.visit(stmt_listcomp.generators[i].ifs[0]) + "){"
-            i += 1
+        self.addImport("lib/inbuilts.dart")
+        code = "$generator((){var list=[];"
+        for node in stmt_listcomp.generators:
+            code += "for(var " + self.visit(node.target) + " in " + self.visit(node.iter) + "){"
+            for ifnode in node.ifs:
+                code += "if(" + self.visit(ifnode) + "){"
 
-        i = alen - 1
-        code += "$listGenerator.add(" + self.visit(stmt_listcomp.elt) + ");"
-        while i >= 0:
-            if len(stmt_listcomp.generators[i].ifs) > 0:
+        code += "list.add(" + self.visit(stmt_listcomp.elt) + ");"
+
+        for node in reversed(stmt_listcomp.generators):
+            for ifnode in node.ifs:
                 code += "}"
-            if i == 0:
-                code += "return $listGenerator;}).toList()[0]"
-            else:
-                code += "}).toList();"
-            i -= 1
+            code += "}"
+
+        code += "return list;})"
 
         return code
 
+
     def visit_GeneratorExp(self, stmt_generatorexp):
-        return "new $PyString(\"" + str(stmt_generatorexp) + "\")"
+        return self.visit_ListComp(stmt_generatorexp)
 
     def visit_Dict(self, stmt_dict):
         keyLen = len(stmt_dict.keys)
