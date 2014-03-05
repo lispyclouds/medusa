@@ -173,7 +173,7 @@ class $PyString extends IterableBase {
     }
 
     get iterator {
-        return _str.split('').iterator;
+        return this.toList().iterator;
     }
 
     capitalize() {
@@ -202,7 +202,11 @@ class $PyString extends IterableBase {
     }
 
     toList() {
-        return _str.split('');
+        var list = [];
+        for (var i in _str.split('')){
+            list.add(new $PyString(i));
+        }
+        return list;
     }
 
     operator ==(str) {
@@ -213,19 +217,20 @@ class $PyString extends IterableBase {
         return new $PyString(_str + str.toString());
     }
 
-    operator % (collection) {
+    operator %(collection) {
         var string = this.toString();
-        if(collection is $PyTuple){
+
+        if (collection is $PyTuple) {
             RegExp exp = new RegExp(r"%\s?[diuoxXeEfFgGcrs]");
             Iterable<Match> matches = exp.allMatches(string);
             var i = 0;
             var List = collection.getList();
             for(var m in matches) {
                 String match = m.group(0);
-                if(match == "%s" || match == "% s")
+                if (match == "%s" || match == "% s")
                     List[i] = List[i].toString();
-                if((match == "%d" || match == "% d") && List[i] is bool){
-                    if(List[i])
+                if ((match == "%d" || match == "% d") && List[i] is bool){
+                    if (List[i])
                         List[i] = 1;
                     else
                         List[i] = 0;
@@ -268,7 +273,7 @@ class $PyString extends IterableBase {
         }
     }
 
-    format(list, dictionary){
+    format(list, dictionary) {
         var string = this.toString();
         RegExp exp = new RegExp(r"{\d+}|{[a-zA-Z0-9_]+}");
         Iterable<Match> matches = exp.allMatches(string);
@@ -324,7 +329,7 @@ class $PyList extends IterableBase {
         return _list.iterator;
     }
 
-    $PyList(iterable) {
+    $PyList([iterable]) {
         switch ($getType(iterable)) {
             case 1:
             case 2:
@@ -338,6 +343,8 @@ class $PyList extends IterableBase {
                 break;
             case 6:
                 _list = iterable;
+                break;
+            default:
                 break;
         }
     }
@@ -406,7 +413,6 @@ class $PyList extends IterableBase {
 
     operator +(iterable) {
         extend(iterable);
-
         return this;
     }
 
@@ -417,10 +423,21 @@ class $PyList extends IterableBase {
     operator []=(pos, item) {
         _list[pos] = item;
     }
+
+    operator *(mul) {
+        if (mul is! int)
+            throw "Invalid multplier for List";
+
+        var pdt = new $PyList();
+        for (var i = 0; i < mul; i++)
+            pdt += this;
+
+        return pdt;
+    }
 }
 
-list(iterable) {
-    return new $PyList(iterable);;
+list([iterable]) {
+    return new $PyList(iterable);
 }
 
 class $PyDict extends IterableBase {
