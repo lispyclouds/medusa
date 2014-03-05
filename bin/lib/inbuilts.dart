@@ -3,6 +3,7 @@ library inbuilts;
 import "dart:io";
 import "dart:collection";
 import "sprintf.dart";
+import "dart:core";
 
 class $PyFile {
     var handle;
