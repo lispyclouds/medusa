@@ -91,11 +91,11 @@ $PyFile open(name, [mode]) {
     return file;
 }
 
-class $TupleClass extends IterableBase{
+class $PyTuple extends IterableBase {
     var tuple = [];
 
-    $TupleClass(iterable) {
-        if (iterable is $TupleClass)
+    $PyTuple(iterable) {
+        if (iterable is $PyTuple)
             this.tuple = iterable.tuple;
         else {
             for (var item in iterable)
@@ -123,8 +123,8 @@ class $TupleClass extends IterableBase{
     }
 
     operator +(tupleObj) {
-        if (tupleObj is $TupleClass) {
-            var newTupObj = new $TupleClass(this.tuple);
+        if (tupleObj is $PyTuple) {
+            var newTupObj = new $PyTuple(this.tuple);
 
             for (var item in tupleObj.tuple)
                 newTupObj.tuple.add(item);
@@ -137,7 +137,7 @@ class $TupleClass extends IterableBase{
 
     operator *(integer) {
         if (integer is int) {
-            var newTupObj = new $TupleClass([]);
+            var newTupObj = new $PyTuple([]);
 
             for (var i = 0; i < integer; i++) {
                 for (var item in this.tuple)
@@ -164,7 +164,7 @@ class $TupleClass extends IterableBase{
 }
 
 tuple(iterable) {
-    return new $TupleClass(iterable);
+    return new $PyTuple(iterable);
 }
 
 class $PyString extends IterableBase {
@@ -175,7 +175,7 @@ class $PyString extends IterableBase {
     }
 
     get iterator {
-        return _str.split('').iterator;
+        return this.toList().iterator;
     }
 
     capitalize() {
@@ -203,6 +203,14 @@ class $PyString extends IterableBase {
         return _str;
     }
 
+    toList() {
+        var list = [];
+        for (var i in _str.split('')){
+            list.add(new $PyString(i));
+        }
+        return list;
+    }
+
     operator ==(str) {
         return _str == str.toString();
     }
@@ -211,19 +219,20 @@ class $PyString extends IterableBase {
         return new $PyString(_str + str.toString());
     }
 
-    operator % (collection) {
+    operator %(collection) {
         var string = this.toString();
-        if(collection is $TupleClass){
+
+        if (collection is $PyTuple) {
             RegExp exp = new RegExp(r"%\s?[diuoxXeEfFgGcrs]");
             Iterable<Match> matches = exp.allMatches(string);
             var i = 0;
             var List = collection.getList();
             for(var m in matches) {
                 String match = m.group(0);
-                if(match == "%s" || match == "% s")
+                if (match == "%s" || match == "% s")
                     List[i] = List[i].toString();
-                if((match == "%d" || match == "% d") && List[i] is bool){
-                    if(List[i])
+                if ((match == "%d" || match == "% d") && List[i] is bool){
+                    if (List[i])
                         List[i] = 1;
                     else
                         List[i] = 0;
@@ -266,7 +275,7 @@ class $PyString extends IterableBase {
         }
     }
 
-    format(list, dictionary){
+    format(list, dictionary) {
         var string = this.toString();
         RegExp exp = new RegExp(r"{\d+}|{[a-zA-Z0-9_]+}");
         Iterable<Match> matches = exp.allMatches(string);
@@ -274,7 +283,8 @@ class $PyString extends IterableBase {
         var currentIndex = 0;
         var newString = "";
         var key;
-        for(var m in matches){
+
+        for (var m in matches) {
             String match = m.group(0);
             key = "";
             while(currentIndex < m.start)
@@ -294,6 +304,7 @@ class $PyString extends IterableBase {
         }
         return new $PyString(newString);
     }
+
     operator *(mul) {
         if (mul is! int)
             throw "Invalid multplier for String";
@@ -313,31 +324,273 @@ class $PyString extends IterableBase {
     }
 }
 
+class $PyList extends IterableBase {
+    var _list = [];
+
+    get iterator {
+        return _list.iterator;
+    }
+
+    $PyList([iterable]) {
+        switch ($getType(iterable)) {
+            case 1:
+            case 2:
+                _list = iterable.toList();
+                break;
+            case 4:
+                _list = iterable.keys;
+                break;
+            case 5:
+                _list = iterable.tuple;
+                break;
+            case 6:
+                _list = iterable;
+                break;
+            default:
+                break;
+        }
+    }
+
+    toList() {
+        return _list;
+    }
+
+    append(item) {
+        _list.add(item);
+    }
+
+    extend(list) {
+        for (var item in list)
+            _list.add(item);
+    }
+
+    insert(pos, item) {
+        _list.insert(pos, item);
+    }
+
+    remove(item) {
+        _list.remove(item);
+    }
+
+    pop([pos]) {
+        var v;
+
+        if (pos == null) {
+            v = _list.last;
+            _list.removeLast();
+        } else {
+            v = _list[pos];
+            _list.removeAt(pos);
+        }
+
+        return v;
+    }
+
+    index(item) {
+        return _list.indexOf(item);
+    }
+
+    count(item) {;
+        var c = 0;
+
+        for (var elem in _list) {
+            if (elem == item)
+                c++;
+        }
+
+        return c;
+    }
+
+    sort() {
+        _list.sort();
+    }
+
+    reverse() {
+        _list = _list.reversed.toList();
+    }
+
+    toString() {
+        return _list.toString();
+    }
+
+    operator +(iterable) {
+        extend(iterable);
+        return this;
+    }
+
+    operator [](index) {
+        return _list[index];
+    }
+
+    operator []=(pos, item) {
+        _list[pos] = item;
+    }
+
+    operator *(mul) {
+        if (mul is! int)
+            throw "Invalid multplier for List";
+
+        var pdt = new $PyList();
+        for (var i = 0; i < mul; i++)
+            pdt += this;
+
+        return pdt;
+    }
+}
+
+list([iterable]) {
+    return new $PyList(iterable);
+}
+
+class $PySet extends IterableBase {
+    var _set;
+    $PySet([iterable]) {
+        if(iterable != null)
+            this._set = new Set.from(iterable);
+        else
+            this._set = new Set();
+    }
+
+    get iterator {
+        return this._set.iterator;
+    }
+
+    add(var elem) => this._set.add(elem);
+
+    isdisjoint(var other) {
+        if(other is $PySet){
+            if(this._set.intersection(other._set).length == 0)
+                return true;
+            else
+                return false;
+        }
+        else
+            throw "Invalid Arguments";
+    }
+
+    issubset(var other) {
+        if(other is $PySet)
+            return other._set.containsAll(this._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    issuperset(var other){
+        if(other is $PySet)
+            return this._set.containsAll(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    union(var other) {
+        if(other is $PySet)
+            return new $PySet(this._set.union(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    intersection(var other) {
+        if(other is $PySet)
+            return new $PySet(this._set.intersection(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    difference(var other){
+        if(other is $PySet)
+            return new $PySet(this._set.difference(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    symmetric_difference(var other){
+        if(other is $PySet)
+            return new $PySet(this._set.union(other._set).difference(this._set.intersection(other._set)));
+        else
+            throw "Invalid Arguments";
+    }
+
+    update(var other){
+        if(other is $PySet)
+            this._set = this._set.union(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    intersection_update(var other){
+        if(other is $PySet)
+            this._set = this._set.intersection(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    difference_update(var other){
+        if(other is $PySet)
+            this._set = this._set.difference(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    symmetric_difference_update(var other){
+        if(other is $PySet)
+            this._set = this._set.union(other._set).difference(this._set.intersection(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    remove(var element) => this._set.remove(element);
+
+    discard(var element){
+        if(this._set.contains(element))
+            this._set.remove(element);
+    }
+
+    toString(){
+        var str = "set([" + this._set.join(",") + "])";
+        return str;
+    }
+
+    clear() => this._set.clear();
+
+    operator -(var other) => return this.difference(other);
+
+}
+
+set([iterable]){
+    return new $PySet(iterable);
+}
+
+class $PyDict extends IterableBase {
+}
+
 $getType(variable) {
-    if(variable is num)
+    if (variable is num)
         return 0;
-    else if(variable is $PyString)
+    else if (variable is $PyString)
         return 1;
-    else if(variable is List)
+    else if (variable is $PyList)
         return 2;
-    else if(variable is bool)
+    else if (variable is bool)
         return 3;
-    else if(variable is Map)
+    else if (variable is $PyDict)
         return 4;
+    else if (variable is $PyTuple)
+        return 5;
+    else if (variable is List)
+        return 6;
     else
         return -1;
 }
 
 abs(n) {
-    if(n is num){
+    if(n is num) {
         if(n < 0)
             return (n * -1);
         else
             return n;
     }
-    else{
+    else
         return "Type is not a Number";
-    }
 }
 
 all(iterable) {
@@ -362,9 +615,9 @@ bin(integer) {
     if(integer is int){
         var num1 = 0;
         var x = 0;
-        while(integer > 0){
+        while (integer > 0) {
             x = integer % 2;
-            num1 = num1*10 + x;
+            num1 = num1 * 10 + x;
             integer ~/= 2;
         }
         return num1;
@@ -401,6 +654,17 @@ input([message]) {
         print("Fatal Error: Non numeric characters in input; Try raw_input()");
         exit(1);
     }
+}
+
+sum(var iterable,[start = 0]){
+    if(start is $PyString){
+        print("TypeError: sum() can't sum strings [use ''.join(seq) instead]");
+        exit(1);
+    }
+    var total = start;
+    for(var i in iterable)
+        total += i;
+    return total;
 }
 
 $checkValue(value){

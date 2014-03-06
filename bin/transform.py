@@ -20,7 +20,6 @@ funMode = False
 broken = False
 formats = False
 fromTest = False
-parsedType = ""
 
 exceptions = dict()
 exceptions['Exception'] = "Exception"
@@ -198,7 +197,9 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_List(self, stmt_list):
-        code = "["
+        self.addImport("lib/inbuilts.dart");
+
+        code = "new $PyList(["
 
         alen = len(stmt_list.elts)
         i = 0
@@ -208,19 +209,19 @@ class PyParser(ast.NodeVisitor):
                 code += ","
             i += 1
 
-        code += "]"
+        code += "])"
 
         return code
 
     def visit_ListComp(self, stmt_listcomp):
         self.addImport("lib/inbuilts.dart")
-        code = "$generator((){var list=[];"
+        code = "$generator((){var list=new $PyList();"
         for node in stmt_listcomp.generators:
             code += "for(var " + self.visit(node.target) + " in " + self.visit(node.iter) + "){"
             for ifnode in node.ifs:
                 code += "if(" + self.visit(ifnode) + "){"
 
-        code += "list.add(" + self.visit(stmt_listcomp.elt) + ");"
+        code += "list.append(" + self.visit(stmt_listcomp.elt) + ");"
 
         for node in reversed(stmt_listcomp.generators):
             for ifnode in node.ifs:
@@ -461,7 +462,7 @@ class PyParser(ast.NodeVisitor):
 
         code = ""
         for target in stmt_assign.targets:
-            if isinstance(target, _ast.Attribute):
+            if isinstance(target, _ast.Attribute) or isinstance(target, _ast.Subscript):
                 code += self.visit(target) + "="
             else:
                 if funMode and target.id not in dartLocalVars:
@@ -617,7 +618,6 @@ for module in dartImports:
     stitched += "import'" + module + "';"
 if len(dartGlobalVars):
     stitched += "var " + ",".join(dartGlobalVars) + ";"
-    stitched += "var $listGenerator = [];"
 for parsedClass in parsedClasses:
     stitched += parsedClass
 for parsedFunction in parsedFunctions:
