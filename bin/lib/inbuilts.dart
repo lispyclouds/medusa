@@ -4,7 +4,6 @@ import "dart:io";
 import "dart:collection";
 import "dart:math";
 import "sprintf.dart";
-import "dart:core";
 
 class $PyFile {
     var handle;
@@ -579,16 +578,34 @@ class $PyDict extends IterableBase {
         return value;
     }
 
+    setdefault(key, [value]) {
+        if (_dict.containsKey(key))
+            return _dict[key];
+        else {
+            _dict[key] = value;
+            return value;
+        }
+    }
+
+    update([other]) {
+        for (var pair in other)
+            _dict[pair[0]] = pair[1];
+    }
+
     iteritems() => items();
     iterkeys() => new $PyList(_dict.keys);
     itervalues() => new $PyList(_dict.values);
     keys() => new $PyList(_dict.keys);
+    values() => new $PyList(_dict.values);
     has_key(key) => _dict.hasKey(key);
     contains(key) => has_Key(key);
     copy() => this;
     clear() => _dict.clear();
     get iterator => _dict.keys.iterator;
     toString() => _dict.toString();
+    viewitems() => _dict.items();
+    viewkeys() => _dict.keys;
+    viewvalues() => _dict.values;
     operator [](index) => _dict[index];
     operator []=(pos, item) => _dict[pos] = item;
 }
