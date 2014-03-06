@@ -508,7 +508,7 @@ class $PySet extends IterableBase {
 
     clear() => this._set.clear();
 
-    operator -(var other) => return this.difference(other);
+    operator -(var other) => this.difference(other);
 
 }
 
