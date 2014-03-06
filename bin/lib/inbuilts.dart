@@ -2,8 +2,8 @@ library inbuilts;
 
 import "dart:io";
 import "dart:collection";
+import "dart:math";
 import "sprintf.dart";
-import "dart:core";
 
 class $PyFile {
     var handle;
@@ -376,13 +376,8 @@ class $PyList extends IterableBase {
         return this;
     }
 
-    operator [](index) {
-        return _list[index];
-    }
-
-    operator []=(pos, item) {
-        _list[pos] = item;
-    }
+    operator [](index) => _list[index];
+    operator []=(pos, item) => _list[pos] = item;
 
     operator *(mul) {
         if (mul is! int)
@@ -535,9 +530,84 @@ class $PyDict extends IterableBase {
         }
     }
 
+    fromKeys(seq, [values]) {
+        _dict.clear();
+
+        for (var value in seq)
+            _dict[value] = null;
+
+        if (values != null) {
+            for (var value in values)
+                _dict[value] = value;
+        }
+    }
+
+    get(key, [fallback]) {
+        if (_dict.containsKey(key))
+            return _dict[key];
+        else
+            return fallback;
+    }
+
+    items() {
+        var items = new $PyList();
+        for (var key in this)
+            items.append(tuple([key, _dict[key]]));
+
+        return items;
+    }
+
+    pop(key, [fallback]) {
+        if (_dict.containsKey(key)) {
+            var value = _dict[key];
+            _dict.remove(key);
+            return value;
+        } else
+            return fallback;
+    }
+
+    popitem() {
+        if (_dict.length == 0)
+            return;
+
+        var rng = new Random();
+        var key = _dict.keys[rng.nextInt(_dict.length)];
+        var value = tuple([keys, _dict[key]);
+
+        _dict.remove(key);
+        return value;
+    }
+
+    setdefault(key, [value]) {
+        if (_dict.containsKey(key))
+            return _dict[key];
+        else {
+            _dict[key] = value;
+            return value;
+        }
+    }
+
+    update([other]) {
+        for (var pair in other)
+            _dict[pair[0]] = pair[1];
+    }
+
+    iteritems() => items();
+    iterkeys() => new $PyList(_dict.keys);
+    itervalues() => new $PyList(_dict.values);
+    keys() => new $PyList(_dict.keys);
+    values() => new $PyList(_dict.values);
+    has_key(key) => _dict.hasKey(key);
+    contains(key) => has_Key(key);
+    copy() => this;
+    clear() => _dict.clear();
     get iterator => _dict.keys.iterator;
     toString() => _dict.toString();
+    viewitems() => _dict.items();
+    viewkeys() => _dict.keys;
+    viewvalues() => _dict.values;
     operator [](index) => _dict[index];
+    operator []=(pos, item) => _dict[pos] = item;
 }
 
 dict([pairs]) => new $PyDict(pairs);
