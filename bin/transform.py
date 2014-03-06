@@ -5,7 +5,7 @@ import ast, _ast, sys, re
 dartImports = []
 dartLocalVars = []
 dartClassVars = []
-dartGlobalVars = []
+dartGlobalVars = ["$broken", "$tried"]
 
 pyGlobalVars = []
 pyClasses = []
@@ -232,28 +232,21 @@ class PyParser(ast.NodeVisitor):
 
         return code
 
-
     def visit_GeneratorExp(self, stmt_generatorexp):
         return self.visit_ListComp(stmt_generatorexp)
 
     def visit_Dict(self, stmt_dict):
-        keyLen = len(stmt_dict.keys)
-        valueLen = len(stmt_dict.values)
-        code = "{"
+        code = "new $PyDict(new $PyList(["
+        l = len(stmt_dict.keys)
+        i = 0
+        while i < l:
+            code += "tuple([" + self.visit(stmt_dict.keys[i]) + "," + self.visit(stmt_dict.values[i]) + "])"
+            if (i + 1) < l:
+                code += ","
+            i += 1
+        code += "]))"
 
-        if keyLen == valueLen:
-            i = 0
-            while i < keyLen:
-                code += self.visit(stmt_dict.keys[i]) + ":" + self.visit(stmt_dict.values[i])
-                if i < keyLen - 1:
-                    code += ","
-                i += 1
-            code += "}"
-
-            return code
-        else:
-            print "Invalid Dictionary"
-            exit(1)
+        return code
 
     def visit_Tuple(self, stmt_tuple):
         self.addImport('lib/inbuilts.dart')
@@ -286,7 +279,8 @@ class PyParser(ast.NodeVisitor):
         elif isinstance(stmt_Subscript.slice, _ast.Index):
             listVar = self.visit(stmt_Subscript.value)
             index = self.visit(stmt_Subscript.slice.value)
-            index = (str(listVar) + ".length" + str(index)) if int(index) < 0 else index
+            if isinstance(index, _ast.Num):
+                index = (str(listVar) + ".length" + str(index)) if int(index) < 0 else index
             index = "[" + str(index) + "]"
             data = str(listVar) + index
             return data
@@ -535,7 +529,7 @@ class PyParser(ast.NodeVisitor):
         global broken
 
         broken = True
-        code = "var $broken=false;for(var " + stmt_for.target.id + " in " + self.visit(stmt_for.iter) + "){"
+        code = "$broken=false;for(var " + stmt_for.target.id + " in " + self.visit(stmt_for.iter) + "){"
         for node in stmt_for.body:
             code += self.visit(node)
         code += "}"
@@ -544,7 +538,7 @@ class PyParser(ast.NodeVisitor):
             code += "if($broken==false){"
             for node in stmt_for.orelse:
                 code += self.visit(node)
-            code += "}"
+            code += "$broken=false;}"
         broken = False
         return code
 
@@ -559,7 +553,7 @@ class PyParser(ast.NodeVisitor):
         else:
             nodes = stmt_tryexcept[0]
 
-        code = "var $tried=true;try{"
+        code = "$tried=true;try{"
         for node in nodes.body:
             code += self.visit(node)
         code += "}"
@@ -583,7 +577,7 @@ class PyParser(ast.NodeVisitor):
             code += "if($tried){"
             for node in nodes.orelse:
                 code += self.visit(node)
-            code += "}"
+            code += "$tried=false;}"
 
         return code;
 
@@ -597,7 +591,7 @@ class PyParser(ast.NodeVisitor):
             code += "if($tried){"
             for node in stmt_tryfinally.body[0].orelse:
                 code += self.visit(node)
-            code += "}"
+            code += "$tried=false;}"
 
         return code
 

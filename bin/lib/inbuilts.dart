@@ -150,22 +150,12 @@ class $PyTuple extends IterableBase {
             throw "Invalid Multiplier";
     }
 
-    getList() {
-        return tuple;
-    }
-
-    contains(comparator){
-        return tuple.contains(comparator);
-    }
-
-    get iterator{
-        return tuple.iterator;
-    }
+    getList() => tuple;
+    contains(comparator) => tuple.contains(comparator);
+    get iterator => tuple.iterator;
 }
 
-tuple(iterable) {
-    return new $PyTuple(iterable);
-}
+tuple(iterable) => new $PyTuple(iterable);
 
 class $PyString extends IterableBase {
     var _str;
@@ -174,9 +164,7 @@ class $PyString extends IterableBase {
         _str = string;
     }
 
-    get iterator {
-        return this.toList().iterator;
-    }
+    get iterator => this.toList().iterator;
 
     capitalize() {
         var capzed = _str.toLowerCase();
@@ -199,9 +187,8 @@ class $PyString extends IterableBase {
         return new $PyString(pad + _str);
     }
 
-    toString() {
-        return _str;
-    }
+    toString() => _str;
+    get hashCode => _str.hashCode;
 
     toList() {
         var list = [];
@@ -211,13 +198,8 @@ class $PyString extends IterableBase {
         return list;
     }
 
-    operator ==(str) {
-        return _str == str.toString();
-    }
-
-    operator +(str) {
-        return new $PyString(_str + str.toString());
-    }
+    operator ==(str) => _str == str.toString();
+    operator +(str) => new $PyString(_str + str.toString());
 
     operator %(collection) {
         var string = this.toString();
@@ -240,7 +222,7 @@ class $PyString extends IterableBase {
                 i++;
             }
             return new $PyString($sprintf(string, List));
-        } else if(collection is Map) {
+        } else if(collection is $PyDict) {
             RegExp exp = new RegExp(r"%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]");
             var List = [];
             Iterable<Match> matches = exp.allMatches(string);
@@ -327,9 +309,7 @@ class $PyString extends IterableBase {
 class $PyList extends IterableBase {
     var _list = [];
 
-    get iterator {
-        return _list.iterator;
-    }
+    get iterator => _list.iterator;
 
     $PyList([iterable]) {
         switch ($getType(iterable)) {
@@ -346,30 +326,17 @@ class $PyList extends IterableBase {
             case 6:
                 _list = iterable;
                 break;
+            case -1:
+                break;
             default:
+                throw "Invalid parameter";
                 break;
         }
-    }
-
-    toList() {
-        return _list;
-    }
-
-    append(item) {
-        _list.add(item);
     }
 
     extend(list) {
         for (var item in list)
             _list.add(item);
-    }
-
-    insert(pos, item) {
-        _list.insert(pos, item);
-    }
-
-    remove(item) {
-        _list.remove(item);
     }
 
     pop([pos]) {
@@ -386,32 +353,23 @@ class $PyList extends IterableBase {
         return v;
     }
 
-    index(item) {
-        return _list.indexOf(item);
-    }
-
     count(item) {;
         var c = 0;
-
         for (var elem in _list) {
             if (elem == item)
                 c++;
         }
-
         return c;
     }
 
-    sort() {
-        _list.sort();
-    }
-
-    reverse() {
-        _list = _list.reversed.toList();
-    }
-
-    toString() {
-        return _list.toString();
-    }
+    toList() => _list;
+    append(item) => _list.add(item);
+    insert(pos, item) => _list.insert(pos, item);
+    remove(item) => _list.remove(item);
+    index(item) => _list.indexOf(item);
+    sort() => _list.sort();
+    reverse() => _list = _list.reversed.toList();
+    toString() => _list.toString();
 
     operator +(iterable) {
         extend(iterable);
@@ -438,9 +396,7 @@ class $PyList extends IterableBase {
     }
 }
 
-list([iterable]) {
-    return new $PyList(iterable);
-}
+list([iterable]) => new $PyList(iterable);
 
 class $PySet extends IterableBase {
     var _set;
@@ -561,7 +517,30 @@ set([iterable]){
 }
 
 class $PyDict extends IterableBase {
+    var _dict;
+
+    $PyDict([pairs]) {
+        _dict = new Map();
+
+        switch ($getType(pairs)) {
+            case 2:
+                for (var pair in pairs)
+                    _dict[pair[0]] = pair[1];
+                break;
+            case -1:
+                break;
+            default:
+                throw "Invalid Parameter";
+                break;
+        }
+    }
+
+    get iterator => _dict.keys.iterator;
+    toString() => _dict.toString();
+    operator [](index) => _dict[index];
 }
+
+dict([pairs]) => new $PyDict(pairs);
 
 $getType(variable) {
     if (variable is num)
@@ -583,8 +562,8 @@ $getType(variable) {
 }
 
 abs(n) {
-    if(n is num) {
-        if(n < 0)
+    if (n is num) {
+        if (n < 0)
             return (n * -1);
         else
             return n;
@@ -603,16 +582,15 @@ all(iterable) {
 }
 
 any(iterable) {
-    var i;
-    for(i in iterable){
-        if($checkValue(i))
+    for (var i in iterable){
+        if ($checkValue(i))
             return true;
     }
     return false;
 }
 
 bin(integer) {
-    if(integer is int){
+    if (integer is int){
         var num1 = 0;
         var x = 0;
         while (integer > 0) {
@@ -626,13 +604,8 @@ bin(integer) {
         return "Type is not Int";
 }
 
-len(target) {
-    return target.length;
-}
-
-str(data) {
-    return new $PyString(data.toString());
-}
+len(target) => target.length;
+str(data) => new $PyString(data.toString());
 
 raw_input([message]) {
     if (message != null)
@@ -758,9 +731,7 @@ class $Range extends Object with IterableMixin<int> {
         return result;
     }
 
-    String toString() {
-        return step == 1 ? "Range($start, $stop)" : "Range($start, $stop, $step)";
-    }
+    String toString() => step == 1 ? "Range($start, $stop)" : "Range($start, $stop, $step)";
 
     bool every(bool f(int e)) {
         for (int e in this) {
@@ -802,16 +773,13 @@ class $Range extends Object with IterableMixin<int> {
 }
 
 class $RangeIterator implements Iterator<int> {
-
     int _pos;
     final int _stop;
     final int _step;
 
     $RangeIterator(int pos, int stop, int step) : _stop = stop, _pos = pos-step, _step = step;
 
-    int get current {
-        return _pos;
-    }
+    get current => _pos;
 
     bool moveNext() {
         if (_step > 0  ? _pos + _step> _stop - 1 : _pos + _step < _stop + 1)
