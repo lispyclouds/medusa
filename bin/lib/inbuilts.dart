@@ -4,6 +4,7 @@ import "dart:io";
 import "dart:collection";
 import "dart:math";
 import "sprintf.dart";
+import "dart:core";
 
 class $PyFile {
     var handle;
@@ -393,6 +394,124 @@ class $PyList extends IterableBase {
 
 list([iterable]) => new $PyList(iterable);
 
+class $PySet extends IterableBase {
+    var _set;
+    $PySet([iterable]) {
+        if(iterable != null)
+            this._set = new Set.from(iterable);
+        else
+            this._set = new Set();
+    }
+
+    get iterator {
+        return this._set.iterator;
+    }
+
+    add(var elem) => this._set.add(elem);
+
+    isdisjoint(var other) {
+        if(other is $PySet){
+            if(this._set.intersection(other._set).length == 0)
+                return true;
+            else
+                return false;
+        }
+        else
+            throw "Invalid Arguments";
+    }
+
+    issubset(var other) {
+        if(other is $PySet)
+            return other._set.containsAll(this._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    issuperset(var other){
+        if(other is $PySet)
+            return this._set.containsAll(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    union(var other) {
+        if(other is $PySet)
+            return new $PySet(this._set.union(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    intersection(var other) {
+        if(other is $PySet)
+            return new $PySet(this._set.intersection(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    difference(var other){
+        if(other is $PySet)
+            return new $PySet(this._set.difference(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    symmetric_difference(var other){
+        if(other is $PySet)
+            return new $PySet(this._set.union(other._set).difference(this._set.intersection(other._set)));
+        else
+            throw "Invalid Arguments";
+    }
+
+    update(var other){
+        if(other is $PySet)
+            this._set = this._set.union(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    intersection_update(var other){
+        if(other is $PySet)
+            this._set = this._set.intersection(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    difference_update(var other){
+        if(other is $PySet)
+            this._set = this._set.difference(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    symmetric_difference_update(var other){
+        if(other is $PySet)
+            this._set = this._set.union(other._set).difference(this._set.intersection(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    remove(var element) => this._set.remove(element);
+
+    discard(var element){
+        if(this._set.contains(element))
+            this._set.remove(element);
+    }
+
+    toString(){
+        var str = "set([" + this._set.join(",") + "])";
+        return str;
+    }
+
+    clear() => this._set.clear();
+
+    operator -(var other) => return this.difference(other);
+
+}
+
+set([iterable]){
+    return new $PySet(iterable);
+}
+
 class $PyDict extends IterableBase {
     var _dict;
 
@@ -561,6 +680,17 @@ input([message]) {
         print("Fatal Error: Non numeric characters in input; Try raw_input()");
         exit(1);
     }
+}
+
+sum(var iterable,[start = 0]){
+    if(start is $PyString){
+        print("TypeError: sum() can't sum strings [use ''.join(seq) instead]");
+        exit(1);
+    }
+    var total = start;
+    for(var i in iterable)
+        total += i;
+    return total;
 }
 
 $checkValue(value){
