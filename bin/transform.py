@@ -1,11 +1,11 @@
 """ Fast Python Transform by heisenberg, apoorv, akashgiri """
 
-import ast, _ast, sys, re
+import ast, _ast, sys
 
 dartImports = []
 dartLocalVars = []
 dartClassVars = []
-dartGlobalVars = ["$broken", "$tried"]
+dartGlobalVars = ["$broken", "$tried", "$multi"]
 
 pyGlobalVars = []
 pyClasses = []
@@ -455,7 +455,23 @@ class PyParser(ast.NodeVisitor):
         global dartLocalVars, funMode, pyGlobalVars, classyMode
 
         code = ""
-        for target in stmt_assign.targets:
+        index = 0
+        multi = False
+
+        if isinstance(stmt_assign.targets[0], _ast.Tuple):
+            targets = stmt_assign.targets[0].elts
+            values = stmt_assign.value.elts
+
+            if len(targets) is not len(values):
+                print "Number of assignment targets and values not equal"
+                exit(1)
+
+            code += "$multi=" + self.visit(stmt_assign.value) + ";";
+            multi = True
+        else:
+            targets = stmt_assign.targets
+
+        for target in targets:
             if isinstance(target, _ast.Attribute) or isinstance(target, _ast.Subscript):
                 code += self.visit(target) + "="
             else:
@@ -467,10 +483,12 @@ class PyParser(ast.NodeVisitor):
                 else:
                     if target.id not in dartGlobalVars:
                         dartGlobalVars.append(target.id)
-
                 code += target.id + "="
-            code += self.visit(stmt_assign.value)
-        code += ";"
+            if multi:
+                code += "$multi[" + str(index) + "];"
+                index += 1
+            else:
+                code += self.visit(stmt_assign.value) + ";"
 
         return code
 
