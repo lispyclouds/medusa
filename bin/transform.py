@@ -469,7 +469,7 @@ class PyParser(ast.NodeVisitor):
             code += "$multi=" + self.visit(stmt_assign.value) + ";";
             multi = True
         else:
-            targets = stmt_assign.targets[0]
+            targets = stmt_assign.targets
 
         for target in targets:
             if isinstance(target, _ast.Attribute) or isinstance(target, _ast.Subscript):
