@@ -33,21 +33,13 @@ class $PyFile {
         return new $PyString(new String.fromCharCodes(handle.readSync(bytes)));
     }
 
-    readlines() {
-        return new $PyString(new File(name).readAsLinesSync());
-    }
-
-    write(data) {
-        handle.writeStringSync(data);
-    }
+    readlines() => new $PyString(new File(name).readAsLinesSync());
+    write(data) => handle.writeStringSync(data);
+    tell() => handle.positionSync();
 
     writelines(lines) {
         for (int i = 0; i < lines.length; i++)
             handle.writeStringSync(lines[i] + "\n");
-    }
-
-    tell() {
-        return handle.positionSync();
     }
 
     seek(position, [whence]) {
@@ -395,6 +387,7 @@ list([iterable]) => new $PyList(iterable);
 
 class $PySet extends IterableBase {
     var _set;
+
     $PySet([iterable]) {
         if(iterable != null)
             this._set = new Set.from(iterable);
@@ -402,10 +395,7 @@ class $PySet extends IterableBase {
             this._set = new Set();
     }
 
-    get iterator {
-        return this._set.iterator;
-    }
-
+    get iterator => this._set.iterator;
     add(var elem) => this._set.add(elem);
 
     isdisjoint(var other) {
@@ -502,9 +492,7 @@ class $PySet extends IterableBase {
     }
 
     clear() => this._set.clear();
-
     operator -(var other) => return this.difference(other);
-
 }
 
 set([iterable]){
@@ -572,7 +560,7 @@ class $PyDict extends IterableBase {
 
         var rng = new Random();
         var key = _dict.keys[rng.nextInt(_dict.length)];
-        var value = tuple([keys, _dict[key]);
+        var value = tuple([keys, _dict[key]]);
 
         _dict.remove(key);
         return value;
@@ -688,10 +676,8 @@ input([message]) {
     if (message != null)
         stdout.write(message);
 
-    num value;
-
     try {
-        value = num.parse(stdin.readLineSync(encoding: SYSTEM_ENCODING));
+        var value = num.parse(stdin.readLineSync(encoding: SYSTEM_ENCODING));
         return value;
     } catch (ex) {
         print("Fatal Error: Non numeric characters in input; Try raw_input()");
