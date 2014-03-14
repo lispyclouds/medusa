@@ -558,10 +558,6 @@ class PyParser(ast.NodeVisitor):
             target = "$obj"
             targets = stmt_for.target.elts
             multi = True
-
-            if len(targets) is not len(stmt_for.iter.elts[0].elts):
-                print "Number of assignment targets and values not equal"
-                exit(1)
         else:
             target = stmt_for.target.id
 
