@@ -9,7 +9,7 @@ class $PyFile {
     var handle;
     var closed, mode, name, softspace;
 
-    $PyFile(name, mode) {
+    $PyFile(name, [mode = 'r']) {
         closed = false;
         this.name = name;
         this.mode = mode;
@@ -31,6 +31,10 @@ class $PyFile {
             bytes = handle.lengthSync();
 
         return new $PyString(new String.fromCharCodes(handle.readSync(bytes)));
+    }
+
+    readline() {
+        // do something here please
     }
 
     readlines() => new $PyString(new File(name).readAsLinesSync());
@@ -67,13 +71,8 @@ class $PyFile {
     }
 }
 
-$PyFile open(name, [mode]) {
+$PyFile open(name, [mode = 'r']) {
     name = name.toString();
-
-    if (mode == null)
-        mode = "r";
-    else
-        mode = mode.toString();
 
     var file = new $PyFile(name, mode);
 
@@ -81,6 +80,10 @@ $PyFile open(name, [mode]) {
         throw new FileSystemException();
 
     return file;
+}
+
+file(path, [mode = 'r']) {
+    return open(path, mode);
 }
 
 class $PyTuple extends IterableBase {
@@ -165,6 +168,14 @@ class $PyString extends IterableBase {
             return new $PyString(capzed.replaceFirst(capzed[0], capzed[0].toUpperCase()));
         else
             return new $PyString(capzed);
+    }
+
+    join(list) {
+        return new $PyString(list.join(_str));
+    }
+
+    split(sep) {
+        return new $PyList(_str.split(sep));
     }
 
     zfill(width) {
@@ -539,7 +550,7 @@ class $PySet extends IterableBase {
     }
 
     clear() => this._set.clear();
-    operator -(var other) => return this.difference(other);
+    operator -(var other) => this.difference(other);
 }
 
 set([iterable]){
@@ -809,7 +820,7 @@ $and(list){
             return list[i];
         }
     }
-    return list[list.length - 1];
+    return list.last;
 }
 
 $or(list){
@@ -820,12 +831,20 @@ $or(list){
     }
     if(list[list.length - 1] == null)
         return "None";
-    return list[list.length - 1];
+    return list.last;
 }
 
 $generator(var function){
     var list = function();
     return list;
+}
+
+max(values) {
+    return values.sort().last;
+}
+
+min(values) {
+    return values.sort().first;
 }
 
 class $Range extends Object with IterableMixin<int> {
