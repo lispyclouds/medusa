@@ -407,87 +407,65 @@ class $PySet extends IterableBase {
     }
 
     get iterator => this._set.iterator;
+
     add(var elem) => this._set.add(elem);
 
-    isdisjoint(var other) {
-        if(other is $PySet){
-            if(this._set.intersection(other._set).length == 0)
-                return true;
-            else
-                return false;
-        }
+    isdisjoint(var iterable) {
+        var other = new $PySet(iterable);
+        if(this._set.intersection(other._set).length == 0)
+            return true;
         else
-            throw "Invalid Arguments";
+            return false;
     }
 
-    issubset(var other) {
-        if(other is $PySet)
-            return other._set.containsAll(this._set);
-        else
-            throw "Invalid Arguments";
+    issubset(var iterable) {
+        var other = new $PySet(iterable);
+        return other._set.containsAll(this._set);
     }
 
-    issuperset(var other){
-        if(other is $PySet)
-            return this._set.containsAll(other._set);
-        else
-            throw "Invalid Arguments";
+    issuperset(var iterable){
+        var other = new $PySet(iterable);
+        return this._set.containsAll(other._set);
     }
 
-    union(var other) {
-        if(other is $PySet)
-            return new $PySet(this._set.union(other._set));
-        else
-            throw "Invalid Arguments";
+    union(var iterable) {
+        var other = new $PySet(iterable);
+        return new $PySet(this._set.union(other._set));
     }
 
-    intersection(var other) {
-        if(other is $PySet)
-            return new $PySet(this._set.intersection(other._set));
-        else
-            throw "Invalid Arguments";
+    intersection(var iterable) {
+        var other = new $PySet(iterable);
+        return new $PySet(this._set.intersection(other._set));
     }
 
-    difference(var other){
-        if(other is $PySet)
-            return new $PySet(this._set.difference(other._set));
-        else
-            throw "Invalid Arguments";
+    difference(var iterable){
+        var other = new $PySet(iterable);
+        return new $PySet(this._set.difference(other._set));
     }
 
-    symmetric_difference(var other){
-        if(other is $PySet)
-            return new $PySet(this._set.union(other._set).difference(this._set.intersection(other._set)));
-        else
-            throw "Invalid Arguments";
+    symmetric_difference(var iterable){
+        var other = new $PySet(iterable);
+        return new $PySet(this._set.union(other._set).difference(this._set.intersection(other._set)));
     }
 
-    update(var other){
-        if(other is $PySet)
-            this._set = this._set.union(other._set);
-        else
-            throw "Invalid Arguments";
+    update(var iterable){
+        var other = new $PySet(iterable);
+        this._set = this._set.union(other._set);
     }
 
-    intersection_update(var other){
-        if(other is $PySet)
-            this._set = this._set.intersection(other._set);
-        else
-            throw "Invalid Arguments";
+    intersection_update(var iterable){
+        var other = new $PySet(iterable);
+        this._set = this._set.intersection(other._set);
     }
 
-    difference_update(var other){
-        if(other is $PySet)
-            this._set = this._set.difference(other._set);
-        else
-            throw "Invalid Arguments";
+    difference_update(var iterable){
+        var other = new $PySet(iterable);
+        this._set = this._set.difference(other._set);
     }
 
-    symmetric_difference_update(var other){
-        if(other is $PySet)
-            this._set = this._set.union(other._set).difference(this._set.intersection(other._set));
-        else
-            throw "Invalid Arguments";
+    symmetric_difference_update(var iterable){
+        var other = new $PySet(iterable);
+        this._set = this._set.union(other._set).difference(this._set.intersection(other._set));
     }
 
     remove(var element) => this._set.remove(element);
@@ -500,6 +478,75 @@ class $PySet extends IterableBase {
     toString(){
         var str = "set([" + this._set.join(",") + "])";
         return str;
+    }
+
+    clear() => this._set.clear();
+
+    operator -(var other) {
+        if(other is $PySet)
+            return new $PySet(this._set.difference(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    operator ==(var other){
+        if(other is $PySet){
+            if(other._set.length == this._set.length){
+                return this._set.difference(other._set).length == 0;
+            }
+            return false;
+        }
+        else
+            throw "Invalid Arguments";
+    }
+
+    operator <=(var other){
+        if(other is $PySet)
+            return other._set.containsAll(this._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    operator <(var other){
+        if(other is $PySet)
+            return (this <= other && this != other);
+        else
+            throw "Invalid Arguments";
+    }
+
+    operator >=(var other){
+        if(other is $PySet)
+            return this._set.containsAll(other._set);
+        else
+            throw "Invalid Arguments";
+    }
+
+    operator >(var other){
+        if(other is $PySet)
+            return (other <= this && other != this);
+        else
+            throw "Invalid Arguments";
+    }
+
+    operator |(var other){
+        if(other is $PySet)
+            return new $PySet(this._set.union(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    operator &(var other){
+        if(other is $PySet)
+            return new $PySet(this._set.intersection(other._set));
+        else
+            throw "Invalid Arguments";
+    }
+
+    operator ^(var other){
+        if(other is $PySet)
+            return new $PySet(this._set.union(other._set).difference(this._set.intersection(other._set)));
+        else
+            throw "Invlaid Arguments";
     }
 
     clear() => this._set.clear();
@@ -705,6 +752,31 @@ sum(var iterable,[start = 0]){
     for(var i in iterable)
         total += i;
     return total;
+}
+
+zip([list]){
+    if(list == null)
+        return new $PyList();
+    var i, j;
+    var length = list[0].length;
+    var finalList = new $PyList();
+    var tempList = [];
+    var tuple;
+
+    for(i = 1; i < list.length; i++){
+        if(list[i].length < length)
+            length = list[i].length;
+    }
+
+    for(i = 0; i < length; i++){
+        tempList.clear();
+        for(j = 0; j < list.length; j++)
+            tempList.add(list[j][i]);
+        tuple = new $PyTuple(tempList);
+        finalList.append(tuple);
+    }
+
+    return finalList;
 }
 
 $checkValue(value){
