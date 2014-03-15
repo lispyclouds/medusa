@@ -5,7 +5,7 @@ import ast, _ast, sys
 dartImports = []
 dartLocalVars = []
 dartClassVars = []
-dartGlobalVars = ["$broken", "$tried", "$multi"]
+dartGlobalVars = []
 
 pyGlobalVars = []
 pyClasses = []
@@ -45,6 +45,12 @@ class PyParser(ast.NodeVisitor):
 
         if module not in dartImports:
             dartImports.append(module)
+
+    def addGuard(self, name):
+        global dartGlobalVars
+
+        if name not in dartGlobalVars:
+            dartGlobalVars.append(name)
 
     def visit_Module(self, stmt_module):
         global parsedType, parsedClasses, parsedFunctions, parsedCode
@@ -468,6 +474,7 @@ class PyParser(ast.NodeVisitor):
 
             code += "$multi=" + self.visit(stmt_assign.value) + ";";
             multi = True
+            self.addGuard("$multi")
         else:
             targets = stmt_assign.targets
 
@@ -546,14 +553,33 @@ class PyParser(ast.NodeVisitor):
     def visit_For(self, stmt_for):
         global broken
 
+        multi = False
+        if isinstance(stmt_for.target, _ast.Tuple):
+            target = "$obj"
+            targets = stmt_for.target.elts
+            multi = True
+        else:
+            target = stmt_for.target.id
+
         broken = True
-        code = "$broken=false;for(var " + stmt_for.target.id + " in " + self.visit(stmt_for.iter) + "){"
+        code = "for(var " + target + " in " + self.visit(stmt_for.iter) + "){"
+
+        if multi:
+            index = 0
+            for target in targets:
+                t = self.visit(target)
+                if t not in dartGlobalVars:
+                    dartGlobalVars.append(t)
+                code += t + "=$obj[" + str(index) + "];"
+                index += 1
+
         for node in stmt_for.body:
             code += self.visit(node)
         code += "}"
 
         if len(stmt_for.orelse) > 0:
-            code += "if($broken==false){"
+            self.addGuard("$broken")
+            code = "$broken=false;" + code + "if($broken==false){"
             for node in stmt_for.orelse:
                 code += self.visit(node)
             code += "$broken=false;}"
@@ -571,7 +597,7 @@ class PyParser(ast.NodeVisitor):
         else:
             nodes = stmt_tryexcept[0]
 
-        code = "$tried=true;try{"
+        code = "try{"
         for node in nodes.body:
             code += self.visit(node)
         code += "}"
@@ -592,6 +618,7 @@ class PyParser(ast.NodeVisitor):
                 exit(1)
 
         if not final and len(nodes.orelse) > 0:
+            self.addGuard("$tried")
             code += "if($tried){"
             for node in nodes.orelse:
                 code += self.visit(node)
@@ -606,6 +633,7 @@ class PyParser(ast.NodeVisitor):
         code += "}"
 
         if len(stmt_tryfinally.body[0].orelse) > 0:
+            self.addGuard("$tried")
             code += "if($tried){"
             for node in stmt_tryfinally.body[0].orelse:
                 code += self.visit(node)
