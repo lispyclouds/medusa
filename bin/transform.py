@@ -9,7 +9,8 @@ dartGlobalVars = []
 
 pyGlobalVars = []
 pyClasses = []
-pyInbuilts = ["abs", "all", "any", "bin", "input", "len", "open", "range", "raw_input", "str", "xrange"]
+pyInbuilts = open("lib/fun.list").read().split("\n")
+pyClassInbuilts = open("lib/classfun.list").read().split("\n")
 
 parsedClasses = []
 parsedFunctions = []
@@ -25,6 +26,8 @@ exceptions = dict()
 exceptions['Exception'] = "Exception"
 exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
+
+functions = dict()
 
 class PyParser(ast.NodeVisitor):
     def parse(self, code):
@@ -159,6 +162,12 @@ class PyParser(ast.NodeVisitor):
 
     def visit_In(self, stmt_in):
         return ".contains"
+
+    def visit_Not(self, stmt_not):
+        return "!"
+
+    def visit_Is(self, stmt_is):
+        return "=="
 
     def visit_NotIn(self, stmt_notin):
         return "NotIn"
@@ -355,11 +364,18 @@ class PyParser(ast.NodeVisitor):
         return ""
 
     def visit_FunctionDef(self, stmt_function):
-        global dartLocalVars, funMode, parsedType
+        global dartLocalVars, funMode, parsedType, functions
 
-        body = ""
-        code = ""
-        defs = ""
+        body, code, defines = "", "", ""
+
+        for arg in stmt_function.args.args:
+            if arg.id == "self":
+                stmt_function.args.args.remove(arg)
+                break
+
+        functions[str(stmt_function.name)] = [stmt_function.args.args, stmt_function.args.defaults]
+        i = 0
+        alen = len(stmt_function.args.args)
 
         funMode = True
         for node in stmt_function.body:
@@ -367,15 +383,13 @@ class PyParser(ast.NodeVisitor):
         funMode = False
 
         if len(dartLocalVars) > 0:
-            defs = "var " + ",".join(dartLocalVars) + ";"
+            defines = "var " + ",".join(dartLocalVars) + ";"
 
         if stmt_function.name == "__init__":
             code = pyClasses[-1] + "(" + code
         else:
             code = stmt_function.name + "(" + code
 
-        i = 0
-        alen = len(stmt_function.args.args)
         while i < alen:
             if str(stmt_function.args.args[i].id) == "self":
                 i += 1
@@ -387,17 +401,21 @@ class PyParser(ast.NodeVisitor):
             if (i + 1) < alen:
                 code += ","
             i += 1
-        code += "){" + defs + body + "}"
 
+        code += "){" + defines + body + "}"
         dartLocalVars = []
         parsedType = "function"
         return code
 
     def visit_Call(self, stmt_call):
-        global pyClasses, pyInbuilts, forceCall, formats
+        global pyClasses, pyInbuilts, forceCall, formats, functions
 
         code = self.visit(stmt_call.func)
         keyDict = {}
+        fName = code
+
+        if '.' in fName:
+            fName = fName.split('.')[-1]
 
         if code in pyInbuilts:
             self.addImport("lib/inbuilts.dart")
@@ -414,6 +432,27 @@ class PyParser(ast.NodeVisitor):
             if (i + 1) < alen:
                 code += ","
             i += 1
+
+        if fName not in pyInbuilts and fName not in pyClassInbuilts and fName not in pyClasses:
+            try:
+                if alen < len(functions[fName][0]):
+                    code += ","
+                    diff = alen - len(functions[fName][0])
+                    i = 0
+
+                    while i < abs(diff):
+                        code += self.visit(functions[fName][1][diff + i])
+
+                        if (i + 1) < abs(diff):
+                            code += ","
+                        i += 1
+            except KeyError:
+                print "Undefined Function: ", fName
+                exit(1)
+            except IndexError:
+                print "Incorrect number of parameters for function ", fName
+                exit(1)
+
         code += "]" if formats else ")"
 
         for node in stmt_call.keywords:
@@ -466,11 +505,6 @@ class PyParser(ast.NodeVisitor):
 
         if isinstance(stmt_assign.targets[0], _ast.Tuple):
             targets = stmt_assign.targets[0].elts
-            values = stmt_assign.value.elts
-
-            if len(targets) is not len(values):
-                print "Number of assignment targets and values not equal"
-                exit(1)
 
             code += "$multi=" + self.visit(stmt_assign.value) + ";";
             multi = True
@@ -551,7 +585,7 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_For(self, stmt_for):
-        global broken
+        global broken, funMode
 
         multi = False
         if isinstance(stmt_for.target, _ast.Tuple):
@@ -568,7 +602,9 @@ class PyParser(ast.NodeVisitor):
             index = 0
             for target in targets:
                 t = self.visit(target)
-                if t not in dartGlobalVars:
+                if funMode and t not in dartLocalVars:
+                    dartLocalVars.append(t)
+                elif t not in dartGlobalVars:
                     dartGlobalVars.append(t)
                 code += t + "=$obj[" + str(index) + "];"
                 index += 1
