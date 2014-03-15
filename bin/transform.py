@@ -14,6 +14,7 @@ pyInbuilts = ["abs", "all", "any", "bin", "input", "len", "open", "range", "raw_
 parsedClasses = []
 parsedFunctions = []
 parsedCode = []
+variableArgs = ["zip"]
 
 classyMode = False
 funMode = False
@@ -397,6 +398,7 @@ class PyParser(ast.NodeVisitor):
         global pyClasses, pyInbuilts, forceCall, formats
 
         code = self.visit(stmt_call.func)
+        funcName = code
         keyDict = {}
 
         if code in pyInbuilts:
@@ -407,13 +409,14 @@ class PyParser(ast.NodeVisitor):
         alen = len(stmt_call.args)
         i = 0
 
-        code += "([" if formats else "("
+        code += "([" if (formats or funcName in variableArgs) else "("
         while i < alen:
             code += self.visit(stmt_call.args[i])
 
             if (i + 1) < alen:
                 code += ","
             i += 1
+        code += "]" if funcName in variableArgs else ""
         code += "]" if formats else ")"
 
         for node in stmt_call.keywords:

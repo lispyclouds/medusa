@@ -743,6 +743,31 @@ sum(var iterable,[start = 0]){
     return total;
 }
 
+zip([list]){
+    if(list == null)
+        return new $PyList();
+    var i, j;
+    var length = list[0].length;
+    var finalList = new $PyList();
+    var tempList = [];
+    var tuple;
+
+    for(i = 1; i < list.length; i++){
+        if(list[i].length < length)
+            length = list[i].length;
+    }
+
+    for(i = 0; i < length; i++){
+        tempList.clear();
+        for(j = 0; j < list.length; j++)
+            tempList.add(list[j][i]);
+        tuple = new $PyTuple(tempList);
+        finalList.append(tuple);
+    }
+
+    return finalList;
+}
+
 $checkValue(value){
     var i = value;
     switch($getType(i)){
