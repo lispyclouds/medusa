@@ -15,13 +15,16 @@ pyClassInbuilts = open("lib/classfun.list").read().split("\n")
 parsedClasses = []
 parsedFunctions = []
 parsedCode = []
-variableArgs = ["zip"]
+variableArgs = ["max", "min", "zip"]
 
 classyMode = False
 funMode = False
 broken = False
 formats = False
 fromTest = False
+
+imports = dict()
+imports['random'] = "lib/pyrandom.dart";
 
 exceptions = dict()
 exceptions['Exception'] = "Exception"
@@ -170,6 +173,9 @@ class PyParser(ast.NodeVisitor):
     def visit_Is(self, stmt_is):
         return "=="
 
+    def visit_IsNot(self, stmt_isnot):
+        return "!="
+
     def visit_NotIn(self, stmt_notin):
         return "NotIn"
 
@@ -211,6 +217,21 @@ class PyParser(ast.NodeVisitor):
             code = "$checkValue(" + code + ")"
 
         return code
+
+    def visit_Import(self, stmt_import):
+
+        for name in stmt_import.names:
+            try:
+                if name.asname is not None:
+                    print "Import aliases not yet supported! :( Sorry!"
+                    exit(1)
+
+                self.addImport(imports[name.name])
+            except KeyError:
+                print "Unimplemented module for import: ", name.name
+                exit(1)
+
+        return ""
 
     def visit_List(self, stmt_list):
         self.addImport("lib/inbuilts.dart");
@@ -436,7 +457,7 @@ class PyParser(ast.NodeVisitor):
             i += 1
         code += "]" if funcName in variableArgs else ""
 
-        if fName not in pyInbuilts and fName not in pyClassInbuilts and fName not in pyClasses:
+        if fName not in pyClassInbuilts and fName not in pyInbuilts and fName not in pyClasses:
             try:
                 if alen < len(functions[fName][0]):
                     code += ","

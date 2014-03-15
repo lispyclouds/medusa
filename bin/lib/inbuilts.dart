@@ -365,6 +365,7 @@ class $PyList extends IterableBase {
         return c;
     }
 
+    shuffle() => new $PyList(_list.shuffle());
     toList() => _list;
     append(item) => _list.add(item);
     insert(pos, item) => _list.insert(pos, item);
@@ -907,6 +908,13 @@ class $Range extends Object with IterableMixin<int> {
             if (f(e))
                 l.add(e);
         }
+        return l;
+    }
+
+    toList() {
+        var l = new $PyList();
+        for (var e in this)
+            l.append(e);
         return l;
     }
 

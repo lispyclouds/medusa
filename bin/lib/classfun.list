@@ -1,6 +1,7 @@
 add
 append
 capitalize
+choice
 clear
 clear
 contains
@@ -30,14 +31,19 @@ list
 pop
 pop
 popitem
+randint
+random
+randrange
 range
 read
 readlines
 remove
 reverse
+seed
 seek
 set
 setdefault
+shuffle
 sort
 split
 symmetric_difference
