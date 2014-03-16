@@ -755,29 +755,38 @@ sum(var iterable,[start = 0]){
     return total;
 }
 
-zip([list]){
-    if(list == null)
-        return new $PyList();
+zip([list,starArgs]){
     var i, j;
-    var length = list[0].length;
+    var length = 0;
     var finalList = new $PyList();
     var tempList = [];
     var tuple;
+    if(list.length == 0 && starArgs == null)
+        return new $PyList();
+    else if(list.length != 0 && starArgs != null)
+        print("This should not print.");
+    else {
+        if(list.length == 0 && starArgs != null)
+            list = starArgs;
 
-    for(i = 1; i < list.length; i++){
-        if(list[i].length < length)
-            length = list[i].length;
+        if(list.length > 0)
+            length = list[0].length;
+
+        for(i = 1; i < list.length; i++){
+            if(list[i].length < length)
+                length = list[i].length;
+        }
+
+        for(i = 0; i < length; i++){
+            tempList.clear();
+            for(j = 0; j < list.length; j++)
+                tempList.add(list[j][i]);
+            tuple = new $PyTuple(tempList);
+            finalList.append(tuple);
+        }
+
+        return finalList;
     }
-
-    for(i = 0; i < length; i++){
-        tempList.clear();
-        for(j = 0; j < list.length; j++)
-            tempList.add(list[j][i]);
-        tuple = new $PyTuple(tempList);
-        finalList.append(tuple);
-    }
-
-    return finalList;
 }
 
 $checkValue(value){

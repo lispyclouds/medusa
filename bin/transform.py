@@ -433,7 +433,6 @@ class PyParser(ast.NodeVisitor):
         global pyClasses, pyInbuilts, forceCall, formats, functions
 
         code = self.visit(stmt_call.func)
-        funcName = code
         keyDict = {}
         fName = code
 
@@ -448,14 +447,13 @@ class PyParser(ast.NodeVisitor):
         alen = len(stmt_call.args)
         i = 0
 
-        code += "([" if (formats or funcName in variableArgs) else "("
+        code += "([" if (formats or fName in variableArgs) else "("
         while i < alen:
             code += self.visit(stmt_call.args[i])
 
             if (i + 1) < alen:
                 code += ","
             i += 1
-        code += "]" if funcName in variableArgs else ""
 
         if fName not in pyClassInbuilts and fName not in pyInbuilts and fName not in pyClasses:
             try:
@@ -477,14 +475,17 @@ class PyParser(ast.NodeVisitor):
                 print "Incorrect number of parameters for function ", fName
                 exit(1)
 
-        code += "]" if formats else ")"
+        code += "]" if (fName in variableArgs or formats) else ""
+
+        if stmt_call.starargs != None:
+            code += "," + self.visit(stmt_call.starargs)
 
         for node in stmt_call.keywords:
             arg = node.arg
             value = self.visit(node.value)
             keyDict[arg] = value
 
-        code += ("," + str(keyDict) + ")") if formats else ""
+        code += ("," + str(keyDict) + ")") if formats else ")"
 
         formats = False
         return code
