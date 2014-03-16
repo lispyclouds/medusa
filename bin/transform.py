@@ -12,6 +12,7 @@ pyClasses = []
 pyInbuilts = open("lib/fun.list").read().split("\n")
 pyClassInbuilts = open("lib/classfun.list").read().split("\n")
 
+parsedImports = []
 parsedClasses = []
 parsedFunctions = []
 parsedCode = []
@@ -24,7 +25,7 @@ formats = False
 fromTest = False
 
 imports = dict()
-imports['random'] = "lib/pyrandom.dart";
+imports['random'] = ["lib/pyrandom.dart", "$PyRandom"];
 
 exceptions = dict()
 exceptions['Exception'] = "Exception"
@@ -72,6 +73,8 @@ class PyParser(ast.NodeVisitor):
                 parsedFunctions.append(parsed)
             elif parsedType is "code":
                 parsedCode.append(parsed)
+            elif parsedType is "import":
+                parsedImports.append(parsed)
             else:
                 print "Not Implemented => ", type(node)
 
@@ -219,19 +222,26 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Import(self, stmt_import):
+        global parsedType
+
+        code, alias = "", ""
 
         for name in stmt_import.names:
             try:
-                if name.asname is not None:
-                    print "Import aliases not yet supported! :( Sorry!"
-                    exit(1)
+                self.addImport(imports[name.name][0])
 
-                self.addImport(imports[name.name])
+                if name.asname is None:
+                    alias = name.name
+                else:
+                    alias = name.asname
+
+                code = alias + "=new " + imports[name.name][1] + "()"
             except KeyError:
                 print "Unimplemented module for import: ", name.name
                 exit(1)
 
-        return ""
+        parsedType = "import"
+        return code
 
     def visit_List(self, stmt_list):
         self.addImport("lib/inbuilts.dart");
@@ -717,7 +727,10 @@ stitched = ""
 for module in dartImports:
     stitched += "import'" + module + "';"
 if len(dartGlobalVars):
-    stitched += "var " + ",".join(dartGlobalVars) + ";"
+    stitched += "var " + ",".join(dartGlobalVars)
+    if len(parsedImports):
+        stitched += "," + ",".join(parsedImports)
+    stitched += ";"
 for parsedClass in parsedClasses:
     stitched += parsedClass
 for parsedFunction in parsedFunctions:

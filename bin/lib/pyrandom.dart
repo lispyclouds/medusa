@@ -33,5 +33,3 @@ class $PyRandom {
     shuffle(x, [rand]) => x.shuffle();
     random() => _rng.nextDouble();
 }
-
-var random = new $PyRandom();
