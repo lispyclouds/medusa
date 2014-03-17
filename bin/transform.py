@@ -10,7 +10,6 @@ dartGlobalVars = []
 pyGlobalVars = []
 pyClasses = []
 pyInbuilts = open("lib/fun.list").read().split("\n")
-pyClassInbuilts = open("lib/classfun.list").read().split("\n")
 
 parsedImports = []
 parsedClasses = []
@@ -25,14 +24,13 @@ formats = False
 fromTest = False
 
 imports = dict()
-imports['random'] = ["lib/pyrandom.dart", "$PyRandom"];
+imports['random'] = ["lib/pyrandom.dart", "$PyRandom"]
+imports['time'] = ["lib/pytime.dart", "$PyTime"]
 
 exceptions = dict()
 exceptions['Exception'] = "Exception"
 exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
-
-functions = dict()
 
 class PyParser(ast.NodeVisitor):
     def parse(self, code):
@@ -46,7 +44,12 @@ class PyParser(ast.NodeVisitor):
         s = s.replace('\r', r'\r')
         s = s.replace('$', '\$')
 
-        return  "'" + s + "'"
+        if "'" in s:
+            s = '"' + s + '"'
+        else:
+            s = "'" + s + "'"
+
+        return s
 
     def addImport(self, module):
         global dartImports
@@ -61,7 +64,7 @@ class PyParser(ast.NodeVisitor):
             dartGlobalVars.append(name)
 
     def visit_Module(self, stmt_module):
-        global parsedType, parsedClasses, parsedFunctions, parsedCode
+        global parsedType, parsedClasses, parsedFunctions, parsedCode, parsedImports
 
         for node in stmt_module.body:
             parsedType = "code"
@@ -73,8 +76,8 @@ class PyParser(ast.NodeVisitor):
                 parsedFunctions.append(parsed)
             elif parsedType is "code":
                 parsedCode.append(parsed)
-            elif parsedType is "import":
-                parsedImports.append(parsed)
+            elif parsedType is "imports":
+                parsedImports += parsed.split(":")
             else:
                 print "Not Implemented => ", type(node)
 
@@ -222,9 +225,9 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Import(self, stmt_import):
-        global parsedType
+        global parsedType, imports
 
-        code, alias = "", ""
+        code, alias = [], ""
 
         for name in stmt_import.names:
             try:
@@ -235,19 +238,18 @@ class PyParser(ast.NodeVisitor):
                 else:
                     alias = name.asname
 
-                code = alias + "=new " + imports[name.name][1] + "()"
+                code.append(alias + "=new " + imports[name.name][1] + "()")
             except KeyError:
                 print "Unimplemented module for import: ", name.name
                 exit(1)
 
-        parsedType = "import"
-        return code
+        parsedType = "imports"
+        return ":".join(code)
 
     def visit_List(self, stmt_list):
         self.addImport("lib/inbuilts.dart");
 
         code = "new $PyList(["
-
         alen = len(stmt_list.elts)
         i = 0
         while i < alen:
@@ -255,7 +257,6 @@ class PyParser(ast.NodeVisitor):
             if i < alen - 1:
                 code += ","
             i += 1
-
         code += "])"
 
         return code
@@ -395,8 +396,32 @@ class PyParser(ast.NodeVisitor):
     def visit_Pass(self, stmt_pass):
         return ""
 
+    # def statTypeOf(self, obj):
+    #     if isinstance(obj, _ast.Str):
+    #         return self.escape(obj.s)
+    #     elif isinstance(obj, _ast.List) or isinstance(obj, _ast.Tuple):
+    #         i, code, alen = 0, "[", len(obj.elts)
+    #         while i < alen:
+    #             code += self.statTypeOf(obj.elts[i])
+    #             if i < alen - 1:
+    #                 code += ","
+    #             i += 1
+    #         code += "]"
+    #         return code
+    #     elif isinstance(obj, _ast.Dict):
+    #         code, l, i = "{", len(obj.keys), 0
+    #         while i < l:
+    #             code += self.statTypeOf(obj.keys[i]) + ":" + self.statTypeOf(obj.values[i])
+    #             if (i + 1) < l:
+    #                 code += ","
+    #             i += 1
+    #         code += "}"
+    #         return code
+    #     else:
+    #         return str(obj.n)
+
     def visit_FunctionDef(self, stmt_function):
-        global dartLocalVars, funMode, parsedType, functions
+        global dartLocalVars, funMode, parsedType
 
         body, code, defines = "", "", ""
 
@@ -404,10 +429,6 @@ class PyParser(ast.NodeVisitor):
             if arg.id == "self":
                 stmt_function.args.args.remove(arg)
                 break
-
-        functions[str(stmt_function.name)] = [stmt_function.args.args, stmt_function.args.defaults]
-        i = 0
-        alen = len(stmt_function.args.args)
 
         funMode = True
         for node in stmt_function.body:
@@ -422,70 +443,72 @@ class PyParser(ast.NodeVisitor):
         else:
             code = stmt_function.name + "(" + code
 
+        alen = len(stmt_function.args.args)
+        dIndex = -1
+
+        if len(stmt_function.args.defaults):
+            dIndex = alen - len(stmt_function.args.defaults)
+
+        i, j = 0, 0
+        b = False
+        fixers = ""
         while i < alen:
-            if str(stmt_function.args.args[i].id) == "self":
-                i += 1
-                continue
+            if dIndex > -1 and i >= dIndex:
+                if not b:
+                    code += "["
+                    b = True
 
-            code += stmt_function.args.args[i].id
+                var = stmt_function.args.args[i].id
+                val = stmt_function.args.defaults[j]
+
+                if isinstance(val, _ast.Str):
+                    val = self.escape(val.s)
+                    fixers += "if(" + var + "==" + val + "){" + var + "=new $PyString(" + val + ");}"
+                elif isinstance(val, _ast.Num):
+                    val = str(val.n)
+                else:
+                    print "Only constant Strings and Numbers supported as default parameters"
+                    exit(1)
+
+                code += var + "=" + val
+                j += 1
+            else:
+                code += stmt_function.args.args[i].id
+
             dartLocalVars.append(stmt_function.args.args[i].id)
-
             if (i + 1) < alen:
                 code += ","
             i += 1
 
-        code += "){" + defines + body + "}"
+        if b:
+            code += "]"
+        code += "){" + fixers + defines + body + "}"
         dartLocalVars = []
         parsedType = "function"
         return code
 
     def visit_Call(self, stmt_call):
-        global pyClasses, pyInbuilts, forceCall, formats, functions
+        global pyClasses, pyInbuilts, forceCall, formats
 
         code = self.visit(stmt_call.func)
+        fname = code
         keyDict = {}
-        fName = code
 
-        if '.' in fName:
-            fName = fName.split('.')[-1]
-
-        if code in pyInbuilts:
+        if fname in pyInbuilts:
             self.addImport("lib/inbuilts.dart")
         elif code in pyClasses:
-            code = "new " + code
+            code = "new " + fname
 
         alen = len(stmt_call.args)
         i = 0
-
-        code += "([" if (formats or fName in variableArgs) else "("
+        code += "([" if (formats or fname in variableArgs) else "("
         while i < alen:
             code += self.visit(stmt_call.args[i])
 
             if (i + 1) < alen:
                 code += ","
             i += 1
-
-        if fName not in pyClassInbuilts and fName not in pyInbuilts and fName not in pyClasses:
-            try:
-                if alen < len(functions[fName][0]):
-                    code += ","
-                    diff = alen - len(functions[fName][0])
-                    i = 0
-
-                    while i < abs(diff):
-                        code += self.visit(functions[fName][1][diff + i])
-
-                        if (i + 1) < abs(diff):
-                            code += ","
-                        i += 1
-            except KeyError:
-                print "Undefined Function: ", fName
-                exit(1)
-            except IndexError:
-                print "Incorrect number of parameters for function ", fName
-                exit(1)
-
-        code += "]" if (fName in variableArgs or formats) else ""
+        code += "]" if (fname in variableArgs or formats) else ""
 
         if stmt_call.starargs != None:
             code += "," + self.visit(stmt_call.starargs)
@@ -727,11 +750,10 @@ PyParser().parse(open(sys.argv[1]).read())
 stitched = ""
 for module in dartImports:
     stitched += "import'" + module + "';"
+if len(parsedImports):
+    stitched += "var " + ",".join(parsedImports) + ";"
 if len(dartGlobalVars):
-    stitched += "var " + ",".join(dartGlobalVars)
-    if len(parsedImports):
-        stitched += "," + ",".join(parsedImports)
-    stitched += ";"
+    stitched += "var " + ",".join(dartGlobalVars) + ";"
 for parsedClass in parsedClasses:
     stitched += parsedClass
 for parsedFunction in parsedFunctions:

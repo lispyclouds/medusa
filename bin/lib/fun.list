@@ -17,3 +17,4 @@ str
 sum
 tuple
 xrange
+zip

@@ -170,12 +170,17 @@ class $PyString extends IterableBase {
             return new $PyString(capzed);
     }
 
-    join(list) {
-        return new $PyString(list.join(_str));
-    }
+    join(list) => new $PyString(list.join(_str));
+    replace(target, value) => new $PyString(_str.replaceAll(target.toString(), value.toString()));
+    strip() => new $PyString(_str.trim());
 
     split(sep) {
-        return new $PyList(_str.split(sep));
+        var parts = _str.split(sep.toString()), list = new $PyList();
+
+        for (var p in parts)
+            list.append(new $PyString(p));
+
+        return list;
     }
 
     zfill(width) {
@@ -549,9 +554,6 @@ class $PySet extends IterableBase {
         else
             throw "Invlaid Arguments";
     }
-
-    clear() => this._set.clear();
-    operator -(var other) => this.difference(other);
 }
 
 set([iterable]){
@@ -658,25 +660,6 @@ class $PyDict extends IterableBase {
 }
 
 dict([pairs]) => new $PyDict(pairs);
-
-$getType(variable) {
-    if (variable is num)
-        return 0;
-    else if (variable is $PyString)
-        return 1;
-    else if (variable is $PyList)
-        return 2;
-    else if (variable is bool)
-        return 3;
-    else if (variable is $PyDict)
-        return 4;
-    else if (variable is $PyTuple)
-        return 5;
-    else if (variable is List)
-        return 6;
-    else
-        return -1;
-}
 
 abs(n) {
     if (n is num) {
@@ -789,6 +772,25 @@ zip([list,starArgs]){
     }
 }
 
+$getType(variable) {
+    if (variable is num)
+        return 0;
+    else if (variable is $PyString)
+        return 1;
+    else if (variable is $PyList)
+        return 2;
+    else if (variable is bool)
+        return 3;
+    else if (variable is $PyDict)
+        return 4;
+    else if (variable is $PyTuple)
+        return 5;
+    else if (variable is List)
+        return 6;
+    else
+        return -1;
+}
+
 $checkValue(value){
     var i = value;
     switch($getType(i)){
@@ -813,8 +815,8 @@ $checkValue(value){
                 return true;
             break;
         case 4:
-            var keys = i.keys;
-            if(keys.length != 0)
+            var keys = i.keys();
+            if (keys.length != 0)
                 return true;
             break;
     }
@@ -954,6 +956,6 @@ class $RangeIterator implements Iterator<int> {
     }
 }
 
-range(int start_inclusive, [int stop_exclusive, int step = 1]) => new $Range(start_inclusive, stop_exclusive, step);
+range(int start_inclusive, [int stop_exclusive, int step = 1]) => new $Range(start_inclusive, stop_exclusive, step).toList();
 xrange(int start_inclusive, [int stop_exclusive, int step = 1]) => new $Range(start_inclusive, stop_exclusive, step);
 indices(lengthable) => new $Range(0, lengthable.length);
