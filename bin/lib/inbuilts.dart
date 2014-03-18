@@ -29,6 +29,8 @@ class $PyFile {
     read([bytes]) {
         if (bytes == null)
             bytes = handle.lengthSync();
+        else
+            bytes = bytes.value()
 
         return new $PyString(new String.fromCharCodes(handle.readSync(bytes)));
     }
@@ -49,6 +51,9 @@ class $PyFile {
     seek(position, [whence]) {
         if (whence == null)
             whence = 0;
+        else
+            whence = whence.value();
+        position = position.value();
 
         switch(whence) {
         case 0:
@@ -71,7 +76,7 @@ class $PyFile {
     }
 }
 
-$PyFile open(name, [mode = 'r']) {
+open(name, [mode = 'r']) {
     name = name.toString();
 
     var file = new $PyFile(name, mode);
@@ -86,6 +91,125 @@ file(path, [mode = 'r']) {
     return open(path, mode);
 }
 
+class $PyNum {
+    num _value;
+
+    $PyNum(value) {
+        switch ($getType(value)) {
+            case 6:
+                _value = value;
+                break;
+            case 7:
+                try {
+                    _value = num.parse(value);
+                } catch (ex) {
+                    print("Invalid string literal for num parsing");
+                    exit(1);
+                }
+                break;
+            case 5:
+                _value = value.value();
+                break;
+            default:
+                throw "Invalid input for num conversion";
+        }
+    }
+
+    value() => _value;
+    toString() => _value.toString();
+
+    operator +(other) => new $PyNum(_value + other.value());
+    operator -(other) => new $PyNum(_value - other.value());
+    operator *(other) => new $PyNum(_value * other.value());
+    operator ~/(other) => new $PyNum(_value ~/ other.value());
+    operator |(other) => new $PyNum(_value | other.value());
+    operator &(other) => new $PyNum(_value & other.value());
+    operator ^(other) => new $PyNum(_value ^ other.value());
+    operator %(other) => new $PyNum(_value % other.value());
+    operator <<(other) => new $PyNum(_value << other.value());
+    operator >>(other) => new $PyNum(_value >> other.value());
+    operator <(other) {
+        switch ($getType(other)) {
+            case 6:
+                return _value < other;
+            case 5:
+                return _value < other.value();
+            default:
+                return true;
+        }
+    }
+    operator >(other) {
+        switch ($getType(other)) {
+            case 6:
+                return _value > other;
+            case 5:
+                return _value > other.value();
+            default:
+                return false;
+        }
+    }
+    operator <=(other) {
+        switch ($getType(other)) {
+            case 6:
+                return _value <= other;
+            case 5:
+                return _value <= other.value();
+            default:
+                return true;
+        }
+    }
+    operator >=(other) {
+        switch ($getType(other)) {
+            case 6:
+                return _value >= other;
+            case 5:
+                return _value >= other.value();
+            default:
+                return false;
+        }
+    }
+    operator ==(other) {
+        switch ($getType(other)) {
+            case 6:
+                return _value == other;
+            case 5:
+                return _value == other.value();
+            default:
+                return false;
+        }
+    }
+}
+int(value) => new $PyNum(value);
+float(value) => int(value);
+
+class $PyBool {
+    var boo;
+
+    $PyBool(value) {
+        switch ($getType(value)) {
+            case 0:
+                boo = value;
+                break;
+            case 1:
+                boo = value.value();
+                break;
+            case 2:
+            case 3:
+            case 4:
+            case 7:
+            case 8:
+                boo = value.length == 0 ? false : true;
+                break;
+            case 5:
+                boo = value.value() == 0 ? false : true;
+                break;
+        }
+    }
+
+    value() => boo;
+    toString() => boo.toString();
+}
+
 class $PyTuple extends IterableBase {
     var tuple = [];
 
@@ -97,6 +221,8 @@ class $PyTuple extends IterableBase {
                 tuple.add(item);
         }
     }
+
+    get length => new $PyNum(tuple.length);
 
     toString() {
         var i = 0, str = "(";
@@ -111,12 +237,8 @@ class $PyTuple extends IterableBase {
         return str;
     }
 
-    operator [](i) => tuple[i];
-
-    operator []=(i, j) {
-        throw "Assignment not possible in Tuple";
-    }
-
+    operator [](i) => tuple[i.value()];
+    operator []=(i, j) => throw "Assignment not possible in Tuple";
     operator +(tupleObj) {
         if (tupleObj is $PyTuple) {
             var newTupObj = new $PyTuple(this.tuple);
@@ -129,20 +251,12 @@ class $PyTuple extends IterableBase {
         else
             throw "Invalid operand for concatenation";
     }
-
     operator *(integer) {
-        if (integer is int) {
-            var newTupObj = new $PyTuple([]);
-
-            for (var i = 0; i < integer; i++) {
-                for (var item in this.tuple)
-                    newTupObj.tuple.add(item);
-            }
-
-            return newTupObj;
+        for (var i = 0; i < integer.value(); i++) {
+            for (var item in this.tuple)
+                newTupObj.tuple.add(item);
         }
-        else
-            throw "Invalid Multiplier";
+        return newTupObj;
     }
 
     getList() => tuple;
@@ -160,6 +274,7 @@ class $PyString extends IterableBase {
     }
 
     get iterator => this.toList().iterator;
+    get length => new $PyNum(_str.length);
 
     capitalize() {
         var capzed = _str.toLowerCase();
@@ -184,10 +299,7 @@ class $PyString extends IterableBase {
     }
 
     zfill(width) {
-        if (!(width is num))
-            throw "TypeError: an integer is required";
-
-        var toPad = width - _str.length, pad = "";
+        var toPad = width.value() - _str.length, pad = "";
 
         for (var i = 0; i < toPad; i++)
             pad += "0";
@@ -208,7 +320,6 @@ class $PyString extends IterableBase {
 
     operator ==(str) => _str == str.toString();
     operator +(str) => new $PyString(_str + str.toString());
-
     operator %(collection) {
         var string = this.toString();
 
@@ -296,42 +407,36 @@ class $PyString extends IterableBase {
     }
 
     operator *(mul) {
-        if (mul is! int)
-            throw "Invalid multplier for String";
-
         var pdt = "";
-        for (var i = 0; i < mul; i++)
+        for (var i = 0; i < mul.value(); i++)
             pdt += _str;
 
         return new $PyString(pdt);
     }
-
-    operator [](index) {
-        if (index is! int)
-            throw "Invalid index for String";
-
-        return new $PyString(_str[index]);
-    }
+    operator [](index) => new $PyString(_str[index.value()]);
 }
 
 class $PyList extends IterableBase {
     var _list = [];
 
     get iterator => _list.iterator;
+    get first => _list.first;
+    get last => _list.last;
+    get length => _list.length;
 
     $PyList([iterable]) {
         switch ($getType(iterable)) {
-            case 1:
-            case 2:
+            case 7:
+            case 3:
                 _list = iterable.toList();
                 break;
-            case 4:
+            case 2:
                 _list = iterable.keys;
                 break;
-            case 5:
+            case 8:
                 _list = iterable.tuple;
                 break;
-            case 6:
+            case 4:
                 _list = iterable;
                 break;
             case -1:
@@ -354,8 +459,8 @@ class $PyList extends IterableBase {
             v = _list.last;
             _list.removeLast();
         } else {
-            v = _list[pos];
-            _list.removeAt(pos);
+            v = _list[pos.value()];
+            _list.removeAt(pos.value());
         }
 
         return v;
@@ -367,16 +472,16 @@ class $PyList extends IterableBase {
             if (elem == item)
                 c++;
         }
-        return c;
+        return new $PyNum(c);
     }
 
     shuffle() => new $PyList(_list.shuffle());
     toList() => _list;
     append(item) => _list.add(item);
-    insert(pos, item) => _list.insert(pos, item);
+    insert(pos, item) => _list.insert(pos.value(), item);
     remove(item) => _list.remove(item);
     index(item) => _list.indexOf(item);
-    sort() => _list.sort();
+    sort() => new $PyList(_list.sort());
     reverse() => _list = _list.reversed.toList();
     toString() => _list.toString();
 
@@ -384,16 +489,11 @@ class $PyList extends IterableBase {
         extend(iterable);
         return this;
     }
-
-    operator [](index) => _list[index];
-    operator []=(pos, item) => _list[pos] = item;
-
+    operator [](index) => _list[index.value()];
+    operator []=(pos, item) => _list[pos.value()] = item;
     operator *(mul) {
-        if (mul is! int)
-            throw "Invalid multplier for List";
-
         var pdt = new $PyList();
-        for (var i = 0; i < mul; i++)
+        for (var i = 0; i < mul.value(); i++)
             pdt += this;
 
         return pdt;
@@ -413,7 +513,7 @@ class $PySet extends IterableBase {
     }
 
     get iterator => this._set.iterator;
-
+    get length => _set.length;
     add(var elem) => this._set.add(elem);
 
     isdisjoint(var iterable) {
@@ -567,7 +667,7 @@ class $PyDict extends IterableBase {
         _dict = new Map();
 
         switch ($getType(pairs)) {
-            case 2:
+            case 3:
                 for (var pair in pairs)
                     _dict[pair[0]] = pair[1];
                 break;
@@ -578,6 +678,8 @@ class $PyDict extends IterableBase {
                 break;
         }
     }
+
+    get length => _dict.length;
 
     fromKeys(seq, [values]) {
         _dict.clear();
@@ -655,21 +757,18 @@ class $PyDict extends IterableBase {
     viewitems() => _dict.items();
     viewkeys() => _dict.keys;
     viewvalues() => _dict.values;
-    operator [](index) => _dict[index];
-    operator []=(pos, item) => _dict[pos] = item;
+    operator [](index) => _dict[index.value()];
+    operator []=(pos, item) => _dict[pos.value()] = item;
 }
 
 dict([pairs]) => new $PyDict(pairs);
 
 abs(n) {
-    if (n is num) {
-        if (n < 0)
-            return (n * -1);
-        else
-            return n;
-    }
+    n = n.value()
+    if (n < 0)
+        return new $PyNum(n * -1);
     else
-        return "Type is not a Number";
+        return new $PyNum(n);
 }
 
 all(iterable) {
@@ -690,27 +789,23 @@ any(iterable) {
 }
 
 bin(integer) {
-    if (integer is int){
-        var num1 = 0;
-        var x = 0;
-        while (integer > 0) {
-            x = integer % 2;
-            num1 = num1 * 10 + x;
-            integer ~/= 2;
-        }
-        return num1;
+    integer = integer.value();
+    var num1 = 0;
+    var x = 0;
+    while (integer > 0) {
+        x = integer % 2;
+        num1 = num1 * 10 + x;
+        integer ~/= 2;
     }
-    else
-        return "Type is not Int";
+    return num1;
 }
 
-len(target) => target.length;
+len(target) => new $PyNum(target.length);
 str(data) => new $PyString(data.toString());
 
 raw_input([message]) {
     if (message != null)
         stdout.write(message);
-
     return new $PyString(stdin.readLineSync(encoding: SYSTEM_ENCODING));
 }
 
@@ -720,7 +815,7 @@ input([message]) {
 
     try {
         var value = num.parse(stdin.readLineSync(encoding: SYSTEM_ENCODING));
-        return value;
+        return new $PyNum(value);
     } catch (ex) {
         print("Fatal Error: Non numeric characters in input; Try raw_input()");
         exit(1);
@@ -733,9 +828,14 @@ sum(var iterable,[start = 0]){
         exit(1);
     }
     var total = start;
-    for(var i in iterable)
+    for(var i in iterable){
+        if(i == true)
+            i = 1;
+        else if(i == false)
+            i = 0;
         total += i;
-    return total;
+    }
+    return new $PyNum(total);
 }
 
 zip([list,starArgs]){
@@ -744,6 +844,7 @@ zip([list,starArgs]){
     var finalList = new $PyList();
     var tempList = [];
     var tuple;
+
     if(list.length == 0 && starArgs == null)
         return new $PyList();
     else if(list.length != 0 && starArgs != null)
@@ -773,20 +874,24 @@ zip([list,starArgs]){
 }
 
 $getType(variable) {
-    if (variable is num)
+    if (variable is bool)
         return 0;
-    else if (variable is $PyString)
+    else if (variable is $PyBool)
         return 1;
-    else if (variable is $PyList)
-        return 2;
-    else if (variable is bool)
-        return 3;
     else if (variable is $PyDict)
-        return 4;
-    else if (variable is $PyTuple)
-        return 5;
+        return 2;
+    else if (variable is $PyList)
+        return 3;
     else if (variable is List)
+        return 4;
+    else if (variable is $PyNum)
+        return 5;
+    else if (variable is num)
         return 6;
+    else if (variable is $PyString)
+        return 7;
+    else if (variable is $PyTuple)
+        return 8;
     else
         return -1;
 }
@@ -798,23 +903,23 @@ $checkValue(value){
             if(i != null)
                 return true;
             break;
-        case 0:
+        case 6:
             if(i != 0)
                 return true;
             break;
-        case 1:
+        case 7:
             if(i != "")
                 return true;
             break;
-        case 2:
+        case 3:
             if(i.length != 0)
                 return true;
             break;
-        case 3:
+        case 0:
             if(i == true)
                 return true;
             break;
-        case 4:
+        case 2:
             var keys = i.keys();
             if (keys.length != 0)
                 return true;
@@ -851,12 +956,16 @@ $generator(var function){
     return list;
 }
 
+$pow(base, exp) => pow(base.value(), exp.value());
+
 max(values) {
-    return values.sort().last;
+    values.sort();
+    return values.last;
 }
 
 min(values) {
-    return values.sort().first;
+    values.sort();
+    return values.first;
 }
 
 class $Range extends Object with IterableMixin<int> {

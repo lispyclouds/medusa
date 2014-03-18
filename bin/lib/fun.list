@@ -4,7 +4,9 @@ any
 bin
 dict
 file
+float
 input
+int
 len
 list
 max

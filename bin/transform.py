@@ -96,7 +96,8 @@ class PyParser(ast.NodeVisitor):
         name = stmt_name.id
 
         if name is "False" or name is "True":
-            name = name.lower()
+            self.addImport("lib/inbuilts.dart")
+            name = "new $PyBool(" + name.lower() + ")"
         elif name is "self":
             name = "this"
         elif name is "None":
@@ -106,7 +107,8 @@ class PyParser(ast.NodeVisitor):
         return str(name)
 
     def visit_Num(self, stmt_num):
-        return str(stmt_num.n)
+        self.addImport("lib/inbuilts.dart")
+        return "new $PyNum(" + str(stmt_num.n) + ")"
 
     def visit_Str(self, stmt_str):
         self.addImport("lib/inbuilts.dart")
@@ -125,7 +127,7 @@ class PyParser(ast.NodeVisitor):
         return "~/"
 
     def visit_Pow(self, stmt_pow):
-        self.addImport('dart:math')
+        self.addImport('lib/inbuilts.dart')
         return ","
 
     def visit_RShift(self, stmt_rshift):
@@ -187,7 +189,6 @@ class PyParser(ast.NodeVisitor):
 
     def visit_IfExp(self, stmt_ternary):
         stmt = self.visit(stmt_ternary.test) + "?" + self.visit(stmt_ternary.body) + ":" + self.visit(stmt_ternary.orelse)
-
         return stmt
 
     def visit_UnaryOp(self, stmt_unop):
@@ -202,7 +203,7 @@ class PyParser(ast.NodeVisitor):
         exp = "(" + left + op + right + ")"
 
         if op == ",":
-            exp = "(pow" + exp + ")"
+            exp = "($pow" + exp + ")"
 
         return exp
 
@@ -600,7 +601,7 @@ class PyParser(ast.NodeVisitor):
 
         code = left
         if op == ",":
-            code += "=pow(" + left + op + right + ")"
+            code += "=$pow(" + left + op + right + ")"
         else:
             code += op + "=" + right
 

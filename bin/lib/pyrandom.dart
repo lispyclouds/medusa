@@ -12,7 +12,7 @@ class $PyRandom {
         if (value == null)
             _rng = new Random();
         else
-            _rng = new Random(value);
+            _rng = new Random(value.value());
     }
 
     randrange(start, [stop, step = 1]) {
@@ -28,8 +28,8 @@ class $PyRandom {
         return space.toList()[_rng.nextInt(space.length - 1)];
     }
 
-    randint(a, b) => range(a, b).toList()[_rng.nextInt((b - a) - 1)];
+    randint(a, b) => new $PyNum(range(a, b).toList()[_rng.nextInt((b - a) - 1)]);
     choice(seq) => seq[_rng.nextInt(seq.length - 1)];
     shuffle(x, [rand]) => x.shuffle();
-    random() => _rng.nextDouble();
+    random() => new $PyNum(_rng.nextDouble());
 }
