@@ -271,6 +271,49 @@ class $PyTuple extends IterableBase {
         return newTupObj;
     }
 
+    operator ==(other){
+    	switch($getType(other)){
+    		case 8:
+    			if(this.length != other.length)
+    				return false;
+    			for(var i = 0; i < this.length; i++){
+    				if(tuple[i] != other.tuple[i])
+    					return false;
+    			}
+    			return true;
+    		default:
+    			return false;
+    	}
+    }
+
+    operator <(other){
+    	switch($getType(other)) {
+    		case 0:
+    		case 1:
+    		case 2:
+    		case 3:
+    		case 4:
+    		case 5:
+    		case 6:
+    		case 7:
+    			return false;
+    		case 8:
+    			for(var i = 0; i < (this.length <= other.length ? this.length : other.length); i++){
+    				if(tuple[i] > other.tuple[i])
+    					return false;
+    				else if(tuple[i] < other.tuple[i])
+    					return true;
+    			}
+    			return other.length < this.length ? false : true;
+    		default:
+    			break;
+    	}
+    }
+
+    operator >(other) => !(this < other) && (this != other);
+    operator <=(other) => (this < other) || (this == other);
+    operator >=(other) => (this > other) || (this == other);
+
     getList() => tuple;
     contains(comparator) => tuple.contains(comparator);
     get iterator => tuple.iterator;
@@ -543,6 +586,49 @@ class $PyList extends IterableBase {
 
         return pdt;
     }
+
+    operator ==(other){
+		switch($getType(other)){
+			case 3:
+				if(this.length != other.length)
+					return false;
+				for(var i = 0; i < this.length; i++){
+					if(_list[i] != other._list[i])
+						return false;
+				}
+				return true;
+			default:
+				return false;
+		}
+	}
+
+    operator <(other){
+		switch($getType(other)) {
+			case 0:
+			case 1:
+			case 2:
+			case 5:
+			case 6:
+				return false;
+			case 3:
+				for(var i = 0; i < (this.length <= other.length ? this.length : other.length); i++){
+					if(_list[i] > other._list[i])
+						return false;
+					else if(_list[i] < other._list[i])
+						return true;
+				}
+				return other.length < this.length ? false : true;
+			case 7:
+			case 8:
+				return true;
+			default:
+				break;
+		}
+	}
+
+	operator >(other) => !(this < other) && (this != other);
+    operator <=(other) => (this < other) || (this == other);
+    operator >=(other) => (this > other) || (this == other);
 }
 
 list([iterable]) => new $PyList(iterable);
@@ -710,11 +796,13 @@ class $PyDict extends IterableBase {
 
     $PyDict([pairs]) {
         _dict = new Map();
+        var key = new $PyNum(0);
+        var key1 = new $PyNum(1);
 
         switch ($getType(pairs)) {
             case 3:
                 for (var pair in pairs)
-                    _dict[pair[0]] = pair[1];
+                    _dict[pair[key]] = pair[key1];
                 break;
             case -1:
                 break;
@@ -791,8 +879,8 @@ class $PyDict extends IterableBase {
     iteritems() => items();
     iterkeys() => new $PyList(_dict.keys);
     itervalues() => new $PyList(_dict.values);
-    keys() => new $PyList(_dict.keys);
-    values() => new $PyList(_dict.values);
+    keys() => new $PyList(_dict.keys.toList());
+    values() => new $PyList(_dict.values.toList());
     has_key(key) => _dict.hasKey(key);
     contains(key) => has_Key(key);
     copy() => this;
