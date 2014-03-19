@@ -974,6 +974,9 @@ class $Range extends Object with IterableMixin<int> {
             stop = start;
             start = 0;
         }
+        else
+            stop = stop.value();
+        step = new $PyNum(step);
 
         if (step == 0)
             throw new ArgumentError("step must not be 0");
@@ -1044,7 +1047,7 @@ class $Range extends Object with IterableMixin<int> {
 
     int start;
     int stop;
-    final int step;
+    int step;
 }
 
 class $RangeIterator implements Iterator<int> {
@@ -1065,6 +1068,6 @@ class $RangeIterator implements Iterator<int> {
     }
 }
 
-range(int start_inclusive, [int stop_exclusive, int step = 1]) => new $Range(start_inclusive, stop_exclusive, step).toList();
-xrange(int start_inclusive, [int stop_exclusive, int step = 1]) => new $Range(start_inclusive, stop_exclusive, step);
+range(start_inclusive, [stop_exclusive, step = 1]) => new $Range(start_inclusive.value(), stop_exclusive, step).toList();
+xrange(start_inclusive, [stop_exclusive, step = 1]) => new $Range(start_inclusive.value(), stop_exclusive, step);
 indices(lengthable) => new $Range(0, lengthable.length);
