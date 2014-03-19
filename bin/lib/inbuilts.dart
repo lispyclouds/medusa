@@ -183,31 +183,122 @@ int(value) => new $PyNum(value);
 float(value) => int(value);
 
 class $PyBool {
-    var boo;
+    var _boo;
 
     $PyBool(value) {
         switch ($getType(value)) {
             case 0:
-                boo = value;
+                _boo = value;
                 break;
             case 1:
-                boo = value.value();
+                _boo = value.value();
                 break;
             case 2:
             case 3:
             case 4:
             case 7:
             case 8:
-                boo = value.length == 0 ? false : true;
+                _boo = value.length == 0 ? false : true;
                 break;
             case 5:
-                boo = value.value() == 0 ? false : true;
+                _boo = value.value() == 0 ? false : true;
                 break;
         }
     }
 
-    value() => boo;
-    toString() => boo.toString();
+    value() => _boo;
+    toString() => _boo.toString();
+    operator <(other) {
+        switch($getType(other)){
+            case 0:
+                return _boo == false && other == true ? true : false;
+            case 1:
+                return _boo == false && other.value() == true ? true : false;
+            case 5:
+                var comp = _boo ? 1 : 0;
+                return comp < other.value();
+            case 6:
+                var comp = _boo ? 1 : 0;
+                return comp < other;
+            case 2:
+            case 3:
+            case 4:
+            case 7:
+            case 8:
+                return true;
+            default:
+                break;
+        }
+    }
+
+    operator >(other) {
+        switch($getType(other)){
+            case 0:
+                return _boo == true && other == false ? true : false;
+            case 1:
+                return _boo == true && other.value() == false ? true : false;
+            case 5:
+                var comp = _boo ? 1 : 0;
+                return comp > other.value();
+            case 6:
+                var comp = _boo ? 1 : 0;
+                return comp > other;
+            case 2:
+            case 3:
+            case 4:
+            case 7:
+            case 8:
+                return false;
+            default:
+                break;
+        }
+    }
+
+    operator <= (other) {
+        switch($getType(other)){
+            case 0:
+                return _boo == true && other == false ? false : true;
+            case 1:
+                return _boo == true && other.value() == false ? false : true;
+            case 5:
+                var comp = _boo ? 1 : 0;
+                return comp <= other.value();
+            case 6:
+                var comp = _boo ? 1 : 0;
+                return comp <= other;
+            case 2:
+            case 3:
+            case 4:
+            case 7:
+            case 8:
+                return true;
+            default:
+                break;
+        }
+    }
+
+    operator >= (other) {
+        switch($getType(other)){
+            case 0:
+                return _boo == false && other == true ? false : true;
+            case 1:
+                return _boo == false && other.value() == true ? false : true;
+            case 5:
+                var comp = _boo ? 1 : 0;
+                return comp >= other.value();
+            case 6:
+                var comp = _boo ? 1 : 0;
+                return comp >= other;
+            case 2:
+            case 3:
+            case 4:
+            case 7:
+            case 8:
+                return false;
+            default:
+                break;
+        }
+    }
 }
 
 class $PyTuple extends IterableBase {
