@@ -128,46 +128,6 @@ class $PyNum {
     operator %(other) => new $PyNum(_value % other.value());
     operator <<(other) => new $PyNum(_value << other.value());
     operator >>(other) => new $PyNum(_value >> other.value());
-    operator <(other) {
-        switch ($getType(other)) {
-            case 6:
-                return _value < other;
-            case 5:
-                return _value < other.value();
-            default:
-                return true;
-        }
-    }
-    operator >(other) {
-        switch ($getType(other)) {
-            case 6:
-                return _value > other;
-            case 5:
-                return _value > other.value();
-            default:
-                return false;
-        }
-    }
-    operator <=(other) {
-        switch ($getType(other)) {
-            case 6:
-                return _value <= other;
-            case 5:
-                return _value <= other.value();
-            default:
-                return true;
-        }
-    }
-    operator >=(other) {
-        switch ($getType(other)) {
-            case 6:
-                return _value >= other;
-            case 5:
-                return _value >= other.value();
-            default:
-                return false;
-        }
-    }
     operator ==(other) {
         switch ($getType(other)) {
             case 6:
@@ -178,7 +138,21 @@ class $PyNum {
                 return false;
         }
     }
+    operator <(other) {
+        switch ($getType(other)) {
+            case 6:
+                return _value < other;
+            case 5:
+                return _value < other.value();
+            default:
+                return true;
+        }
+    }
+    operator >(other) => !(this < other) && (this != other);
+    operator <=(other) => (this < other) || (this == other);
+    operator >=(other) => (this > other) || (this == other);
 }
+
 int(value) => new $PyNum(value);
 float(value) => int(value);
 
@@ -208,6 +182,19 @@ class $PyBool {
 
     value() => _boo;
     toString() => _boo.toString();
+    operator ==(other) {
+        case 0:
+        case 1:
+            return _boo == other.value();
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            return false;
+    }
     operator <(other) {
         switch($getType(other)){
             case 0:
@@ -230,75 +217,9 @@ class $PyBool {
                 break;
         }
     }
-
-    operator >(other) {
-        switch($getType(other)){
-            case 0:
-                return _boo == true && other == false ? true : false;
-            case 1:
-                return _boo == true && other.value() == false ? true : false;
-            case 5:
-                var comp = _boo ? 1 : 0;
-                return comp > other.value();
-            case 6:
-                var comp = _boo ? 1 : 0;
-                return comp > other;
-            case 2:
-            case 3:
-            case 4:
-            case 7:
-            case 8:
-                return false;
-            default:
-                break;
-        }
-    }
-
-    operator <= (other) {
-        switch($getType(other)){
-            case 0:
-                return _boo == true && other == false ? false : true;
-            case 1:
-                return _boo == true && other.value() == false ? false : true;
-            case 5:
-                var comp = _boo ? 1 : 0;
-                return comp <= other.value();
-            case 6:
-                var comp = _boo ? 1 : 0;
-                return comp <= other;
-            case 2:
-            case 3:
-            case 4:
-            case 7:
-            case 8:
-                return true;
-            default:
-                break;
-        }
-    }
-
-    operator >= (other) {
-        switch($getType(other)){
-            case 0:
-                return _boo == false && other == true ? false : true;
-            case 1:
-                return _boo == false && other.value() == true ? false : true;
-            case 5:
-                var comp = _boo ? 1 : 0;
-                return comp >= other.value();
-            case 6:
-                var comp = _boo ? 1 : 0;
-                return comp >= other;
-            case 2:
-            case 3:
-            case 4:
-            case 7:
-            case 8:
-                return false;
-            default:
-                break;
-        }
-    }
+    operator >(other) => !(this < other) && (this != other);
+    operator <=(other) => (this < other) || (this == other);
+    operator >=(other) => (this > other) || (this == other);
 }
 
 class $PyTuple extends IterableBase {
@@ -409,7 +330,6 @@ class $PyString extends IterableBase {
         return list;
     }
 
-    operator ==(str) => _str == str.toString();
     operator +(str) => new $PyString(_str + str.toString());
     operator %(collection) {
         var string = this.toString();
@@ -505,6 +425,40 @@ class $PyString extends IterableBase {
         return new $PyString(pdt);
     }
     operator [](index) => new $PyString(_str[index.value()]);
+    operator ==(other) {
+        switch ($getType(other)) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 8:
+                return false;
+            case 6:
+            case 7:
+                return (_str.compareTo(other.toString()) == 0) ? true : false;
+        }
+    }
+    operator <(other) {
+        switch ($getType(other)) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                return false;
+            case 6:
+            case 7:
+                return (_str.compareTo(other.toString()) < 0) ? true : false;
+            case 8:
+                return true;
+        }
+    }
+    operator >(other) => !(this < other) && (this != other);
+    operator <=(other) => (this < other) || (this == other);
+    operator >=(other) => (this > other) || (this == other);
 }
 
 class $PyList extends IterableBase {
