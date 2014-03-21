@@ -1102,14 +1102,13 @@ min(values) {
 }
 
 class $Range extends Object with IterableMixin<int> {
-    $Range(int this.start, [int this.stop, int this.step = 1]) {
+    $Range(this.start, [this.stop, this.step = 1]) {
         if (stop == null ) {
             stop = start;
             start = 0;
         }
         else
             stop = stop.value();
-        step = new $PyNum(step);
 
         if (step == 0)
             throw new ArgumentError("step must not be 0");
@@ -1135,7 +1134,7 @@ class $Range extends Object with IterableMixin<int> {
         return result;
     }
 
-    String toString() => step == 1 ? "Range($start, $stop)" : "Range($start, $stop, $step)";
+    String toString() => step == 1 ? "xrange($start, $stop)" : "xrange($start, $stop, $step)";
 
     bool every(bool f(int e)) {
         for (int e in this) {
@@ -1178,17 +1177,14 @@ class $Range extends Object with IterableMixin<int> {
         return (other != null && start == other.start && stop == other.stop && step == other.step);
     }
 
-    int start;
-    int stop;
-    int step;
+    var start, stop, step;
 }
 
 class $RangeIterator implements Iterator<int> {
-    int _pos;
-    final int _stop;
-    final int _step;
+    var _pos;
+    final _stop, _step;
 
-    $RangeIterator(int pos, int stop, int step) : _stop = stop, _pos = pos-step, _step = step;
+    $RangeIterator(pos, stop, step) : _stop = stop, _pos = pos - step, _step = step;
 
     get current => _pos;
 
@@ -1201,6 +1197,6 @@ class $RangeIterator implements Iterator<int> {
     }
 }
 
-range(start_inclusive, [stop_exclusive, step = 1]) => new $Range(start_inclusive.value(), stop_exclusive, step).toList();
-xrange(start_inclusive, [stop_exclusive, step = 1]) => new $Range(start_inclusive.value(), stop_exclusive, step);
+range(start_inclusive, [stop_exclusive, step = 1]) => new $Range(start_inclusive, stop_exclusive, step).toList();
+xrange(start_inclusive, [stop_exclusive, step = 1]) => new $Range(start_inclusive, stop_exclusive, step);
 indices(lengthable) => new $Range(0, lengthable.length);
