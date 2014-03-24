@@ -168,10 +168,10 @@ class PyParser(ast.NodeVisitor):
         return "!="
 
     def visit_And(self, stmt_and):
-        return "$and(["
+        return "and"
 
     def visit_Or(self, stmt_or):
-        return "$or(["
+        return "or"
 
     def visit_In(self, stmt_in):
         return ".contains"
@@ -210,17 +210,25 @@ class PyParser(ast.NodeVisitor):
 
     def visit_BoolOp(self, stmt_boolop):
         self.addImport('lib/inbuilts.dart');
-        code = self.visit(stmt_boolop.op)
-        alen = len(stmt_boolop.values)
+        op = self.visit(stmt_boolop.op)
+        code = "$generator((){var temp;"
+        
         i = 0
-        while i < alen:
-            code += self.visit(stmt_boolop.values[i])
-            if i < alen - 1:
-                code += ","
+        while i < len(stmt_boolop.values):
+            item = self.visit(stmt_boolop.values[i])
+            code += "temp=" + item + ";"
+            if i == len(stmt_boolop.values) - 1:
+                code += "return temp;"
+            else:
+                if op == "and":
+                    code += "if(!$checkValue(temp))return temp;"
+                elif op == "or":
+                    code += "if($checkValue(temp))return temp;"
+                else:
+                    print "Operator not implemented => ", op
             i += 1
 
-        code += "])"
-
+        code += "})"
         if fromTest:
             code = "$checkValue(" + code + ")"
 
@@ -600,10 +608,14 @@ class PyParser(ast.NodeVisitor):
         code += "}"
 
         if len(stmt_if.orelse) > 0:
-            code += "else{"
-            for node in stmt_if.orelse:
-                code += self.visit(node)
-            code += "}"
+            code += "else "
+            if len(stmt_if.orelse) == 1 and isinstance(stmt_if.orelse[0], _ast.If):
+                code += self.visit(stmt_if.orelse[0])
+            else:
+                code += "{"
+                for node in stmt_if.orelse:
+                    code += self.visit(node)
+                code += "}"
 
         fromTest = False
         return code
