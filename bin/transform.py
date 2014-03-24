@@ -33,6 +33,7 @@ exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
 
 class PyParser(ast.NodeVisitor):
+    """ The Parser clsss transforming a Python input into optimized Dart output """
     def parse(self, code):
         tree = ast.parse(code)
         self.visit(tree)
@@ -417,6 +418,8 @@ class PyParser(ast.NodeVisitor):
 
         if stmt_function.name == "__init__":
             code = pyClasses[-1] + "(" + code
+        elif stmt_function.name == "main":
+            code = "$main(" + code
         else:
             code = stmt_function.name + "(" + code
 
@@ -466,6 +469,17 @@ class PyParser(ast.NodeVisitor):
 
         alen = len(stmt_call.args)
         i = 0
+
+        if code == "exit":
+            self.addImport("dart:io")
+            if alen == 1:
+                arg = stmt_call.args[0].n
+            else:
+                arg = 0
+            return "exit(" + str(arg) + ")"
+        elif code == "main":
+            fname, code = "$main", "$main"
+
         code += "([" if (formats or fname in variableArgs) else "("
         while i < alen:
             code += self.visit(stmt_call.args[i])
