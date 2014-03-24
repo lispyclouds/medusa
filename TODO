@@ -1,0 +1,3 @@
+1. Multple Inheritance support
+2. Support for native OS functionality
+3. Reduce number of Wrapper class objects resulting in speed boost

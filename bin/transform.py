@@ -33,6 +33,7 @@ exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
 
 class PyParser(ast.NodeVisitor):
+    """ The Parser clsss transforming a Python input into optimized Dart output """
     def parse(self, code):
         tree = ast.parse(code)
         self.visit(tree)
@@ -405,30 +406,6 @@ class PyParser(ast.NodeVisitor):
     def visit_Pass(self, stmt_pass):
         return ""
 
-    # def statTypeOf(self, obj):
-    #     if isinstance(obj, _ast.Str):
-    #         return self.escape(obj.s)
-    #     elif isinstance(obj, _ast.List) or isinstance(obj, _ast.Tuple):
-    #         i, code, alen = 0, "[", len(obj.elts)
-    #         while i < alen:
-    #             code += self.statTypeOf(obj.elts[i])
-    #             if i < alen - 1:
-    #                 code += ","
-    #             i += 1
-    #         code += "]"
-    #         return code
-    #     elif isinstance(obj, _ast.Dict):
-    #         code, l, i = "{", len(obj.keys), 0
-    #         while i < l:
-    #             code += self.statTypeOf(obj.keys[i]) + ":" + self.statTypeOf(obj.values[i])
-    #             if (i + 1) < l:
-    #                 code += ","
-    #             i += 1
-    #         code += "}"
-    #         return code
-    #     else:
-    #         return str(obj.n)
-
     def visit_FunctionDef(self, stmt_function):
         global dartLocalVars, funMode, parsedType
 
@@ -449,6 +426,8 @@ class PyParser(ast.NodeVisitor):
 
         if stmt_function.name == "__init__":
             code = pyClasses[-1] + "(" + code
+        elif stmt_function.name == "main":
+            code = "$main(" + code
         else:
             code = stmt_function.name + "(" + code
 
@@ -462,28 +441,16 @@ class PyParser(ast.NodeVisitor):
         b = False
         fixers = ""
         while i < alen:
+            var = stmt_function.args.args[i].id
+
             if dIndex > -1 and i >= dIndex:
                 if not b:
                     code += "["
                     b = True
-
-                var = stmt_function.args.args[i].id
-                val = stmt_function.args.defaults[j]
-
-                if isinstance(val, _ast.Str):
-                    val = self.escape(val.s)
-                    fixers += "if(" + var + "==" + val + "){" + var + "=new $PyString(" + val + ");}"
-                elif isinstance(val, _ast.Num):
-                    val = str(val.n)
-                else:
-                    print "Only constant Strings and Numbers supported as default parameters"
-                    exit(1)
-
-                code += var + "=" + val
+                fixers += "if(" + var + "==null" + "){" + var + "=" + self.visit(stmt_function.args.defaults[j]) + ";}"
                 j += 1
-            else:
-                code += stmt_function.args.args[i].id
 
+            code += var
             dartLocalVars.append(stmt_function.args.args[i].id)
             if (i + 1) < alen:
                 code += ","
@@ -510,6 +477,17 @@ class PyParser(ast.NodeVisitor):
 
         alen = len(stmt_call.args)
         i = 0
+
+        if code == "exit":
+            self.addImport("dart:io")
+            if alen == 1:
+                arg = stmt_call.args[0].n
+            else:
+                arg = 0
+            return "exit(" + str(arg) + ")"
+        elif code == "main":
+            fname, code = "$main", "$main"
+
         code += "([" if (formats or fname in variableArgs) else "("
         while i < alen:
             code += self.visit(stmt_call.args[i])
