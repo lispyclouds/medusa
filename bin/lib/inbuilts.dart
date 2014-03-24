@@ -117,6 +117,7 @@ class $PyNum {
 
     value() => _value;
     toString() => _value.toString();
+    compareTo(other) => this < other ? this : other;
 
     operator +(other) => new $PyNum(_value + other.value());
     operator -(other) => new $PyNum(_value - other.value());
@@ -182,18 +183,23 @@ class $PyBool {
 
     value() => _boo;
     toString() => _boo.toString();
+    compareTo(other) => this < other ? this : other;
+
     operator ==(other) {
-        case 0:
-        case 1:
-            return _boo == other.value();
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-            return false;
+        switch($getType(other)){
+            case 0:
+                return _boo == other;
+            case 1:
+                return _boo == other.value();
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+                return false;
+        }
     }
     operator <(other) {
         switch($getType(other)){
@@ -235,6 +241,7 @@ class $PyTuple extends IterableBase {
     }
 
     get length => new $PyNum(tuple.length);
+    compareTo(other) => this < other ? this : other;
 
     toString() {
         var i = 0, str = "(";
@@ -340,6 +347,7 @@ class $PyString extends IterableBase {
             return new $PyString(capzed);
     }
 
+    compareTo(other) =>  this < other ? this : other;
     join(list) => new $PyString(list.join(_str));
     replace(target, value) => new $PyString(_str.replaceAll(target.toString(), value.toString()));
     strip() => new $PyString(_str.trim());
@@ -563,6 +571,7 @@ class $PyList extends IterableBase {
         return new $PyNum(c);
     }
 
+    compareTo(other) => this < other ? this : other;
     shuffle() => new $PyList(_list.shuffle());
     toList() => _list;
     append(item) => _list.add(item);
@@ -876,6 +885,7 @@ class $PyDict extends IterableBase {
             _dict[pair[0]] = pair[1];
     }
 
+    compareTo(other) => this < other ? this : other;
     iteritems() => items();
     iterkeys() => new $PyList(_dict.keys);
     itervalues() => new $PyList(_dict.values);
@@ -892,6 +902,67 @@ class $PyDict extends IterableBase {
     viewvalues() => _dict.values;
     operator [](index) => _dict[index.value()];
     operator []=(pos, item) => _dict[pos.value()] = item;
+
+    operator ==(other){
+    	switch($getType(other)){
+    		case 2:
+    			var thisKeys = this.keys();
+    			var otherKeys = other.keys();
+    			var thisValues = this.values();
+    			var otherValues = other.values();
+    			thisKeys.sort();
+    			otherKeys.sort();
+    			thisValues.sort();
+    			otherValues.sort();
+    			if(thisKeys != otherKeys || thisValues != otherValues)
+    				return false;
+    			for(var key in thisKeys){
+    				if(_dict[key] != other._dict[key])
+    					return false;
+    			}
+    			return true;
+			default:
+				return false;
+    	}
+    }
+
+    operator <(other) {
+    	switch($getType(other)){
+    		case 0:
+    		case 1:
+    			return false;
+    		case 2:
+    			var thisKeys = this.keys();
+    			var otherKeys = other.keys();
+    			thisKeys.sort();
+    			otherKeys.sort();
+    			if(thisKeys < otherKeys)
+    				return true;
+
+    			else if(thisKeys == otherKeys){
+    				for(var key in this.keys()){
+    					if(_dict[key] < other._dict[key])
+    						return true;
+    					else if(_dict[key] > other._dict[key])
+    						return false;
+    				}
+    				return false;
+    			}
+    			else
+    				return false;
+    		case 3:
+    		case 4:
+    		case 5:
+    		case 6:
+    		case 7:
+    		case 8:
+    			return true;
+    	}
+    }
+
+    operator >(other) => !(this < other) && (this != other);
+    operator <=(other) => (this < other) || (this == other);
+    operator >=(other) => (this > other) || (this == other);
 }
 
 dict([pairs]) => new $PyDict(pairs);
@@ -1021,7 +1092,7 @@ $getType(variable) {
         return 5;
     else if (variable is num)
         return 6;
-    else if (variable is $PyString)
+    else if (variable is $PyString || variable is String)
         return 7;
     else if (variable is $PyTuple)
         return 8;
@@ -1036,6 +1107,7 @@ $checkValue(value){
             if(i != null)
                 return true;
             break;
+        case 5:
         case 6:
             if(i != 0)
                 return true;
@@ -1049,6 +1121,7 @@ $checkValue(value){
                 return true;
             break;
         case 0:
+        case 1:
             if(i == true)
                 return true;
             break;
@@ -1062,12 +1135,13 @@ $checkValue(value){
 }
 
 $and(list){
-    var condition;
-    for(var i = 0; i < list.length; i++){
-        if(!$checkValue(list[i])){
+	var item;
+    for(var i = 0; i < list.length - 1; i++){
+    	item = list[i];
+        if(!$checkValue(item)){
             if(list[i] == null)
                 return "None";
-            return list[i];
+            return item;
         }
     }
     return list.last;
@@ -1084,10 +1158,7 @@ $or(list){
     return list.last;
 }
 
-$generator(var function){
-    var list = function();
-    return list;
-}
+$generator(var function) => function();
 
 $pow(base, exp) => pow(base.value(), exp.value());
 
