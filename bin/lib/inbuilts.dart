@@ -30,7 +30,7 @@ class $PyFile {
         if (bytes == null)
             bytes = handle.lengthSync();
         else
-            bytes = bytes.value()
+            bytes = bytes.value();
 
         return new $PyString(new String.fromCharCodes(handle.readSync(bytes)));
     }
@@ -256,7 +256,15 @@ class $PyTuple extends IterableBase {
         return str;
     }
 
-    operator [](i) => tuple[i.value()];
+    operator [](index) {
+        if (index is num)
+            return tuple[index];
+        else if (index is $PyNum)
+            return tuple[index.value()];
+        else
+            throw "Invalid Tuple Key";
+
+    }
     operator []=(i, j) => throw "Assignment not possible in Tuple";
     operator +(tupleObj) {
         if (tupleObj is $PyTuple) {
@@ -372,6 +380,7 @@ class $PyString extends IterableBase {
 
     toString() => _str;
     get hashCode => _str.hashCode;
+    value() => _str;
 
     toList() {
         var list = [];
@@ -586,8 +595,23 @@ class $PyList extends IterableBase {
         extend(iterable);
         return this;
     }
-    operator [](index) => _list[index.value()];
-    operator []=(pos, item) => _list[pos.value()] = item;
+    operator [](index) {
+        if (index is num)
+            return _list[index];
+        else if (index is $PyNum)
+            return _list[index.value()];
+        else
+            throw "Invalid List Key";
+
+    }
+    operator []=(pos, item) {
+        if (pos is num)
+            _list[pos] = item;
+        else if (pos is $PyNum)
+            _list[pos.value()] = item;
+        else
+            throw "Invalid List Key";
+    }
     operator *(mul) {
         var pdt = new $PyList();
         for (var i = 0; i < mul.value(); i++)
@@ -1026,11 +1050,14 @@ input([message]) {
     }
 }
 
-sum(var iterable,[start = 0]){
-    if(start is $PyString){
+sum(var iterable, [start]){
+    if (start is $PyString){
         print("TypeError: sum() can't sum strings [use ''.join(seq) instead]");
         exit(1);
     }
+    if (start == null)
+        start = new $PyNum(0);
+
     var total = start;
     for(var i in iterable){
         if(i == true)
@@ -1039,7 +1066,7 @@ sum(var iterable,[start = 0]){
             i = 0;
         total += i;
     }
-    return new $PyNum(total);
+    return total;
 }
 
 zip([list,starArgs]){

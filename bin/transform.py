@@ -33,7 +33,7 @@ exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
 
 class PyParser(ast.NodeVisitor):
-    """ The Parser clsss transforming a Python input into optimized Dart output """
+    """ The Parser class transforming a Python input into optimized Dart output """
     def parse(self, code):
         tree = ast.parse(code)
         self.visit(tree)
@@ -80,7 +80,8 @@ class PyParser(ast.NodeVisitor):
             elif parsedType is "imports":
                 parsedImports += parsed.split(":")
             else:
-                print "Not Implemented => ", type(node)
+                sys.stderr.write("Not Implemented => " + type(node))
+                exit(-1)
 
     def visit_UAdd(self, stmt_uadd):
         return "+"
@@ -212,7 +213,7 @@ class PyParser(ast.NodeVisitor):
         self.addImport('lib/inbuilts.dart');
         op = self.visit(stmt_boolop.op)
         code = "$generator((){var temp;"
-        
+
         i = 0
         while i < len(stmt_boolop.values):
             item = self.visit(stmt_boolop.values[i])
@@ -225,7 +226,8 @@ class PyParser(ast.NodeVisitor):
                 elif op == "or":
                     code += "if($checkValue(temp))return temp;"
                 else:
-                    print "Operator not implemented => ", op
+                    sys.stderr.write("Operator not implemented => " + op)
+                    exit(-1)
             i += 1
 
         code += "})"
@@ -250,8 +252,8 @@ class PyParser(ast.NodeVisitor):
 
                 code.append(alias + "=new " + imports[name.name][1] + "()")
             except KeyError:
-                print "Unimplemented module for import: ", name.name
-                exit(1)
+                sys.stderr.write("Unimplemented module for import:" + name.name)
+                exit(-1)
 
         parsedType = "imports"
         return ":".join(code)
@@ -343,8 +345,8 @@ class PyParser(ast.NodeVisitor):
             data = str(listVar) + index
             return data
         else:
-            print "Unimplemented TYpe =>", type(stmt_Subscript.slice)
-            exit(1)
+            sys.stderr.write("Unimplemented Type => %s" + type(stmt_Subscript.slice))
+            exit(-1)
 
     def subsituteVisit(self, node):
         if node is not None:
@@ -380,8 +382,8 @@ class PyParser(ast.NodeVisitor):
                 base = str(stmt_class.bases[0].id)
             code += " extends " + base
         elif len(stmt_class.bases) > 1:
-            print "Multiple Inheritace is unsupported at the moment :( Sorry!"
-            exit(1)
+            sys.stderr.write("Multiple Inheritace is unsupported at the moment :( Sorry!")
+            exit(-1)
         code += "{"
 
         classyMode = True
@@ -699,8 +701,8 @@ class PyParser(ast.NodeVisitor):
                     code += self.visit(node)
                 code += "}"
             except KeyError:
-                print "Fatal Error: Exception handler not implemented for " + handler.type.id
-                exit(1)
+                sys.stderr.write("Fatal Error: Exception handler not implemented for + handler.type.id")
+                exit(-1)
 
         if not final and len(nodes.orelse) > 0:
             self.addGuard("$tried")
@@ -754,6 +756,4 @@ for code in parsedCode:
     stitched += code
 stitched += "}"
 
-outFile = open("out.dart", 'w')
-outFile.write(stitched)
-outFile.close()
+sys.stdout.write(stitched)

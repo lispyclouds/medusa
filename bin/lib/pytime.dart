@@ -1,3 +1,7 @@
+library PyTime;
+
+import "inbuilts.dart";
+
 class $PyTime {
     var _tobj;
 
@@ -5,5 +9,5 @@ class $PyTime {
         _tobj = new DateTime.now();
     }
 
-    time() => _tobj.millisecondsSinceEpoch / 1000.0;
+    time() => new $PyNum(_tobj.millisecondsSinceEpoch / 1000.0);
 }
