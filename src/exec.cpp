@@ -8,4 +8,6 @@ void Exec::run(QString code, QString fileName) {
 
     QString command = "dart " + fileName;
     system(command.toStdString().c_str());
+
+    out.remove();
 }
