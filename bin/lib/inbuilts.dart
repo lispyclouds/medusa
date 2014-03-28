@@ -92,7 +92,7 @@ file(path, [mode = 'r']) {
 }
 
 class $PyNum {
-    num _value;
+    var _value;
 
     $PyNum(value) {
         switch ($getType(value)) {
@@ -122,7 +122,17 @@ class $PyNum {
     operator +(other) => new $PyNum(_value + other.value());
     operator -(other) => new $PyNum(_value - other.value());
     operator *(other) => new $PyNum(_value * other.value());
-    operator ~/(other) => new $PyNum(_value ~/ other.value());
+    operator /(other) {
+        // if(_value is int){
+        //     if(other._value is int)
+        //         return _value ~/ other._value;
+        //     else
+        //         return _value / other._value;
+        // }
+        // else
+        //     return _value / other._value;
+        
+    }
     operator |(other) => new $PyNum(_value | other.value());
     operator &(other) => new $PyNum(_value & other.value());
     operator ^(other) => new $PyNum(_value ^ other.value());
