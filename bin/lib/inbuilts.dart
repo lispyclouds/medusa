@@ -4,6 +4,9 @@ import "dart:io";
 import "dart:collection";
 import "dart:math";
 import "sprintf.dart";
+import "dart:mirrors";
+
+$getTypeName(obj) => reflect(obj).type.reflectedType.toString();
 
 class $PyFile {
     var handle;
@@ -92,7 +95,7 @@ file(path, [mode = 'r']) {
 }
 
 class $PyNum {
-    num _value;
+    var _value, type;
 
     $PyNum(value) {
         switch ($getType(value)) {
@@ -113,6 +116,7 @@ class $PyNum {
             default:
                 throw "Invalid input for num conversion";
         }
+        type = $getTypeName(_value);
     }
 
     value() => _value;
@@ -122,7 +126,16 @@ class $PyNum {
     operator +(other) => new $PyNum(_value + other.value());
     operator -(other) => new $PyNum(_value - other.value());
     operator *(other) => new $PyNum(_value * other.value());
-    operator ~/(other) => new $PyNum(_value ~/ other.value());
+    operator /(other) {
+        var result;
+
+        if (type == "double" || other.type == "double")
+            result = _value / other.value();
+        else
+            result = _value ~/ other.value();
+
+        return new $PyNum(result);
+    }
     operator |(other) => new $PyNum(_value | other.value());
     operator &(other) => new $PyNum(_value & other.value());
     operator ^(other) => new $PyNum(_value ^ other.value());
@@ -1105,26 +1118,33 @@ zip([list,starArgs]){
 }
 
 $getType(variable) {
-    if (variable is bool)
-        return 0;
-    else if (variable is $PyBool)
-        return 1;
-    else if (variable is $PyDict)
-        return 2;
-    else if (variable is $PyList)
-        return 3;
-    else if (variable is List)
-        return 4;
-    else if (variable is $PyNum)
-        return 5;
-    else if (variable is num)
-        return 6;
-    else if (variable is $PyString || variable is String)
-        return 7;
-    else if (variable is $PyTuple)
-        return 8;
-    else
-        return -1;
+    var tName = $getTypeName(variable);
+
+    switch (tName) {
+        case "bool":
+            return 0;
+        case "\$PyBool":
+            return 1;
+        case "\$PyDict":
+            return 2;
+        case "\$PyList":
+            return 3;
+        case "List":
+            return 4;
+        case "\$PyNum":
+            return 5;
+        case "int":
+        case "double":
+        case "num":
+            return 6;
+        case "\$PyString":
+        case "String":
+            return 7;
+        case "\$PyTuple":
+            return 8;
+        default:
+            return -1;
+    }
 }
 
 $checkValue(value){
