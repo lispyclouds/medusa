@@ -9,5 +9,5 @@ void Exec::run(QString code, QString fileName) {
     out.close();
 
     system(command.toStdString().c_str());
-    //out.remove();
+    out.remove();
 }
