@@ -95,9 +95,7 @@ class $PyNum {
     var _value, type;
 
     $PyNum(value) {
-        type = $getType(value);
-
-        switch (type) {
+        switch ($getType(value)) {
             case 6:
                 _value = value;
                 break;
@@ -115,6 +113,11 @@ class $PyNum {
             default:
                 throw "Invalid input for num conversion";
         }
+
+        if (_value is double)
+            type = 0;
+        else
+            type = 1;
     }
 
     value() => _value;
@@ -127,7 +130,7 @@ class $PyNum {
     operator /(other) {
         var result;
 
-        if (type == "double" || other.type == "double")
+        if (type == 0 || other.type == 0)
             result = _value / other.value();
         else
             result = _value ~/ other.value();
@@ -1296,7 +1299,6 @@ class $RangeIterator implements Iterator<int> {
     final _stop, _step;
 
     $RangeIterator(pos, stop, step) : _stop = stop, _pos = pos - step, _step = step;
-
     get current => _pos;
 
     bool moveNext() {
