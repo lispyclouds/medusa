@@ -4,9 +4,6 @@ import "dart:io";
 import "dart:collection";
 import "dart:math";
 import "sprintf.dart";
-import "dart:mirrors";
-
-$getTypeName(obj) => reflect(obj).type.reflectedType.toString();
 
 class $PyFile {
     var handle;
@@ -19,13 +16,13 @@ class $PyFile {
         softspace = true;
 
         switch (mode) {
-        case "r":
-            handle = new File(name).openSync(mode: FileMode.READ);
-            break;
+            case "r":
+                handle = new File(name).openSync(mode: FileMode.READ);
+                break;
 
-        case "w":
-            handle = new File(name).openSync(mode: FileMode.WRITE);
-            break;
+            case "w":
+                handle = new File(name).openSync(mode: FileMode.WRITE);
+                break;
         }
     }
 
@@ -59,17 +56,17 @@ class $PyFile {
         position = position.value();
 
         switch(whence) {
-        case 0:
-            handle.setPositionSync(position);
-            break;
+            case 0:
+                handle.setPositionSync(position);
+                break;
 
-        case 1:
-            handle.setPositionSync(handle.positionSync() + position);
-            break;
+            case 1:
+                handle.setPositionSync(handle.positionSync() + position);
+                break;
 
-        case 2:
-            handle.setPositionSync(handle.lengthSync() + position);
-            break;
+            case 2:
+                handle.setPositionSync(handle.lengthSync() + position);
+                break;
         }
     }
 
@@ -98,7 +95,9 @@ class $PyNum {
     var _value, type;
 
     $PyNum(value) {
-        switch ($getType(value)) {
+        type = $getType(value);
+
+        switch (type) {
             case 6:
                 _value = value;
                 break;
@@ -116,7 +115,6 @@ class $PyNum {
             default:
                 throw "Invalid input for num conversion";
         }
-        type = $getTypeName(_value);
     }
 
     value() => _value;
@@ -278,6 +276,7 @@ class $PyTuple extends IterableBase {
             throw "Invalid Tuple Key";
 
     }
+
     operator []=(i, j) => throw "Assignment not possible in Tuple";
     operator +(tupleObj) {
         if (tupleObj is $PyTuple) {
@@ -291,6 +290,7 @@ class $PyTuple extends IterableBase {
         else
             throw "Invalid operand for concatenation";
     }
+
     operator *(integer) {
         for (var i = 0; i < integer.value(); i++) {
             for (var item in this.tuple)
@@ -365,7 +365,7 @@ class $PyString extends IterableBase {
         if (capzed.length > 0)
             return new $PyString(capzed.replaceFirst(capzed[0], capzed[0].toUpperCase()));
         else
-            return new $PyString(capzed);
+            return this;
     }
 
     compareTo(other) =>  this < other ? this : other;
@@ -397,9 +397,8 @@ class $PyString extends IterableBase {
 
     toList() {
         var list = [];
-        for (var i in _str.split('')){
+        for (var i in _str.split(''))
             list.add(new $PyString(i));
-        }
         return list;
     }
 
@@ -412,20 +411,21 @@ class $PyString extends IterableBase {
             Iterable<Match> matches = exp.allMatches(string);
             var i = 0;
             var List = collection.getList();
-            for(var m in matches) {
+
+            for (var m in matches) {
                 String match = m.group(0);
                 if (match == "%s" || match == "% s")
                     List[i] = List[i].toString();
-                if ((match == "%d" || match == "% d") && List[i] is bool){
-                    if (List[i])
-                        List[i] = 1;
+                if (match == "%d" || match == "% d" || match == "%f" || match == "% f") {
+                    if (List[i] is $PyBool)
+                        (List[i] == true) ? List[i] = 1 : List[i] = 0;
                     else
-                        List[i] = 0;
+                        List[i] = List[i].value();
                 }
                 i++;
             }
             return new $PyString($sprintf(string, List));
-        } else if(collection is $PyDict) {
+        } else if (collection is $PyDict) {
             RegExp exp = new RegExp(r"%(\([a-zA-Z_]+\))*\s?[diuoxXeEfFgGcrs]");
             var List = [];
             Iterable<Match> matches = exp.allMatches(string);
@@ -433,7 +433,8 @@ class $PyString extends IterableBase {
             var currentIndex = 0;
             var newString = "";
             var key = "";
-            for(var m in matches){
+
+            for (var m in matches){
                 String match = m.group(0);
                 while(currentIndex <= m.start)
                     newString += string[currentIndex++];
@@ -657,7 +658,7 @@ class $PyList extends IterableBase {
 			case 6:
 				return false;
 			case 3:
-				for(var i = 0; i < (this.length <= other.length ? this.length : other.length); i++){
+				for (var i = 0; i < (this.length <= other.length ? this.length : other.length); i++){
 					if(_list[i] > other._list[i])
 						return false;
 					else if(_list[i] < other._list[i])
@@ -1118,33 +1119,26 @@ zip([list,starArgs]){
 }
 
 $getType(variable) {
-    var tName = $getTypeName(variable);
-
-    switch (tName) {
-        case "bool":
-            return 0;
-        case "\$PyBool":
-            return 1;
-        case "\$PyDict":
-            return 2;
-        case "\$PyList":
-            return 3;
-        case "List":
-            return 4;
-        case "\$PyNum":
-            return 5;
-        case "int":
-        case "double":
-        case "num":
-            return 6;
-        case "\$PyString":
-        case "String":
-            return 7;
-        case "\$PyTuple":
-            return 8;
-        default:
-            return -1;
-    }
+    if (variable is bool)
+        return 0;
+    else if (variable is $PyString)
+        return 1;
+    else if (variable is $PyDict)
+        return 2;
+    else if (variable is $PyList)
+        return 3;
+    else if (variable is List)
+        return 4;
+    else if (variable is $PyNum)
+        return 5;
+    else if (variable is num)
+        return 6;
+    else if (variable is $PyString || variable is String)
+        return 7;
+    else if (variable is $PyTuple)
+        return 8;
+    else
+        return -1;
 }
 
 $checkValue(value){
@@ -1206,7 +1200,6 @@ $or(list){
 }
 
 $generator(var function) => function();
-
 $pow(base, exp) => pow(base.value(), exp.value());
 
 max(values) {
