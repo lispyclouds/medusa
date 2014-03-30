@@ -7,7 +7,7 @@
 
 using namespace std;
 
-string helpText = "\nMedusa 1.0 beta\nCopyright (c) 2013-2104, Rahul De, Apoorv Agarwal and Aakash Giri, VIT University\n\
+string helpText = "\nMedusa 2.7.3 beta\nCopyright (c) 2013-2104, Rahul De, Apoorv Agarwal and Aakash Giri, VIT University\n\
 Licensed under BSD 3-Clause\n\nUsage: medusa [options] file\n\nOptions:\n\
 --help\tDispaly this information\n-c\tCompile to Dart only\n";
 
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    foreach(QString arg, app.arguments()) {
+    foreach (QString arg, app.arguments()) {
         if (arg == "--help") {
             artFile.open(QIODevice::ReadOnly | QIODevice::Text);
             art = artFile.readAll();
