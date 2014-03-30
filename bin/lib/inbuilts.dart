@@ -92,7 +92,7 @@ file(path, [mode = 'r']) {
 }
 
 class $PyNum {
-    var _value, type;
+    var _value;
 
     $PyNum(value) {
         switch ($getType(value)) {
@@ -113,11 +113,6 @@ class $PyNum {
             default:
                 throw "Invalid input for num conversion";
         }
-
-        if (_value is double)
-            type = 0;
-        else
-            type = 1;
     }
 
     value() => _value;
@@ -130,7 +125,7 @@ class $PyNum {
     operator /(other) {
         var result;
 
-        if (type == 0 || other.type == 0)
+        if (_value is double || other.value() is double)
             result = _value / other.value();
         else
             result = _value ~/ other.value();
