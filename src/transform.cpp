@@ -25,15 +25,17 @@ void Transform::readStandardError() {
 
 void Transform::pythonFinished(int exitCode, QProcess::ExitStatus) {
     this->exitCode = exitCode;
+    QSqlQuery query(db);
 
     if (exitCode == 0) {
-        QSqlQuery query(db);
         query.prepare("UPDATE MedusaCache SET GenCode=? WHERE InFile=?");
         query.addBindValue(reply);
         query.addBindValue(path);
         query.exec();
-    } else
+    } else {
+        query.exec("DELETE FROM MedusaCache WHERE InFile='" + path + "'");
         cerr << reply.toStdString() << endl;
+    }
 }
 
 bool Transform::transform(QString path, QString &code) {
