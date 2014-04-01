@@ -11,15 +11,14 @@ class $PyFile {
 
     $PyFile(name, [mode = 'r']) {
         closed = false;
-        this.name = name;
-        this.mode = mode;
+        this.name = name.toString();
+        this.mode = mode.toString();
         softspace = true;
 
-        switch (mode) {
+        switch (this.mode) {
             case "r":
                 handle = new File(name).openSync(mode: FileMode.READ);
                 break;
-
             case "w":
                 handle = new File(name).openSync(mode: FileMode.WRITE);
                 break;
@@ -40,7 +39,7 @@ class $PyFile {
     }
 
     readlines() => new $PyString(new File(name).readAsLinesSync());
-    write(data) => handle.writeStringSync(data);
+    write(data) => handle.writeStringSync(data.toString());
     tell() => handle.positionSync();
 
     writelines(lines) {
@@ -602,6 +601,7 @@ class $PyList extends IterableBase {
     sort() => new $PyList(_list.sort());
     reverse() => _list = _list.reversed.toList();
     toString() => _list.toString();
+    contains(elem) => _list.contains(elem);
 
     operator +(iterable) {
         extend(iterable);
@@ -936,7 +936,7 @@ class $PyDict extends IterableBase {
     viewitems() => _dict.items();
     viewkeys() => _dict.keys;
     viewvalues() => _dict.values;
-    operator [](index) => _dict[index.value()];
+    operator [](index) => _dict[index];
     operator []=(pos, item) => _dict[pos.value()] = item;
 
     operator ==(other){
@@ -1119,7 +1119,7 @@ zip([list,starArgs]){
 $getType(variable) {
     if (variable is bool)
         return 0;
-    else if (variable is $PyString)
+    else if (variable is $PyBool)
         return 1;
     else if (variable is $PyDict)
         return 2;
@@ -1218,6 +1218,9 @@ class $Range extends Object with IterableMixin<int> {
         }
         else
             stop = stop.value();
+
+        start = start.value();
+        step = step.value();
 
         if (step == 0)
             throw new ArgumentError("step must not be 0");
