@@ -5,7 +5,7 @@
 
 class Exec {
 public:
-    void run(QString code, QString fileName);
+    void run(QString code, QString fileName, bool cStop);
 };
 
 #endif

@@ -80,7 +80,7 @@ class PyParser(ast.NodeVisitor):
             elif parsedType is "imports":
                 parsedImports += parsed.split(":")
             else:
-                sys.stderr.write("Not Implemented => " + type(node))
+                sys.stderr.write("[Medusa Error] Can't Parse " + type(node))
                 exit(-1)
 
     def visit_UAdd(self, stmt_uadd):
@@ -229,7 +229,7 @@ class PyParser(ast.NodeVisitor):
                 elif op == "or":
                     code += "if($checkValue(temp))return temp;"
                 else:
-                    sys.stderr.write("Operator not implemented => " + op)
+                    sys.stderr.write("[Medusa Error] Operator not implemented => " + op)
                     exit(-1)
             i += 1
 
@@ -255,7 +255,7 @@ class PyParser(ast.NodeVisitor):
 
                 code.append(alias + "=new " + imports[name.name][1] + "()")
             except KeyError:
-                sys.stderr.write("Unimplemented module for import:" + name.name)
+                sys.stderr.write("[Medusa Error] Unimplemented module for import: " + name.name)
                 exit(-1)
 
         parsedType = "imports"
@@ -348,7 +348,7 @@ class PyParser(ast.NodeVisitor):
             data = str(listVar) + index
             return data
         else:
-            sys.stderr.write("Unimplemented Type => %s" + type(stmt_Subscript.slice))
+            sys.stderr.write("[Medusa Error] Unimplemented Type => " + type(stmt_Subscript.slice))
             exit(-1)
 
     def subsituteVisit(self, node):
@@ -385,7 +385,7 @@ class PyParser(ast.NodeVisitor):
                 base = str(stmt_class.bases[0].id)
             code += " extends " + base
         elif len(stmt_class.bases) > 1:
-            sys.stderr.write("Multiple Inheritace is unsupported at the moment :( Sorry!")
+            sys.stderr.write("[Medusa Error] Multiple Inheritace is unsupported at the moment :( Sorry!")
             exit(-1)
         code += "{"
 
@@ -704,7 +704,7 @@ class PyParser(ast.NodeVisitor):
                     code += self.visit(node)
                 code += "}"
             except KeyError:
-                sys.stderr.write("Fatal Error: Exception handler not implemented for + handler.type.id")
+                sys.stderr.write("[Medusa Error] Exception handler not implemented for + handler.type.id")
                 exit(-1)
 
         if not final and len(nodes.orelse) > 0:
