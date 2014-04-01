@@ -128,6 +128,9 @@ class PyParser(ast.NodeVisitor):
     def visit_Div(self, stmt_div):
         return "/"
 
+    def visit_FloorDiv(self, stmt_fdiv):
+        return "/"
+
     def visit_Pow(self, stmt_pow):
         self.addImport('lib/inbuilts.dart')
         return ","

@@ -365,6 +365,24 @@ class $PyString extends IterableBase {
             return this;
     }
 
+    center(width, [fillChar = " "]) {
+        if($getTypeName(width.value()) != "int" || fillChar.length > 1)
+            throw "Invalid Arguments";
+        fillChar = fillChar.toString();
+        var extra = width.value() - _str.length;
+        if(extra <= 0)
+            return this;
+        else {
+            var left = extra ~/ 2;
+            var right = width.value() - left - _str.length; 
+            var finalStr = "";
+            for(var i = 0; i < left; i++) finalStr += fillChar;
+            finalStr += _str;
+            for(var i = 0; i < right; i++) finalStr += fillChar;
+            return new $PyString(finalStr);
+        }
+    }
+
     compareTo(other) =>  this < other ? this : other;
     join(list) => new $PyString(list.join(_str));
     replace(target, value) => new $PyString(_str.replaceAll(target.toString(), value.toString()));
@@ -1073,9 +1091,9 @@ sum(var iterable, [start]){
     var total = start;
     for(var i in iterable){
         if(i == true)
-            i = 1;
+            i = new $PyNum(1);
         else if(i == false)
-            i = 0;
+            i = new $PyNum(0);
         total += i;
     }
     return total;
