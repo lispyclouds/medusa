@@ -345,10 +345,10 @@ class $PyTuple extends IterableBase {
     operator ==(other) {
         switch($getType(other)) {
             case 8:
-                if(this.length != other.length)
+                if (this.length != other.length)
                     return false;
-                for(var i = 0; i < this.length; i++){
-                    if(_tuple[i] != other._tuple[i])
+                for (var i = 0; i < this.length; i++) {
+                    if (_tuple[i] != other._tuple[i])
                         return false;
                 }
                 return true;
@@ -366,18 +366,16 @@ class $PyTuple extends IterableBase {
             case 4:
             case 5:
             case 6:
-            case 7:
-                return false;
+            case 7: return false;
             case 8:
-                for(var i = 0; i < (this.length <= other.length ? this.length : other.length); i++){
+                for (var i = 0; i < (this.length <= other.length ? this.length : other.length); i++) {
                     if (_tuple[i] > other._tuple[i])
                         return false;
                     else if (_tuple[i] < other._tuple[i])
                         return true;
                 }
                 return other.length < this.length ? false : true;
-            default:
-                break;
+            default: break;
         }
     }
 
@@ -495,7 +493,7 @@ class $PyString extends IterableBase {
             var newString = "";
             var key = "";
 
-            for (var m in matches){
+            for (var m in matches) {
                 String match = m.group(0);
                 while(currentIndex <= m.start)
                     newString += string[currentIndex++];
@@ -505,10 +503,10 @@ class $PyString extends IterableBase {
                     key += string[currentIndex++];
 
                 currentIndex = m.end - 1;
-                if(string[currentIndex] == "s")
+                if (string[currentIndex] == "s")
                     List.add(collection[key].toString());
-                else if(string[currentIndex] == "d" && collection[key] is bool){
-                    if(collection[key])
+                else if (string[currentIndex] == "d" && collection[key] is bool) {
+                    if (collection[key])
                         List.add(1);
                     else
                         List.add(0);
@@ -541,7 +539,7 @@ class $PyString extends IterableBase {
                 key += string[currentIndex++];
 
             exp = new RegExp(r"{\d+}");
-            if(exp.hasMatch(match))
+            if (exp.hasMatch(match))
                 newString += list[int.parse(key)].toString();
             else
                 newString += dictionary[key].toString();
@@ -568,11 +566,9 @@ class $PyString extends IterableBase {
             case 3:
             case 4:
             case 5:
-            case 8:
-                return false;
+            case 8: return false;
             case 6:
-            case 7:
-                return (_str.compareTo(other.toString()) == 0) ? true : false;
+            case 7: return (_str.compareTo(other.toString()) == 0) ? true : false;
         }
     }
 
@@ -583,13 +579,10 @@ class $PyString extends IterableBase {
             case 2:
             case 3:
             case 4:
-            case 5:
-                return false;
+            case 5: return false;
             case 6:
-            case 7:
-                return (_str.compareTo(other.toString()) < 0) ? true : false;
-            case 8:
-                return true;
+            case 7: return (_str.compareTo(other.toString()) < 0) ? true : false;
+            case 8: return true;
         }
     }
 
@@ -676,19 +669,19 @@ class $PyList extends IterableBase {
 
     operator *(mul) {
         var pdt = new $PyList([]);
-        for (var i = 0; i < mul.value; i++)
+        for (var i = 0; i < mul; i++)
             pdt += this;
 
         return pdt;
     }
 
-    operator ==(other){
-        switch($getType(other)){
+    operator ==(other) {
+        switch($getType(other)) {
             case 2:
-                if(this.length != other.length)
+                if (this.length != other.length)
                     return false;
-                for(int i = 0; i < this.length; i++){
-                    if(_list[i] != other._list[i])
+                for (int i = 0; i < this.length; i++) {
+                    if (_list[i] != other._list[i])
                         return false;
                 }
                 return true;
@@ -697,27 +690,24 @@ class $PyList extends IterableBase {
         }
     }
 
-    operator <(other){
+    operator <(other) {
         switch($getType(other)) {
             case 0:
             case 1:
             case 2:
             case 5:
-            case 6:
-                return false;
+            case 6: return false;
             case 3:
-                for (int i = 0; i < (this.length <= other.length ? this.length : other.length); i++){
-                    if(_list[i] > other._list[i])
+                for (int i = 0; i < (this.length <= other.length ? this.length : other.length); i++) {
+                    if (_list[i] > other._list[i])
                         return false;
-                    else if(_list[i] < other._list[i])
+                    else if (_list[i] < other._list[i])
                         return true;
                 }
                 return other.length < this.length ? false : true;
             case 7:
-            case 8:
-                return true;
-            default:
-                break;
+            case 8: return true;
+            default: break;
         }
     }
 
@@ -743,8 +733,7 @@ list([iterable]) {
                 break;
             case 4:
                 break;
-            default:
-                throw "Invalid parameter";
+            default: throw "Invalid parameter";
         }
     }
     return new $PyList(iterable);
@@ -758,68 +747,68 @@ class $PySet extends IterableBase {
     get length => _set.length;
     add(var elem) => this._set.add(elem);
 
-    isdisjoint(var iterable) {
-        var other = new $PySet(iterable);
-        if(this._set.intersection(other._set).length == 0)
+    isdisjoint(iterable) {
+        $PySet other = new $PySet(iterable);
+        if (this._set.intersection(other._set).length == 0)
             return true;
         else
             return false;
     }
 
-    issubset(var iterable) {
-        var other = new $PySet(iterable);
+    issubset(iterable) {
+        $PySet other = new $PySet(iterable);
         return other._set.containsAll(this._set);
     }
 
-    issuperset(var iterable){
-        var other = new $PySet(iterable);
+    issuperset(iterable) {
+        $PySet other = new $PySet(iterable);
         return this._set.containsAll(other._set);
     }
 
-    union(var iterable) {
-        var other = new $PySet(iterable);
+    union(iterable) {
+        $PySet other = new $PySet(iterable);
         return new $PySet(this._set.union(other._set));
     }
 
-    intersection(var iterable) {
-        var other = new $PySet(iterable);
+    intersection(iterable) {
+        $PySet other = new $PySet(iterable);
         return new $PySet(this._set.intersection(other._set));
     }
 
-    difference(var iterable){
-        var other = new $PySet(iterable);
+    difference(iterable) {
+        $PySet other = new $PySet(iterable);
         return new $PySet(this._set.difference(other._set));
     }
 
-    symmetric_difference(var iterable){
-        var other = new $PySet(iterable);
+    symmetric_difference(iterable) {
+        $PySet other = new $PySet(iterable);
         return new $PySet(this._set.union(other._set).difference(this._set.intersection(other._set)));
     }
 
-    update(var iterable){
-        var other = new $PySet(iterable);
+    update(iterable) {
+        $PySet other = new $PySet(iterable);
         this._set = this._set.union(other._set);
     }
 
-    intersection_update(var iterable){
-        var other = new $PySet(iterable);
+    intersection_update(iterable) {
+        $PySet other = new $PySet(iterable);
         this._set = this._set.intersection(other._set);
     }
 
-    difference_update(var iterable){
-        var other = new $PySet(iterable);
+    difference_update(iterable) {
+        $PySet other = new $PySet(iterable);
         this._set = this._set.difference(other._set);
     }
 
-    symmetric_difference_update(var iterable){
-        var other = new $PySet(iterable);
+    symmetric_difference_update(iterable) {
+        $PySet other = new $PySet(iterable);
         this._set = this._set.union(other._set).difference(this._set.intersection(other._set));
     }
 
-    remove(var element) => this._set.remove(element);
+    remove(element) => this._set.remove(element);
 
-    discard(var element){
-        if(this._set.contains(element))
+    discard(element) {
+        if (this._set.contains(element))
             this._set.remove(element);
     }
 
@@ -833,8 +822,8 @@ class $PySet extends IterableBase {
             throw "Invalid Arguments";
     }
 
-    operator ==(other){
-        if (other is $PySet){
+    operator ==(other) {
+        if (other is $PySet) {
             if (other._set.length == this._set.length)
                 return this._set.difference(other._set).length == 0;
             return false;
@@ -843,49 +832,49 @@ class $PySet extends IterableBase {
             throw "Invalid Arguments";
     }
 
-    operator <=(other){
+    operator <=(other) {
         if (other is $PySet)
             return other._set.containsAll(this._set);
         else
             throw "Invalid Arguments";
     }
 
-    operator <(other){
+    operator <(other) {
         if (other is $PySet)
             return (this <= other && this != other);
         else
             throw "Invalid Arguments";
     }
 
-    operator >=(other){
+    operator >=(other) {
         if (other is $PySet)
             return this._set.containsAll(other._set);
         else
             throw "Invalid Arguments";
     }
 
-    operator >(other){
+    operator >(other) {
         if (other is $PySet)
             return (other <= this && other != this);
         else
             throw "Invalid Arguments";
     }
 
-    operator |(other){
+    operator |(other) {
         if (other is $PySet)
             return new $PySet(this._set.union(other._set));
         else
             throw "Invalid Arguments";
     }
 
-    operator &(other){
+    operator &(other) {
         if (other is $PySet)
             return new $PySet(this._set.intersection(other._set));
         else
             throw "Invalid Arguments";
     }
 
-    operator ^(other){
+    operator ^(other) {
         if (other is $PySet)
             return new $PySet(this._set.union(other._set).difference(this._set.intersection(other._set)));
         else
@@ -998,10 +987,10 @@ class $PyDict extends IterableBase {
                 otherKeys.sort();
                 thisValues.sort();
                 otherValues.sort();
-                if(thisKeys != otherKeys || thisValues != otherValues)
+                if (thisKeys != otherKeys || thisValues != otherValues)
                     return false;
-                for(var key in thisKeys){
-                    if(_dict[key] != other._dict[key])
+                for (var key in thisKeys) {
+                    if (_dict[key] != other._dict[key])
                         return false;
                 }
                 return true;
@@ -1020,14 +1009,14 @@ class $PyDict extends IterableBase {
                 var otherKeys = other.keys();
                 thisKeys.sort();
                 otherKeys.sort();
-                if(thisKeys < otherKeys)
+                if (thisKeys < otherKeys)
                     return true;
 
-                else if(thisKeys == otherKeys){
-                    for(var key in this.keys()){
-                        if(_dict[key] < other._dict[key])
+                else if (thisKeys == otherKeys) {
+                    for (var key in this.keys()) {
+                        if (_dict[key] < other._dict[key])
                             return true;
-                        else if(_dict[key] > other._dict[key])
+                        else if (_dict[key] > other._dict[key])
                             return false;
                     }
                     return false;
@@ -1039,8 +1028,7 @@ class $PyDict extends IterableBase {
             case 5:
             case 6:
             case 7:
-            case 8:
-                return true;
+            case 8: return true;
         }
     }
 
@@ -1073,15 +1061,15 @@ abs(n) {
 
 all(iterable) {
     var i;
-    for(i in iterable){
-        if(!$checkValue(i))
+    for (i in iterable) {
+        if (!$checkValue(i))
             return false;
     }
     return true;
 }
 
 any(iterable) {
-    for (var i in iterable){
+    for (var i in iterable) {
         if ($checkValue(i))
             return true;
     }
@@ -1090,8 +1078,7 @@ any(iterable) {
 
 bin(integer) {
     integer = integer.value;
-    var num1 = 0;
-    var x = 0;
+    int num1, x = 0;
     while (integer > 0) {
         x = integer % 2;
         num1 = num1 * 10 + x;
@@ -1130,10 +1117,10 @@ sum(var iterable, [start]) {
         start = new $PyNum(0);
 
     var total = start;
-    for(var i in iterable) {
-        if(i == true)
+    for (var i in iterable) {
+        if (i == true)
             i = new $PyNum(1);
-        else if(i == false)
+        else if (i == false)
             i = new $PyNum(0);
         total += i;
     }
@@ -1144,7 +1131,6 @@ zip([list, starArgs]) {
     int i, j, length = 0;
     $PyList finalList = new $PyList([]);
     List tempList = [];
-    var tuple;
 
     if (list.length == 0 && starArgs == null)
         return new $PyList([]);
@@ -1157,19 +1143,18 @@ zip([list, starArgs]) {
         if (list.length > 0)
             length = list[0].length;
 
-        for (i = 1; i < list.length; i++){
+        for (i = 1; i < list.length; i++) {
             if (list[i].length < length)
                 length = list[i].length;
         }
 
-        for (i = 0; i < length; i++){
+        for (i = 0; i < length; i++) {
             tempList.clear();
             for (j = 0; j < list.length; j++)
                 tempList.add(list[j][i]);
-            tuple = new $PyTuple(tempList);
+            $PyTuple tuple = new $PyTuple(tempList);
             finalList.append(tuple);
         }
-
         return finalList;
     }
 }
@@ -1197,8 +1182,8 @@ $getType(variable) {
         return -1;
 }
 
-$checkValue(i){
-    switch($getType(i)){
+$checkValue(i) {
+    switch($getType(i)) {
         case 0: return false;
         case 4:
         case 5:
@@ -1226,9 +1211,9 @@ $checkValue(i){
     return false;
 }
 
-$and(list){
+$and(list) {
     var item;
-    for (int i = 0; i < list.length - 1; i++){
+    for (int i = 0; i < list.length - 1; i++) {
         item = list[i];
         if (!$checkValue(item)) {
             if (list[i] == null)
@@ -1239,9 +1224,9 @@ $and(list){
     return list.last;
 }
 
-$or(list){
-    for (int i = 0; i < list.length; i++){
-        if($checkValue(list[i]))
+$or(list) {
+    for (int i = 0; i < list.length; i++) {
+        if ($checkValue(list[i]))
             return list[i];
     }
     if (list[list.length - 1] == null)
@@ -1273,7 +1258,7 @@ class $Range extends Object with IterableMixin<int> {
         else
             stop = stop.value;
 
-        if(step == null)
+        if (step == null)
             step = new $PyNum(1);
 
         start = start.value;

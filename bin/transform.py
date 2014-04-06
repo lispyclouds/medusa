@@ -634,7 +634,6 @@ class PyParser(ast.NodeVisitor):
 
     def visit_Break(self, stmt_break):
         global broken
-
         return "$broken=true;break;" if broken else "break;"
 
     def visit_If(self, stmt_if):
