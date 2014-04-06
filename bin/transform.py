@@ -22,6 +22,7 @@ funMode = False
 broken = False
 formats = False
 fromTest = False
+wrap = True
 
 imports = dict()
 imports['random'] = ["lib/pyrandom.dart", "$PyRandom"]
@@ -93,28 +94,43 @@ class PyParser(ast.NodeVisitor):
         return "~"
 
     def visit_Name(self, stmt_name):
-        global parsedType
+        global parsedType, wrap
 
         name = stmt_name.id
-
         if name is "False" or name is "True":
-            self.addImport("lib/inbuilts.dart")
-            name = "new $PyBool(" + name.lower() + ")"
+            name = 'false' if name == 'False' else 'true'
+            if wrap:
+                self.addImport("lib/inbuilts.dart")
+                name = "new $PyBool(" + name + ")"
         elif name is "self":
             name = "this"
         elif name is "None":
-            name = "null"
+            self.addImport("lib/inbuilts.dart")
+            name = "new $PyNone()"
 
-        parsedType = "code"
-        return str(name)
+        return name
 
     def visit_Num(self, stmt_num):
-        self.addImport("lib/inbuilts.dart")
-        return "new $PyNum(" + str(stmt_num.n) + ")"
+        global wrap
+
+        code = ""
+        if wrap:
+            self.addImport("lib/inbuilts.dart")
+            code =  "int(" + str(stmt_num.n) + ")"
+        else:
+            code = str(stmt_num.n)
+        return code
 
     def visit_Str(self, stmt_str):
-        self.addImport("lib/inbuilts.dart")
-        return "new $PyString(" + self.escape(stmt_str.s) + ")"
+        global wrap
+
+        code = ""
+        if wrap:
+            self.addImport("lib/inbuilts.dart")
+            code =  "str('" + str(stmt_str.s) + "')"
+        else:
+            code = "'" + str(stmt_str.s) + "'"
+        return code
 
     def visit_Add(self, stmt_add):
         return "+"
@@ -202,9 +218,13 @@ class PyParser(ast.NodeVisitor):
         return data
 
     def visit_BinOp(self, stmt_binop):
+        global wrap
+
         left = self.visit(stmt_binop.left)
         op = self.visit(stmt_binop.op)
+        wrap = False
         right = self.visit(stmt_binop.right)
+        wrap = True
         exp = "(" + left + op + right + ")"
 
         if op == ",":
@@ -262,9 +282,15 @@ class PyParser(ast.NodeVisitor):
         return ":".join(code)
 
     def visit_List(self, stmt_list):
-        self.addImport("lib/inbuilts.dart");
+        global wrap
 
-        code = "new $PyList(["
+        code = ""
+        if wrap:
+            self.addImport("lib/inbuilts.dart");
+            code += "new $PyList(["
+        else:
+            code += "["
+
         alen = len(stmt_list.elts)
         i = 0
         while i < alen:
@@ -272,7 +298,10 @@ class PyParser(ast.NodeVisitor):
             if i < alen - 1:
                 code += ","
             i += 1
-        code += "])"
+        code += "]"
+
+        if wrap:
+            code += ")"
 
         return code
 
@@ -299,7 +328,8 @@ class PyParser(ast.NodeVisitor):
         return self.visit_ListComp(stmt_generatorexp)
 
     def visit_Dict(self, stmt_dict):
-        code = "new $PyDict(new $PyList(["
+        self.addImport("lib/inbuilts.dart");
+        code = "dict(list(["
         l = len(stmt_dict.keys)
         i = 0
         while i < l:
@@ -334,7 +364,7 @@ class PyParser(ast.NodeVisitor):
             lower = self.subsituteVisit(stmt_Subscript.slice.lower)
             upper = self.subsituteVisit(stmt_Subscript.slice.upper)
             step = self.subsituteVisit(stmt_Subscript.slice.step)
-            step = 1 if step is None or step == "None" else int(step)
+            step = "new $PyNum(1)" if step is None or step == "None" else int(step)
             lower = (str(listVar) + ".length," if step < 0 else "0,") if lower is None  else str(lower) + ","
             upper = (str(listVar) + ".length," if step > 0 else "0,") if upper is None  else str(upper) + ","
             data = "$slice(" + str(listVar) + "," + str(lower) + str(upper) + str(step) + ")"
@@ -358,9 +388,13 @@ class PyParser(ast.NodeVisitor):
             return None
 
     def visit_Compare(self, stmt_test):
+        global wrap
+
         left = self.visit(stmt_test.left)
         op = self.visit(stmt_test.ops[0])
+        wrap = False
         right = self.visit(stmt_test.comparators[0])
+        wrap = True
 
         if op == ".contains":
             code = right + op + "(" + left + ")"
@@ -607,7 +641,10 @@ class PyParser(ast.NodeVisitor):
         global fromTest
 
         fromTest = True
-        code = "if(" + self.visit(stmt_if.test) + "){"
+        code = self.visit(stmt_if.test)
+        if isinstance(stmt_if.test, _ast.Name):
+            code = "$checkValue(" + code + ")"
+        code = "if(" + code + "){"
         for node in stmt_if.body:
             code += self.visit(node)
         code += "}"
