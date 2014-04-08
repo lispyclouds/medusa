@@ -1,6 +1,6 @@
 """ Fast Python Transform by heisenberg, apoorv, akashgiri """
 
-import ast, _ast, sys
+import ast, _ast, sys, os
 
 dartImports = []
 dartLocalVars = []
@@ -23,6 +23,7 @@ broken = False
 formats = False
 fromTest = False
 wrap = True
+importing = False
 
 imports = dict()
 imports['random'] = ["lib/pyrandom.dart", "$PyRandom"]
@@ -71,7 +72,7 @@ class PyParser(ast.NodeVisitor):
         for node in stmt_module.body:
             parsedType = "code"
             parsed = self.visit(node)
-            #print parsed
+
             if parsedType is "class":
                 parsedClasses.append(parsed)
             elif parsedType is "function":
@@ -116,7 +117,7 @@ class PyParser(ast.NodeVisitor):
         code = ""
         if wrap:
             self.addImport("lib/inbuilts.dart")
-            code =  "int(" + str(stmt_num.n) + ")"
+            code = "$n(" + str(stmt_num.n) + ")"
         else:
             code = str(stmt_num.n)
         return code
@@ -235,19 +236,19 @@ class PyParser(ast.NodeVisitor):
     def visit_BoolOp(self, stmt_boolop):
         self.addImport('lib/inbuilts.dart');
         op = self.visit(stmt_boolop.op)
-        code = "$generator((){var temp;"
+        code = "$generator((){var $temp;"
 
         i = 0
         while i < len(stmt_boolop.values):
             item = self.visit(stmt_boolop.values[i])
-            code += "temp=" + item + ";"
+            code += "$temp=" + item + ";"
             if i == len(stmt_boolop.values) - 1:
-                code += "return temp;"
+                code += "return $temp;"
             else:
                 if op == "and":
-                    code += "if(!$checkValue(temp))return temp;"
+                    code += "if(!$checkValue($temp))return temp;"
                 elif op == "or":
-                    code += "if($checkValue(temp))return temp;"
+                    code += "if($checkValue($temp))return temp;"
                 else:
                     sys.stderr.write("[Medusa Error] Operator not implemented => " + op)
                     exit(-1)
@@ -260,23 +261,53 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Import(self, stmt_import):
-        global parsedType, imports
+        global parsedType, imports, parsedClasses, parsedFunctions, parsedCode, importing
 
         code, alias = [], ""
 
         for name in stmt_import.names:
             try:
                 self.addImport(imports[name.name][0])
-
                 if name.asname is None:
                     alias = name.name
                 else:
                     alias = name.asname
-
                 code.append(alias + "=new " + imports[name.name][1] + "()")
             except KeyError:
-                sys.stderr.write("[Medusa Error] Unimplemented module for import: " + name.name)
-                exit(-1)
+                iFile = os.path.split(os.path.realpath(sys.argv[1]))[0] + os.sep + name.name + ".py";
+
+                if os.path.exists(iFile):
+                    if importing:
+                        sys.stderr.write("[Medusa Error] Cannot recursively import user code. Yet. Sorry :(")
+                        exit(-1)
+
+                    importing = True
+                    class_bak, func_bak, code_bak = parsedClasses, parsedFunctions, parsedCode
+                    parsedClasses, parsedFunctions, parsedCode = [], [], []
+
+                    self.parse(open(iFile).read())
+
+                    class_bak.append("class $" + name.name + "{")
+                    class_bak[-1] += "".join(parsedClasses)
+                    class_bak[-1] += "".join(parsedFunctions)
+                    class_bak[-1] += "}";
+                    parsedClasses = class_bak
+                    parsedFunctions = func_bak
+
+                    if code_bak is not []:
+                        code_bak += parsedCode;
+                        parsedCode = code_bak
+
+                    importing = False
+
+                    if name.asname is None:
+                        alias = name.name
+                    else:
+                        alias = name.asname
+                    code.append(alias + "=new $" + name.name + "()")
+                else:
+                    sys.stderr.write("[Medusa Error] Unimplemented or module found for import: " + name.name)
+                    exit(-1)
 
         parsedType = "imports"
         return ":".join(code)

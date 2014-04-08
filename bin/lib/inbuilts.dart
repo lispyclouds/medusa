@@ -127,7 +127,7 @@ class $PyNum {
 
     const $PyNum(this._value);
     get value => _value;
-    toString() => _value.toString();
+    String toString() => _value.toString();
 
     static num toNum(x) {
         if (x is $PyNum)
@@ -201,10 +201,10 @@ class $PyNum {
     }
 }
 
-$PyNum int([x]) {
+$PyNum $n([x]) {
     if (x == null)
         x = 0;
-    else  if (x is $PyNum)
+    else if (x is $PyNum)
         x = x._value;
     else if (x is $PyString) {
         try {
@@ -218,7 +218,22 @@ $PyNum int([x]) {
         throw "Invalid numeric data";
     return new $PyNum(x);
 }
-$PyNum float([x]) => int(x);
+
+$PyNum int([x]) {
+    if (x == null)
+        x = 0;
+    else
+        x = x.value.toInt();
+    return new $PyNum(x);
+}
+
+$PyNum float([x]) {
+    if (x == null)
+        x = 0.0;
+    else
+        x = x.value.toDouble();
+    return new $PyNum(x);
+}
 
 class $PyBool {
     final bool _boo;
@@ -994,16 +1009,14 @@ class $PyDict extends IterableBase {
                         return false;
                 }
                 return true;
-            default:
-                return false;
+            default: return false;
         }
     }
 
     operator <(other) {
         switch($getType(other)) {
             case 0:
-            case 1:
-                return false;
+            case 1: return false;
             case 2:
                 var thisKeys = this.keys();
                 var otherKeys = other.keys();
@@ -1053,15 +1066,12 @@ dict([pairs]) {
 }
 
 abs(n) {
-    if (n < 0)
-        return n * -1;
-    else
-        return n;
+    if (n < 0) return n * -1;
+    else return n;
 }
 
 all(iterable) {
-    var i;
-    for (i in iterable) {
+    for (var i in iterable) {
         if (!$checkValue(i))
             return false;
     }
@@ -1098,10 +1108,8 @@ raw_input([message]) {
 input([message]) {
     if (message != null)
         stdout.write(message);
-
     try {
-        var value = num.parse(stdin.readLineSync(encoding: SYSTEM_ENCODING));
-        return new $PyNum(value);
+        return new $PyNum(num.parse(stdin.readLineSync(encoding: SYSTEM_ENCODING)));
     } catch (ex) {
         print("Fatal Error: Non numeric characters in input; Try raw_input()");
         exit(1);
@@ -1238,12 +1246,16 @@ $generator(var function) => function();
 $pow(base, exp) => pow(base.value, exp.value);
 
 max(values) {
-    values.sort();
+    if (values.length == 1 && values[0] is $PyList)
+        values = values[0];
+    values.sort((x, y) => x < y);
     return values.last;
 }
 
 min(values) {
-    values.sort();
+    if (values.length == 1 && values[0] is $PyList)
+        values = values[0];
+    values.sort((x, y) => x < y);
     return values.first;
 }
 
