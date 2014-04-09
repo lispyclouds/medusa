@@ -282,7 +282,7 @@ class PyParser(ast.NodeVisitor):
             except KeyError:
                 iFile = os.path.split(os.path.realpath(sys.argv[1]))[0] + os.sep + name.name + ".py";
 
-                if os.path.exists(iFile):
+                if os.path.exists(iFile) or os.path.exists("lib" + os.sep + name.name + ".py"):
                     if importing:
                         sys.stderr.write("[Medusa Error] Cannot recursively import user code. Yet. Sorry :(")
                         exit(-1)
@@ -301,7 +301,7 @@ class PyParser(ast.NodeVisitor):
                     parsedFunctions = func_bak
 
                     if code_bak is not []:
-                        code_bak += parsedCode;
+                        code_bak += parsedCode
                         parsedCode = code_bak
 
                     importing = False
