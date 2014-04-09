@@ -16,6 +16,7 @@ parsedClasses = []
 parsedFunctions = []
 parsedCode = []
 variableArgs = ["max", "min", "zip"]
+userImports = []
 
 classyMode = False
 funMode = False
@@ -261,17 +262,22 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Import(self, stmt_import):
-        global parsedType, imports, parsedClasses, parsedFunctions, parsedCode, importing
+        global parsedType, imports, parsedClasses, parsedFunctions, parsedCode, importing, userImports
 
         code, alias = [], ""
 
         for name in stmt_import.names:
+            if name.name in userImports:
+                continue
+
             try:
                 self.addImport(imports[name.name][0])
                 if name.asname is None:
                     alias = name.name
                 else:
                     alias = name.asname
+
+                userImports.append(name.name)
                 code.append(alias + "=new " + imports[name.name][1] + "()")
             except KeyError:
                 iFile = os.path.split(os.path.realpath(sys.argv[1]))[0] + os.sep + name.name + ".py";
@@ -304,13 +310,18 @@ class PyParser(ast.NodeVisitor):
                         alias = name.name
                     else:
                         alias = name.asname
+
+                    userImports.append(name.name)
                     code.append(alias + "=new $" + name.name + "()")
                 else:
                     sys.stderr.write("[Medusa Error] Unimplemented or module found for import: " + name.name)
                     exit(-1)
 
         parsedType = "imports"
-        return ":".join(code)
+        if code is not []:
+            return ":".join(code)
+        else:
+            return ""
 
     def visit_List(self, stmt_list):
         global wrap
