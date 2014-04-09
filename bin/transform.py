@@ -264,7 +264,7 @@ class PyParser(ast.NodeVisitor):
     def visit_Import(self, stmt_import):
         global parsedType, imports, parsedClasses, parsedFunctions, parsedCode, importing, userImports
 
-        code, alias = [], ""
+        code, alias, wd = [], "", os.path.split(os.path.realpath(sys.argv[1]))[0]
 
         for name in stmt_import.names:
             if name.name in userImports:
@@ -280,42 +280,44 @@ class PyParser(ast.NodeVisitor):
                 userImports.append(name.name)
                 code.append(alias + "=new " + imports[name.name][1] + "()")
             except KeyError:
-                iFile = os.path.split(os.path.realpath(sys.argv[1]))[0] + os.sep + name.name + ".py";
-
-                if os.path.exists(iFile) or os.path.exists("lib" + os.sep + name.name + ".py"):
-                    if importing:
-                        sys.stderr.write("[Medusa Error] Cannot recursively import user code. Yet. Sorry :(")
-                        exit(-1)
-
-                    importing = True
-                    class_bak, func_bak, code_bak = parsedClasses, parsedFunctions, parsedCode
-                    parsedClasses, parsedFunctions, parsedCode = [], [], []
-
-                    self.parse(open(iFile).read())
-
-                    class_bak.append("class $" + name.name + "{")
-                    class_bak[-1] += "".join(parsedClasses)
-                    class_bak[-1] += "".join(parsedFunctions)
-                    class_bak[-1] += "}";
-                    parsedClasses = class_bak
-                    parsedFunctions = func_bak
-
-                    if code_bak is not []:
-                        code_bak += parsedCode
-                        parsedCode = code_bak
-
-                    importing = False
-
-                    if name.asname is None:
-                        alias = name.name
-                    else:
-                        alias = name.asname
-
-                    userImports.append(name.name)
-                    code.append(alias + "=new $" + name.name + "()")
+                if os.path.exists(wd + os.sep + name.name + ".py"):
+                    iFile =  wd + os.sep + name.name + ".py";
+                elif os.path.exists("lib" + os.sep + name.name + ".py"):
+                    iFile = "lib" + os.sep + name.name + ".py"
                 else:
                     sys.stderr.write("[Medusa Error] Unimplemented or module found for import: " + name.name)
                     exit(-1)
+
+                if importing:
+                    sys.stderr.write("[Medusa Error] Cannot recursively import user code. Yet. Sorry :(")
+                    exit(-1)
+
+                importing = True
+                class_bak, func_bak, code_bak = parsedClasses, parsedFunctions, parsedCode
+                parsedClasses, parsedFunctions, parsedCode = [], [], []
+
+                self.parse(open(iFile).read())
+
+                class_bak.append("class $" + name.name + "{")
+                class_bak[-1] += "".join(parsedClasses)
+                class_bak[-1] += "".join(parsedFunctions)
+                class_bak[-1] += "}";
+                parsedClasses = class_bak
+                parsedFunctions = func_bak
+
+                if code_bak is not []:
+                    code_bak += parsedCode
+                    parsedCode = code_bak
+
+                importing = False
+
+                if name.asname is None:
+                    alias = name.name
+                else:
+                    alias = name.asname
+
+                userImports.append(name.name)
+                code.append(alias + "=new $" + name.name + "()")
 
         parsedType = "imports"
         if code is not []:

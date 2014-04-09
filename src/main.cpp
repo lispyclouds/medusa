@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
         if (QFile::copy(path, "lib/" + name + ".py"))
             cout << QString(name + ".py").toStdString() + " successfully Installed into Medusa!" << endl;
         else
-            cerr << "Couldn't Install!" + QString(name + ".py").toStdString() << endl;
+            cerr << "Couldn't Install: " + QString(name + ".py").toStdString() << endl;
         return 0;
     }
 
