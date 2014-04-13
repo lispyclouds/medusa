@@ -1215,6 +1215,7 @@ $checkValue(i) {
             if (keys.length != 0)
                 return true;
             break;
+        case -1: return i;
     }
     return false;
 }

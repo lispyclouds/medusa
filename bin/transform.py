@@ -247,9 +247,9 @@ class PyParser(ast.NodeVisitor):
                 code += "return $temp;"
             else:
                 if op == "and":
-                    code += "if(!$checkValue($temp))return temp;"
+                    code += "if(!$checkValue($temp))return $temp;"
                 elif op == "or":
-                    code += "if($checkValue($temp))return temp;"
+                    code += "if($checkValue($temp))return $temp;"
                 else:
                     sys.stderr.write("[Medusa Error] Operator not implemented => " + op)
                     exit(-1)
@@ -351,20 +351,20 @@ class PyParser(ast.NodeVisitor):
 
     def visit_ListComp(self, stmt_listcomp):
         self.addImport("lib/inbuilts.dart")
-        code = "$generator((){var list=new $PyList();"
+        code = "$generator((){var $list=new $PyList([]);"
         for node in stmt_listcomp.generators:
             code += "for(var " + self.visit(node.target) + " in " + self.visit(node.iter) + "){"
             for ifnode in node.ifs:
                 code += "if(" + self.visit(ifnode) + "){"
 
-        code += "list.append(" + self.visit(stmt_listcomp.elt) + ");"
+        code += "$list.append(" + self.visit(stmt_listcomp.elt) + ");"
 
         for node in reversed(stmt_listcomp.generators):
             for ifnode in node.ifs:
                 code += "}"
             code += "}"
 
-        code += "return list;})"
+        code += "return $list;})"
 
         return code
 
