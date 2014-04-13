@@ -1,12 +1,12 @@
 #include <cache.h>
 
 Cache::Cache() {
-    QString medusaHome = QDir::homePath();
+    QString medusaHome = QDir::homePath() + "/.medusa/";
 
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(medusaHome + "/.medusa.cache");
+    db.setDatabaseName(medusaHome + "medusa.cache");
 
-    QFile dbFile(medusaHome + "/.medusa.cache");
+    QFile dbFile(medusaHome + "medusa.cache");
     if (!dbFile.exists()) {
         db.open();
         QSqlQuery query(db);

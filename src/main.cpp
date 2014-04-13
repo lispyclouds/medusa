@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     Transform transformer;
     Exec exec;
     QStringList args = app.arguments();
-    bool cStop = false;
+    bool cStop = false, install = false;
     QString path, name, code, medusa = QByteArray::fromBase64(art);
 
     if (app.arguments().size() == 1) {
@@ -30,18 +30,21 @@ int main(int argc, char **argv) {
         }
         else if (arg == "-c")
             cStop = true;
-        else if (arg == "-install") {
-            if (QFile::copy(path, "lib/" + name + ".py"))
-                cout << QString(name + ".py").toStdString() + " successfully Installed into Medusa!" << endl;
-            else
-                cerr << "Couldn't Install: " + QString(name + ".py").toStdString() << endl;
-            return 0;
-        }
+        else if (arg == "-install")
+            install = true;
         else {
             QFileInfo pyFile(arg);
             path = pyFile.absoluteFilePath();
             name = pyFile.completeBaseName();
         }
+    }
+
+    if (install) {
+        if (QFile::copy(path, QDir::homePath() + "/.medusa/lib/" + name + ".py"))
+            cout << QString(name + ".py").toStdString() + " successfully Installed into Medusa!" << endl;
+        else
+            cerr << "Couldn't Install: " + QString(name + ".py").toStdString() << endl;
+        return 0;
     }
 
     if (cache.isCached(path, code) || transformer.transform(path, code))

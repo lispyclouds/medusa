@@ -5,7 +5,7 @@ using namespace std;
 
 Transform::Transform() {
     reply = "";
-    db.setDatabaseName(QDir::homePath() + "/.medusa.cache");
+    db.setDatabaseName(QDir::homePath() + "/.medusa/medusa.cache");
     db.open();
     python = new QProcess(this);
 }
@@ -41,7 +41,7 @@ void Transform::pythonFinished(int exitCode, QProcess::ExitStatus) {
 bool Transform::transform(QString path, QString &code) {
     QStringList args;
 
-    args << "transform.py" << path;
+    args << QDir::homePath() + "/.medusa/transform.py" << path;
     this->path = path;
 
     QObject::connect(python,

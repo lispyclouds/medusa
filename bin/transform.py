@@ -1,6 +1,6 @@
-""" Fast Python Transform by heisenberg, apoorv, akashgiri """
-
 import ast, _ast, sys, os
+
+inc_path = os.path.expanduser("~") + "/.medusa/lib/"
 
 dartImports = []
 dartLocalVars = []
@@ -9,7 +9,28 @@ dartGlobalVars = []
 
 pyGlobalVars = []
 pyClasses = []
-pyInbuilts = open("lib/fun.list").read().split("\n")
+pyInbuilts = ['abs',
+            'all',
+            'any',
+            'bin',
+            'dict',
+            'file',
+            'float',
+            'input',
+            'int',
+            'len',
+            'list',
+            'max',
+            'min',
+            'open',
+            'range',
+            'raw_input',
+            'set',
+            'str',
+            'sum',
+            'tuple',
+            'xrange',
+            'zip']
 
 parsedImports = []
 parsedClasses = []
@@ -27,8 +48,8 @@ wrap = True
 importing = False
 
 imports = dict()
-imports['random'] = ["lib/pyrandom.dart", "$PyRandom"]
-imports['time'] = ["lib/pytime.dart", "$PyTime"]
+imports['random'] = [inc_path + "pyrandom.dart", "$PyRandom"]
+imports['time'] = [inc_path + "pytime.dart", "$PyTime"]
 
 exceptions = dict()
 exceptions['Exception'] = "Exception"
@@ -36,7 +57,6 @@ exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
 
 class PyParser(ast.NodeVisitor):
-    """ The Parser class transforming a Python input into optimized Dart output """
     def parse(self, code):
         tree = ast.parse(code)
         self.visit(tree)
@@ -102,12 +122,12 @@ class PyParser(ast.NodeVisitor):
         if name is "False" or name is "True":
             name = 'false' if name == 'False' else 'true'
             if wrap:
-                self.addImport("lib/inbuilts.dart")
+                self.addImport(inc_path + "inbuilts.dart")
                 name = "new $PyBool(" + name + ")"
         elif name is "self":
             name = "this"
         elif name is "None":
-            self.addImport("lib/inbuilts.dart")
+            self.addImport(inc_path + "inbuilts.dart")
             name = "new $PyNone()"
 
         return name
@@ -117,7 +137,7 @@ class PyParser(ast.NodeVisitor):
 
         code = ""
         if wrap:
-            self.addImport("lib/inbuilts.dart")
+            self.addImport(inc_path + "inbuilts.dart")
             code = "$n(" + str(stmt_num.n) + ")"
         else:
             code = str(stmt_num.n)
@@ -128,7 +148,7 @@ class PyParser(ast.NodeVisitor):
 
         code = ""
         if wrap:
-            self.addImport("lib/inbuilts.dart")
+            self.addImport(inc_path + "inbuilts.dart")
             code =  "str('" + str(stmt_str.s) + "')"
         else:
             code = "'" + str(stmt_str.s) + "'"
@@ -150,7 +170,7 @@ class PyParser(ast.NodeVisitor):
         return "/"
 
     def visit_Pow(self, stmt_pow):
-        self.addImport('lib/inbuilts.dart')
+        self.addImport(inc_path + "inbuilts.dart")
         return ","
 
     def visit_RShift(self, stmt_rshift):
@@ -235,7 +255,7 @@ class PyParser(ast.NodeVisitor):
         return exp
 
     def visit_BoolOp(self, stmt_boolop):
-        self.addImport('lib/inbuilts.dart');
+        self.addImport(inc_path + "inbuilts.dart");
         op = self.visit(stmt_boolop.op)
         code = "$generator((){var $temp;"
 
@@ -282,8 +302,8 @@ class PyParser(ast.NodeVisitor):
             except KeyError:
                 if os.path.exists(wd + os.sep + name.name + ".py"):
                     iFile =  wd + os.sep + name.name + ".py";
-                elif os.path.exists("lib" + os.sep + name.name + ".py"):
-                    iFile = "lib" + os.sep + name.name + ".py"
+                elif os.path.exists(inc_path + name.name + ".py"):
+                    iFile = inc_path + name.name + ".py"
                 else:
                     sys.stderr.write("[Medusa Error] Unimplemented or module found for import: " + name.name)
                     exit(-1)
@@ -330,7 +350,7 @@ class PyParser(ast.NodeVisitor):
 
         code = ""
         if wrap:
-            self.addImport("lib/inbuilts.dart");
+            self.addImport(inc_path + "inbuilts.dart");
             code += "new $PyList(["
         else:
             code += "["
@@ -350,7 +370,7 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_ListComp(self, stmt_listcomp):
-        self.addImport("lib/inbuilts.dart")
+        self.addImport(inc_path + "inbuilts.dart")
         code = "$generator((){var $list=new $PyList([]);"
         for node in stmt_listcomp.generators:
             code += "for(var " + self.visit(node.target) + " in " + self.visit(node.iter) + "){"
@@ -372,7 +392,7 @@ class PyParser(ast.NodeVisitor):
         return self.visit_ListComp(stmt_generatorexp)
 
     def visit_Dict(self, stmt_dict):
-        self.addImport("lib/inbuilts.dart");
+        self.addImport(inc_path + "inbuilts.dart");
         code = "dict(list(["
         l = len(stmt_dict.keys)
         i = 0
@@ -386,7 +406,7 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Tuple(self, stmt_tuple):
-        self.addImport('lib/inbuilts.dart')
+        self.addImport(inc_path + "inbuilts.dart")
 
         code = "tuple(["
         i = 0
@@ -403,7 +423,7 @@ class PyParser(ast.NodeVisitor):
 
     def visit_Subscript(self, stmt_Subscript):
         if isinstance(stmt_Subscript.slice, _ast.Slice):
-            self.addImport('lib/slice.dart')
+            self.addImport(inc_path + "slice.dart")
             listVar = self.visit(stmt_Subscript.value)
             lower = self.subsituteVisit(stmt_Subscript.slice.lower)
             upper = self.subsituteVisit(stmt_Subscript.slice.upper)
@@ -554,7 +574,7 @@ class PyParser(ast.NodeVisitor):
         keyDict = {}
 
         if fname in pyInbuilts:
-            self.addImport("lib/inbuilts.dart")
+            self.addImport(inc_path + "inbuilts.dart")
         elif code in pyClasses:
             code = "new " + fname
 
