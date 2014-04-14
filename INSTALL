@@ -1,0 +1,66 @@
+#!/bin/bash
+
+echo "Checking for Qt 5 Installation..."
+if dpkg -s qtdeclarative5-dev > /dev/null 2>&1
+then
+    echo "Qt 5 found, moving on..."
+else
+    echo "Qt 5 not found, installing..."
+    sudo apt-add-repository ppa:ubuntu-sdk-team/ppa
+    sudo apt-get update
+    sudo apt-get install qtdeclarative5-dev
+fi
+
+echo "Checking for Python 2.7 Installation..."
+if type "python" > /dev/null
+then
+    echo "Python 2.7 found, moving on..."
+else
+    echo "Python 2.7 not found, installing..."
+    sudo apt-get install python
+fi
+
+echo "Checking for Dart SDK Installation..."
+if type "dart" > /dev/null
+then
+    echo "Dart SDK found, moving on..."
+else
+    echo "Dart SDK not found, installing..."
+    sudo add-apt-repository ppa:hachre/dart
+    sudo apt-get update
+    sudo apt-get install dartsdk
+fi
+
+echo "All dependencies satisified! We are good to go... :D"
+
+echo "moc'ing transform.h..."
+cd inc
+if [ -f /usr/lib/x86_64-linux-gnu/qt5/bin/moc ]; then
+    /usr/lib/x86_64-linux-gnu/qt5/bin/moc transform.h > transform_moc.h
+else
+    /usr/lib/i686-linux-gnu/qt5/bin/moc transform.h > transform_moc.h
+fi
+echo "Done!"
+
+echo "Generating Makefile..."
+cd ..
+if [ -f /usr/lib/x86_64-linux-gnu/qt5/bin/moc ]; then
+    /usr/lib/x86_64-linux-gnu/qt5/bin/qmake -o Makefile medusa.pro
+else
+    /usr/lib/i686-linux-gnu/qt5/bin/qmake -o Makefile medusa.pro
+fi
+echo "Done"
+
+echo "Buliding and Installing Medusa 2.7.3..."
+sudo make install
+make clean
+echo "Done!"
+
+echo "Installing Medusa Enviroment 2.7.3..."
+if [ ! -d $HOME/.medusa ]
+then
+    mkdir $HOME/.medusa
+fi
+cp -R bin/lib $HOME/.medusa
+cp bin/transform.py $HOME/.medusa
+echo "Medusa 2.7.3 Successfully installed Yo! Happy Pythoning!"

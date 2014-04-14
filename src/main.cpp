@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    foreach (QString arg, app.arguments()) {
+    foreach (QString arg, args) {
         if (arg == "--help" || arg == "-h") {
             cout << help << medusa.toStdString();
             return 0;

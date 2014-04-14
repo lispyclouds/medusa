@@ -16,7 +16,7 @@ SOURCES                  += src/main.cpp      \
                             src/transform.cpp \
                             src/exec.cpp
 
-target.path               = bin
+target.path               = /usr/bin
 INSTALLS                 += target
 
 QMAKE_CXXFLAGS_RELEASE   -= -O
