@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "Checking for Qt 5 Installation..."
+echo "Checking for Qt5 Libs..."
 if dpkg -s qtdeclarative5-dev > /dev/null 2>&1
 then
-    echo "Qt 5 found, moving on..."
+    echo "Qt5 Libs found, moving on..."
 else
-    echo "Qt 5 not found, installing..."
+    echo "Qt5 Libs not found, installing..."
     sudo apt-add-repository -y ppa:ubuntu-sdk-team/ppa
     sudo apt-get update
     sudo apt-get -y install qtdeclarative5-dev
@@ -31,24 +31,35 @@ else
     sudo apt-get -y install dartsdk
 fi
 
+echo "Checking for C++ compilers..."
+qmake_opt=""
+if type "clang++" > /dev/null; then
+    echo "clang++ found, using it."
+    qmake_opt="-recursive -spec linux-clang"
+elif type "g++" > /dev/null; then
+    echo "g++ found, using it."
+else
+    echo "No C++ compilers found. Installing GNU bulid tools..."
+    sudo apt-get -y install build-essential
+fi
+
 echo "All dependencies satisified! We are good to go... :D"
+echo "Starting Medusa build..."
+
+echo "Setting Qt5 build home.."
+if [ -d /usr/lib/x86_64-linux-gnu/qt5 ]; then
+    qHome="/usr/lib/x86_64-linux-gnu/qt5/bin"
+else
+    qHome="/usr/lib/i686-linux-gnu/qt5/bin"
+fi
+echo "Qt5 build home set at" $qHome
 
 echo "moc'ing transform.h..."
-cd inc
-if [ -f /usr/lib/x86_64-linux-gnu/qt5/bin/moc ]; then
-    /usr/lib/x86_64-linux-gnu/qt5/bin/moc transform.h > transform_moc.h
-else
-    /usr/lib/i686-linux-gnu/qt5/bin/moc transform.h > transform_moc.h
-fi
+$qHome/moc inc/transform.h > inc/transform_moc.h
 echo "Done!"
 
 echo "Generating Makefile..."
-cd ..
-if [ -f /usr/lib/x86_64-linux-gnu/qt5/bin/moc ]; then
-    /usr/lib/x86_64-linux-gnu/qt5/bin/qmake -o Makefile medusa.pro
-else
-    /usr/lib/i686-linux-gnu/qt5/bin/qmake -o Makefile medusa.pro
-fi
+$qHome/qmake -o Makefile medusa.pro $qmake_opt
 echo "Done"
 
 echo "Buliding and Installing Medusa 2.7.3..."
@@ -57,10 +68,12 @@ make clean
 echo "Done!"
 
 echo "Installing Medusa Enviroment 2.7.3..."
-if [ ! -d $HOME/.medusa ]
-then
+if [ ! -d $HOME/.medusa ]; then
+    echo "Creating Medusa Home Directory"
     mkdir $HOME/.medusa
 fi
+echo "Installing Dart Libs"
 cp -R bin/lib $HOME/.medusa
+echo "Installing FPT Python Transformer"
 cp bin/transform.py $HOME/.medusa
-echo "Medusa 2.7.3 Successfully installed Yo! Happy Pythoning!"
+echo "Medusa 2.7.3 Successfully installed Yo! Runnable directly as medusa from the terminal. Happy Pythoning!"
