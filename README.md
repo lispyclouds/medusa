@@ -1,4 +1,4 @@
-## Medusa
+## Medusa ![Build Status](https://travis-ci.org/facebook/hhvm.svg)
 
 An attempt at making Python stronger and faster like Medusa herself!
 
