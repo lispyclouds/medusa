@@ -15,7 +15,7 @@ Still in its nascent stages and implemented using Qt/C++, Python and Dart, the p
 
 <b>Debian Derived Linux users:</b>
 
-Simply run ./INSTALL after cloning this repo on your Debian based Linux distro. Thats it. All dependencies are installed, code compiled and paths setup autmatically.
+Simply run <b>./INSTALL</b> after cloning this repo on your Debian based Linux distro. Thats it. All dependencies are installed, code compiled and paths setup automatically.
 
 <b>Others:</b>
 * Install C++ compilers and Make tools
