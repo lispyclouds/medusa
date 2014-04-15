@@ -13,10 +13,11 @@ Still in its nascent stages and implemented using Qt/C++, Python and Dart, the p
 
 ## Installing
 
-<u>Debian Derived Linux users:</u>
+<b>Debian Derived Linux users:</b>
+
 Simply run ./INSTALL after cloning this repo on your Debian based Linux distro. Thats it. All dependencies are installed, code compiled and paths setup autmatically.
 
-<u>Others:</u>
+<b>Others:</b>
 * Install C++ compilers and Make tools
 * Install Qt5 build tools and libs
 * Install Dart SDK
@@ -29,8 +30,8 @@ Simply run ./INSTALL after cloning this repo on your Debian based Linux distro. 
 
 ## Running
 
-<u>Using Medusa:</u>
-* Medusa is available as <b>medusavm</b> after a succeddful buid and install
+<b>Using Medusa:</b>
+* Medusa is available as <b>medusavm</b> after a successful buid and install
 * Python programs can be run by passing them as parameters: <b>medusavm hello.py</b>
 * Medusa can be stopped after the Dart compile phase by passing a -c switch: <b>medusavm -c hello.py</b>. The Dart code is obtained in hello.dart in the same directory.
 * Python files can be globally installed into Medusa for imports by other files: <b>medusavm -install python_file</b>
@@ -60,3 +61,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 ## Fear and Respect her at the same time!
 
 ![alt tag](https://raw.github.com/rahul080327/medusa/master/icon.jpg)
+
+## Just Kidding, Happy Pythoning Yo!
