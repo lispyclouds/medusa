@@ -23,7 +23,7 @@ Simply run <b>./INSTALL</b> after cloning this repo on your Debian based Linux d
 * Install Dart SDK
 * Install Python 2.7.x
 * Rum moc on inc/transform.h to inc/transform_moc.h
-* Run qmake on medusa.pto
+* Run qmake on medusa.pro
 * Run make
 * Use the medusavm executable
 
@@ -39,7 +39,7 @@ Simply run <b>./INSTALL</b> after cloning this repo on your Debian based Linux d
 
 ## Contributing
 
-We'd love to have your help in making Medusa better and Python faster. Any and all contributions are welcome.
+We'd love to have your help in making Medusa better and Python faster. Any and all contributions are welcome. Frankly speaking theres is still a hell lot to do.
 
 ## License
 
