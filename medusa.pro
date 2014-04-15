@@ -1,7 +1,7 @@
 QT                       += core sql
 QT                       -= gui
 
-TARGET                    = medusa
+TARGET                    = medusavm
 
 CONFIG                   += console
 CONFIG                   -= app_bundle

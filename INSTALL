@@ -76,4 +76,4 @@ echo "Installing Dart Libs"
 cp -R bin/lib $HOME/.medusa
 echo "Installing FPT Python Transformer"
 cp bin/transform.py $HOME/.medusa
-echo "Medusa 2.7.3 Successfully installed Yo! Runnable directly as medusa from the terminal. Happy Pythoning!"
+echo "Medusa 2.7.3 Successfully installed Yo! Runnable directly as 'medusavm' from the terminal. Happy Pythoning!"
