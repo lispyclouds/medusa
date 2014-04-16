@@ -33,11 +33,11 @@ fi
 
 echo "Checking for C++ compilers..."
 qmake_opt=""
-if type "clang++" > /dev/null; then
+if type "g++" > /dev/null; then
+    echo "g++ found, using it."
+elif type "clang++" > /dev/null; then
     echo "clang++ found, using it."
     qmake_opt="-recursive -spec linux-clang"
-elif type "g++" > /dev/null; then
-    echo "g++ found, using it."
 else
     echo "No C++ compilers found. Installing GNU bulid tools..."
     sudo apt-get -y install build-essential
