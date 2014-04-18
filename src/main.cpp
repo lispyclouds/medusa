@@ -32,6 +32,10 @@ int main(int argc, char **argv) {
             cStop = true;
         else if (arg == "-install")
             install = true;
+        else if (arg == "--version" || arg == "-v") {
+            cout << version << endl;
+            return 0;
+        }
         else {
             QFileInfo pyFile(arg);
             path = pyFile.absoluteFilePath();
