@@ -809,7 +809,7 @@ class PyParser(ast.NodeVisitor):
 
         if not final and len(nodes.orelse) > 0:
             self.addGuard("$tried")
-            code += "if($tried){"
+            code = "$tried=true;" + code + "if($tried){"
             for node in nodes.orelse:
                 code += self.visit(node)
             code += "$tried=false;}"
@@ -824,7 +824,7 @@ class PyParser(ast.NodeVisitor):
 
         if len(stmt_tryfinally.body[0].orelse) > 0:
             self.addGuard("$tried")
-            code += "if($tried){"
+            code = "$tried=true;" + code + "if($tried){"
             for node in stmt_tryfinally.body[0].orelse:
                 code += self.visit(node)
             code += "$tried=false;}"

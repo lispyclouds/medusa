@@ -143,7 +143,7 @@ class $PyNum {
     operator *(other) => new $PyNum(_value * toNum(other));
     operator /(other) {
         num result;
-        other = toNum(value);
+        other = toNum(other);
         if (_value is double || other is double)
             result = _value / other;
         else
