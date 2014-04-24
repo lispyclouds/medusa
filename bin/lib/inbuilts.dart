@@ -144,6 +144,8 @@ class $PyNum {
     operator /(other) {
         num result;
         other = toNum(other);
+        if (other == 0)
+            throw IntegerDivisionByZeroException;
         if (_value is double || other is double)
             result = _value / other;
         else
@@ -700,8 +702,7 @@ class $PyList extends IterableBase {
                         return false;
                 }
                 return true;
-            default:
-                return false;
+            default: return false;
         }
     }
 
@@ -1065,10 +1066,7 @@ dict([pairs]) {
     return new $PyDict(dict);
 }
 
-abs(n) {
-    if (n < 0) return n * -1;
-    else return n;
-}
+abs(n) => (n < 0) ? (n * -1) : n;
 
 all(iterable) {
     for (var i in iterable) {
@@ -1281,9 +1279,7 @@ class $Range extends Object with IterableMixin<int> {
             throw new ArgumentError("step must not be 0");
     }
 
-    Iterator<int> get iterator {
-        return new $RangeIterator(start, stop, step);
-    }
+    Iterator<int> get iterator => new $RangeIterator(start, stop, step);
 
     int get length {
         if ((step > 0 && start > stop) || (step < 0 && start < stop))
