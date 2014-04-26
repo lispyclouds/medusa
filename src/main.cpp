@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     Exec exec;
     QStringList args = app.arguments();
     bool cStop = false, install = false;
-    QString path, name, code, medusa = QByteArray::fromBase64(art);
+    QString path, name, code, medusa = QByteArray::fromBase64(art), moo = QByteArray::fromBase64(mooData);
 
     if (app.arguments().size() == 1) {
         cout << help << medusa.toStdString();
@@ -26,6 +26,10 @@ int main(int argc, char **argv) {
     foreach (QString arg, args) {
         if (arg == "--help" || arg == "-h") {
             cout << help << medusa.toStdString();
+            return 0;
+        }
+        else if (arg == "moo") {
+            cout << moo.toStdString() << endl;
             return 0;
         }
         else if (arg == "-c")
