@@ -33,11 +33,11 @@ fi
 
 echo "Checking for C++ compilers..."
 qmake_opt=""
-if type "g++" > /dev/null; then
-    echo "g++ found, using it."
-elif type "clang++" > /dev/null; then
+if type "clang++" > /dev/null; then
     echo "clang++ found, using it."
     qmake_opt="-recursive -spec linux-clang"
+elif type "g++" > /dev/null; then
+    echo "g++ found, using it."
 else
     echo "No C++ compilers found. Installing GNU bulid tools..."
     sudo apt-get -y install build-essential
@@ -63,6 +63,7 @@ $qHome/qmake -o Makefile medusa.pro $qmake_opt
 echo "Done"
 
 echo "Buliding and Installing Medusa 2.7.3..."
+make -j $(grep -c ^processor /proc/cpuinfo)
 sudo make install
 make clean
 echo "Done!"
