@@ -512,9 +512,10 @@ class PyParser(ast.NodeVisitor):
     def visit_FunctionDef(self, stmt_function):
         global dartLocalVars, funMode, parsedType
 
-        body, code, defines = "", "", ""
+        body, code, defines, arguments = "", "", "", []
 
         for arg in stmt_function.args.args:
+            arguments.append(arg.id)
             if arg.id == "self":
                 stmt_function.args.args.remove(arg)
                 break
@@ -523,6 +524,10 @@ class PyParser(ast.NodeVisitor):
         for node in stmt_function.body:
             body += self.visit(node)
         funMode = False
+
+        for arg in arguments:
+            if arg in dartLocalVars:
+                dartLocalVars.remove(arg)
 
         if len(dartLocalVars) > 0:
             defines = "var " + ",".join(dartLocalVars) + ";"
