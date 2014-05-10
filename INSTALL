@@ -33,10 +33,12 @@ fi
 
 echo "Checking for C++ compilers..."
 qmake_opt=""
-if type "clang++" > /dev/null; then
+if type "clang++" > /dev/null;
+then
     echo "clang++ found, using it."
     qmake_opt="-recursive -spec linux-clang"
-elif type "g++" > /dev/null; then
+elif type "g++" > /dev/null;
+then
     echo "g++ found, using it."
 else
     echo "No C++ compilers found. Installing GNU bulid tools..."
@@ -47,12 +49,13 @@ echo "All dependencies satisified! We are good to go... :D"
 echo "Starting Medusa build..."
 
 echo "Setting Qt5 build home.."
-if [ -d /usr/lib/x86_64-linux-gnu/qt5 ]; then
+if [ -d /usr/lib/x86_64-linux-gnu/qt5 ];
+then
     qHome="/usr/lib/x86_64-linux-gnu/qt5/bin"
 else
     qHome="/usr/lib/i686-linux-gnu/qt5/bin"
 fi
-echo "Qt5 build home set at" $qHome
+echo "Qt5 build home set at: " $qHome
 
 echo "moc'ing transform.h..."
 $qHome/moc inc/transform.h > inc/transform_moc.h
@@ -69,7 +72,8 @@ make clean
 echo "Done!"
 
 echo "Installing Medusa Enviroment 2.7.3..."
-if [ ! -d $HOME/.medusa ]; then
+if [ ! -d $HOME/.medusa ];
+then
     echo "Creating Medusa Home Directory"
     mkdir $HOME/.medusa
 fi
