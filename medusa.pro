@@ -3,7 +3,7 @@ QT                       -= gui
 
 TARGET                    = medusavm
 
-CONFIG                   += console
+CONFIG                   += console release
 CONFIG                   -= app_bundle
 
 TEMPLATE                  = app
@@ -16,7 +16,6 @@ SOURCES                  += src/main.cpp      \
                             src/transform.cpp \
                             src/exec.cpp
 
-target.path               = /usr/bin
 INSTALLS                 += target
 
 QMAKE_CXXFLAGS_RELEASE   -= -O
@@ -24,12 +23,14 @@ QMAKE_CXXFLAGS_RELEASE   -= -O1
 QMAKE_CXXFLAGS_RELEASE   -= -O2
 
 win32 {
-  QMAKE_CXXFLAGS         += -arch:x64
-  QMAKE_CXXFLAGS         += -D "_CRT_SECURE_NO_WARNINGS"
-  QMAKE_CXXFLAGS_RELEASE *= /O2
+  target.path              = .
+  QMAKE_CXXFLAGS          += -D "_CRT_SECURE_NO_WARNINGS"
+  QMAKE_CXXFLAGS_RELEASE  *= /O2
+  QMAKE_LFLAGS            += /MACHINE:x86
 }
 
 linux {
+  target.path             = /usr/bin
   QMAKE_CXXFLAGS         += -m64
   QMAKE_CXXFLAGS_RELEASE *= -O3
 }
