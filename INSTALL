@@ -12,7 +12,7 @@ else
 fi
 
 echo "Checking for Python 2.7 Installation..."
-if type "python" > /dev/null
+if type "python" > /dev/null 2>&1
 then
     echo "Python 2.7 found, moving on..."
 else
@@ -21,7 +21,7 @@ else
 fi
 
 echo "Checking for Dart SDK Installation..."
-if type "dart" > /dev/null
+if type "dart" > /dev/null 2>&1
 then
     echo "Dart SDK found, moving on..."
 else
@@ -33,11 +33,11 @@ fi
 
 echo "Checking for C++ compilers..."
 qmake_opt=""
-if type "clang++" > /dev/null;
+if type "clang++" > /dev/null 2>&1
 then
     echo "clang++ found, using it."
     qmake_opt="-recursive -spec linux-clang"
-elif type "g++" > /dev/null;
+elif type "g++" > /dev/null 2>&1
 then
     echo "g++ found, using it."
 else

@@ -1,6 +1,6 @@
 import ast, _ast, sys, os
 
-inc_path = os.path.expanduser("~") + "/.medusa/lib/"
+inc_path = "file:///" + os.path.expanduser("~").replace("\\", "/") + "/.medusa/lib/"
 
 dartImports = []
 dartLocalVars = []

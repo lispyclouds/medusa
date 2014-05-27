@@ -16,20 +16,20 @@ int main(int argc, char **argv) {
     Exec exec;
     QStringList args = app.arguments();
     bool cStop = false, install = false;
-    QString path, name, code, medusa = QByteArray::fromBase64(art), moo = QByteArray::fromBase64(mooData);
+    QString path, name, code;
 
     if (app.arguments().size() == 1) {
-        cout << help << medusa.toStdString();
+        cout << help << QString(QByteArray::fromBase64(art)).toStdString();
         return 0;
     }
 
     foreach (QString arg, args) {
         if (arg == "--help" || arg == "-h") {
-            cout << help << medusa.toStdString();
+            cout << help << QString(QByteArray::fromBase64(art)).toStdString();
             return 0;
         }
         else if (arg == "moo") {
-            cout << moo.toStdString() << endl;
+            cout << QString(QByteArray::fromBase64(mooData)).toStdString() << endl;
             return 0;
         }
         else if (arg == "-c")
