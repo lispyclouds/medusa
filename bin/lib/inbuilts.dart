@@ -1242,7 +1242,12 @@ $or(list) {
 }
 
 $generator(var function) => function();
-$pow(base, exp) => pow(base.value, exp.value);
+$pow(base, exp) {
+    if (exp is $PyNum)
+        exp = exp.value;
+
+    return pow(base.value, exp);
+}
 
 max(values) {
     if (values.length == 1 && values[0] is $PyList)
