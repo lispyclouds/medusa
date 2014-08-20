@@ -7,6 +7,9 @@
 #include <QtSql/QSqlQuery>
 #include <QVariant>
 #include <sha256.h>
+#include <iostream>
+
+using namespace std;
 
 #define BUFFER_SIZE 512
 

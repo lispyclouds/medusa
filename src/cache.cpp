@@ -22,10 +22,18 @@ Cache::~Cache() {
 
 QString Cache::hashFile(QString path) {
     sha256_ctx ctx;
-    FILE *inFile = fopen(path.toStdString().c_str(), "rb");
+    FILE *inFile;
     char buffer[BUFFER_SIZE], output[2 * SHA256_DIGEST_SIZE + 1];
     unsigned char digest[SHA256_DIGEST_SIZE];
     int bytes;
+
+    if (!(inFile = fopen(path.toStdString().c_str(), "rb"))) {
+        cerr << "Error: Couldn't read "
+            << path.toStdString().c_str()
+            << ". Please check if it exists and is readable."
+            << endl;
+        exit(-1);
+    }
 
     sha256_init(&ctx);
     while ((bytes = fread(buffer, 1, BUFFER_SIZE, inFile)) != 0)
