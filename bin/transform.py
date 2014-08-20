@@ -7,6 +7,7 @@ dartLocalVars = []
 dartClassVars = []
 dartGlobalVars = []
 
+pyClassCache = {}
 pyGlobalVars = []
 pyClasses = []
 pyInbuilts = ['abs',
@@ -470,7 +471,7 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_ClassDef(self, stmt_class):
-        global parsedType, dartLocalVars, dartClassVars, classyMode
+        global parsedType, dartLocalVars, dartClassVars, classyMode, pyClassCache
 
         if stmt_class.name not in pyClasses:
             pyClasses.append(stmt_class.name)
@@ -481,16 +482,25 @@ class PyParser(ast.NodeVisitor):
                 base = "Object"
             else:
                 base = str(stmt_class.bases[0].id)
-            code += " extends " + base
+            code += " extends " + base + "{"
         elif len(stmt_class.bases) > 1:
-            sys.stderr.write("[Medusa Error] Multiple Inheritace is unsupported at the moment :( Sorry!")
-            exit(-1)
-        code += "{"
+            code += "{"
+            for base in stmt_class.bases:
+                try:
+                    code += pyClassCache[str(base.id)]
+                except KeyError:
+                    sys.stderr.write("[Medusa Error] Class " + str(base.id) + " is not yet defined!")
+                    exit(-1)
+        else:
+            code += "{"
 
+        body = ""
         classyMode = True
         for node in stmt_class.body:
-            code += self.visit(node)
-        code += "}"
+            body += self.visit(node)
+
+        pyClassCache[stmt_class.name] = body
+        code += body + "}"
         classyMode = False
         dartClassVars = []
 
@@ -849,6 +859,8 @@ class PyParser(ast.NodeVisitor):
 PyParser().parse(open(sys.argv[1]).read())
 
 stitched = ""
+pyClassCache.clear()
+
 for module in dartImports:
     stitched += "import'" + module + "';"
 if len(parsedImports):
