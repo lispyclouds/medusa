@@ -496,8 +496,10 @@ class $PyString extends IterableBase {
                 if (match == "%d" || match == "% d" || match == "%f" || match == "% f") {
                     if (List[i] is $PyBool)
                         (List[i] == true) ? List[i] = 1 : List[i] = 0;
-                    else
-                        List[i] = List[i].value;
+                    else {
+                        if (List[i] is $PyNum)
+                            List[i] = List[i].value;
+                    }
                 }
                 i++;
             }

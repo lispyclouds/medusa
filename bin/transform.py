@@ -697,11 +697,13 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_AugAssign(self, stmt_aug_assign):
-        global powFlag
+        global powFlag, wrap
 
         left = self.visit(stmt_aug_assign.target)
         op = self.visit(stmt_aug_assign.op)
+        wrap = False
         right = self.visit(stmt_aug_assign.value)
+        wrap = True
 
         code = left
         if op == ",":
