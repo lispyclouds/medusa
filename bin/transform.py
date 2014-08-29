@@ -40,6 +40,9 @@ parsedCode = []
 variableArgs = ["max", "min", "zip"]
 userImports = []
 
+fNames = []
+fCalled = []
+
 classyMode = False
 funMode = False
 broken = False
@@ -520,7 +523,7 @@ class PyParser(ast.NodeVisitor):
         return ""
 
     def visit_FunctionDef(self, stmt_function):
-        global dartLocalVars, funMode, parsedType
+        global dartLocalVars, funMode, parsedType, fNames
 
         body, code, defines, arguments = "", "", "", []
 
@@ -541,6 +544,9 @@ class PyParser(ast.NodeVisitor):
 
         if len(dartLocalVars) > 0:
             defines = "var " + ",".join(dartLocalVars) + ";"
+
+        if stmt_function.name not in fNames:
+            fNames.append(stmt_function.name)
 
         if stmt_function.name == "__init__":
             code = pyClasses[-1] + "(" + code
@@ -582,7 +588,7 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Call(self, stmt_call):
-        global pyClasses, pyInbuilts, forceCall, formats
+        global pyClasses, pyInbuilts, forceCall, formats, fCalled
 
         code = self.visit(stmt_call.func)
         fname = code
@@ -592,6 +598,8 @@ class PyParser(ast.NodeVisitor):
             self.addImport(inc_path + "inbuilts.dart")
         elif code in pyClasses:
             code = "new " + fname
+        elif not isinstance(stmt_call.func, _ast.Attribute) and fname not in fCalled:
+            fCalled.append(fname)
 
         alen = len(stmt_call.args)
         i = 0
@@ -871,8 +879,10 @@ if len(dartGlobalVars):
     stitched += "var " + ",".join(dartGlobalVars) + ";"
 for parsedClass in parsedClasses:
     stitched += parsedClass
-for parsedFunction in parsedFunctions:
-    stitched += parsedFunction
+for func in fCalled:
+    stitched += parsedFunctions[fNames.index(func)]
+fCalled = []
+fNames = []
 stitched += "main(){"
 for code in parsedCode:
     stitched += code
