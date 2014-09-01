@@ -881,8 +881,8 @@ for parsedClass in parsedClasses:
     stitched += parsedClass
 for func in fCalled:
     stitched += parsedFunctions[fNames.index(func)]
-fCalled = []
-fNames = []
+del fCalled[:]
+del fNames[:]
 stitched += "main(){"
 for code in parsedCode:
     stitched += code
