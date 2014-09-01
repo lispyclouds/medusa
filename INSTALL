@@ -71,7 +71,7 @@ sudo make install
 make clean
 echo "Done!"
 
-echo "Installing Medusa Enviroment 2.7.3..."
+echo "Installing Medusa 2.7.3 Runtime..."
 if [ ! -d $HOME/.medusa ];
 then
     echo "Creating Medusa Home Directory"
