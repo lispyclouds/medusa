@@ -61,11 +61,29 @@ exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
 
 class PyParser(ast.NodeVisitor):
+    '''
+    This class forms the core of 'Python-to-Dart' code conversion.
+    The module parses the whole python code as a string. The code is then
+    tokenized and converted to a Abstract Syntax Tree(ast).
+
+    Functions defined as def visit_*(self,stmt_*) emit the Dart code for the
+    respective node.
+    Here * refers to any node that has been recognized.
+
+    It also contains other helper functions that assit in the code generation.
+    '''
     def parse(self, code):
+        '''
+        Parses the input files and traverses it node by node.
+        '''
         tree = ast.parse(code)
         self.visit(tree)
 
     def escape(self, s):
+        '''
+        Converting python escape sequences to that of Dart.
+        '''
+
         s = s.replace('\\', '\\\\')
         s = s.replace('\n', r'\n')
         s = s.replace('\t', r'\t')
@@ -80,6 +98,9 @@ class PyParser(ast.NodeVisitor):
         return s
 
     def addImport(self, module):
+        '''
+        Add corresponding imports from Dart.
+        '''
         global dartImports
 
         if module not in dartImports:
