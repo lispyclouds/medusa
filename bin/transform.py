@@ -246,15 +246,21 @@ class PyParser(ast.NodeVisitor):
     def visit_BinOp(self, stmt_binop):
         global wrap
 
-        left = self.visit(stmt_binop.left)
         op = self.visit(stmt_binop.op)
-        wrap = False
-        right = self.visit(stmt_binop.right)
-        wrap = True
-        exp = "(" + left + op + right + ")"
 
-        if op == ",":
-            exp = "($pow" + exp + ")"
+        if isinstance(stmt_binop.left, _ast.Num) and isinstance(stmt_binop.right, _ast.Num):
+            if op is ",":
+                op = "**"
+            exp = "(" + str(eval(str(stmt_binop.left.n) + op + str(stmt_binop.right.n))) + ")"
+        else:
+            left = self.visit(stmt_binop.left)
+            wrap = False
+            right = self.visit(stmt_binop.right)
+            wrap = True
+            exp = "(" + left + op + right + ")"
+
+            if op is ",":
+                exp = "($pow" + exp + ")"
 
         return exp
 
