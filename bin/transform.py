@@ -829,7 +829,7 @@ class PyParser(ast.NodeVisitor):
                     code += self.visit(node)
                 code += "}"
             except KeyError:
-                sys.stderr.write("[Medusa Error] Exception handler not implemented for + handler.type.id")
+                sys.stderr.write("[Medusa Error] Exception handler not implemented for " + handler.type.id)
                 exit(-1)
 
         if not final and len(nodes.orelse) > 0:
