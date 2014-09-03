@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction &mdash; medusa 0.01 documentation</title>
+    <title>Installation &mdash; medusa 0.01 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,8 +25,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="medusa 0.01 documentation" href="index.html" />
-    <link rel="next" title="Installation" href="installation.html" />
-    <link rel="prev" title="Welcome to medusa’s documentation!" href="index.html" /> 
+    <link rel="next" title="Developers Corner" href="DevDocs.html" />
+    <link rel="prev" title="Introduction" href="Intro.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,10 +36,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="installation.html" title="Installation"
+          <a href="DevDocs.html" title="Developers Corner"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to medusa’s documentation!"
+          <a href="Intro.html" title="Introduction"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">medusa 0.01 documentation</a> &raquo;</li> 
       </ul>
@@ -50,14 +50,42 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>Medusa</p>
-<div class="section" id="medusa-in-a-glance">
-<h2>Medusa in a glance<a class="headerlink" href="#medusa-in-a-glance" title="Permalink to this headline">¶</a></h2>
-<p>In 2011 google released <a class="reference external" href="https://www.Dartlang.org">Dart</a> and with it came the Dart VM.
-The power of Medusa lies in running the python code on the DartVM . Python runs about 1000%
-faster on Medusa as compared to cpython.</p>
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>Medusa is currently supported only on debian. Windows and Mac builds will soon be available</p>
+<div class="section" id="debian-users">
+<h2>Debian Users<a class="headerlink" href="#debian-users" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Simply run ./INSTALL after cloning this <a class="reference external" href="https://github.com/rahul080327/medusa">repo</a> on your Debian</dt>
+<dd>based Linux distro.</dd>
+</dl>
+<p>Thats it. All dependencies are installed, code compiled and paths setup automatically.</p>
+<dl class="docutils">
+<dt>Others:</dt>
+<dd><ul class="first last simple">
+<li>Install C++ compilers and Make tools</li>
+<li>Install Qt5 build tools and libs</li>
+<li>Install Dart SDK</li>
+<li>Install Python 2.7.x</li>
+<li>Rum moc on inc/transform.h to inc/transform_moc.h</li>
+<li>Run qmake on medusa.pro</li>
+<li>Run make</li>
+<li>Use the medusavm executable</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="using-medusa">
+<h2>Using Medusa<a class="headerlink" href="#using-medusa" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>Medusa is available as medusavm after a successful buid and install</li>
+<li>Python programs can be run by passing them as parameters: medusavm hello.py</li>
+<li>Medusa can be stopped after the Dart compile phase by passing a -c switch: medusavm -c hello.py. The Dart code is obtained in hello.dart in the same directory.</li>
+<li>Python files can be globally installed into Medusa for imports by other files: medusavm -install python_file</li>
+<li>Help is at: medusavm &#8211;help</li>
+</ul>
+</div></blockquote>
 </div>
 </div>
 
@@ -69,21 +97,22 @@ faster on Medusa as compared to cpython.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Introduction</a><ul>
-<li><a class="reference internal" href="#medusa-in-a-glance">Medusa in a glance</a></li>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#debian-users">Debian Users</a></li>
+<li><a class="reference internal" href="#using-medusa">Using Medusa</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to medusa&#8217;s documentation!</a></p>
+  <p class="topless"><a href="Intro.html"
+                        title="previous chapter">Introduction</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="next chapter">Installation</a></p>
+  <p class="topless"><a href="DevDocs.html"
+                        title="next chapter">Developers Corner</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/Intro.txt"
+    <li><a href="_sources/installation.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -110,10 +139,10 @@ faster on Medusa as compared to cpython.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="installation.html" title="Installation"
+          <a href="DevDocs.html" title="Developers Corner"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to medusa’s documentation!"
+          <a href="Intro.html" title="Introduction"
              >previous</a> |</li>
         <li><a href="index.html">medusa 0.01 documentation</a> &raquo;</li> 
       </ul>

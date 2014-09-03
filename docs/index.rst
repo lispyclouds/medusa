@@ -12,9 +12,9 @@ Contents:
    :maxdepth: 2
 
    Intro.rst
-   Installation
-   User Docs
-   Developers
+   installation.rst
+   DevDocs.rst
+   About.rst
 
 
 

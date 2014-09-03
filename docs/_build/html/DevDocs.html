@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction &mdash; medusa 0.01 documentation</title>
+    <title>Developers Corner &mdash; medusa 0.01 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,8 +25,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="medusa 0.01 documentation" href="index.html" />
-    <link rel="next" title="Installation" href="installation.html" />
-    <link rel="prev" title="Welcome to medusa’s documentation!" href="index.html" /> 
+    <link rel="next" title="About" href="About.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,10 +36,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="installation.html" title="Installation"
+          <a href="About.html" title="About"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to medusa’s documentation!"
+          <a href="installation.html" title="Installation"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">medusa 0.01 documentation</a> &raquo;</li> 
       </ul>
@@ -50,14 +50,27 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>Medusa</p>
-<div class="section" id="medusa-in-a-glance">
-<h2>Medusa in a glance<a class="headerlink" href="#medusa-in-a-glance" title="Permalink to this headline">¶</a></h2>
-<p>In 2011 google released <a class="reference external" href="https://www.Dartlang.org">Dart</a> and with it came the Dart VM.
-The power of Medusa lies in running the python code on the DartVM . Python runs about 1000%
-faster on Medusa as compared to cpython.</p>
+  <div class="section" id="developers-corner">
+<h1>Developers Corner<a class="headerlink" href="#developers-corner" title="Permalink to this headline">¶</a></h1>
+<p>We&#8217;d love to have your help in making Medusa better and Python faster. Any and all contributions are welcome. Frankly speaking there&#8217;s still a hell lot to do.</p>
+<div class="section" id="how-medusa-works">
+<h2>How Medusa works<a class="headerlink" href="#how-medusa-works" title="Permalink to this headline">¶</a></h2>
+<p>Running python faster has been a major challenge since the very start. Python brought with it the joy of flexibility
+and simpler prototyping. What Medusa intends to do is run the same python scripts you wrote faster.
+Medusa takes the python file and creates its equivalent dart code. This Dart code can be run on the DartVM.</p>
+<p>The challenge here is converting python to dart. Medusa tokenizes the python file and creates an Abstract Syntax Tree.
+As we traverse this tree from one node to another, the equivalent Dart code is emitted and at the end all this code is stitched , optimized and run on the DartVM.</p>
+</div>
+<div class="section" id="development-workflow">
+<h2>Development Workflow<a class="headerlink" href="#development-workflow" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><em class="xref std std-ref">Creating the environment</em></li>
+<li><em class="xref std std-ref">Workflow process</em></li>
+<li><em class="xref std std-ref">How to submit a patch</em></li>
+<li><em class="xref std std-ref">Coding Conventions</em></li>
+</ul>
+</div></blockquote>
 </div>
 </div>
 
@@ -69,21 +82,22 @@ faster on Medusa as compared to cpython.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Introduction</a><ul>
-<li><a class="reference internal" href="#medusa-in-a-glance">Medusa in a glance</a></li>
+<li><a class="reference internal" href="#">Developers Corner</a><ul>
+<li><a class="reference internal" href="#how-medusa-works">How Medusa works</a></li>
+<li><a class="reference internal" href="#development-workflow">Development Workflow</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to medusa&#8217;s documentation!</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="installation.html"
-                        title="next chapter">Installation</a></p>
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="About.html"
+                        title="next chapter">About</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/Intro.txt"
+    <li><a href="_sources/DevDocs.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -110,10 +124,10 @@ faster on Medusa as compared to cpython.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="installation.html" title="Installation"
+          <a href="About.html" title="About"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to medusa’s documentation!"
+          <a href="installation.html" title="Installation"
              >previous</a> |</li>
         <li><a href="index.html">medusa 0.01 documentation</a> &raquo;</li> 
       </ul>
