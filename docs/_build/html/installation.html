@@ -54,7 +54,7 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>Medusa is currently supported only on debian. Windows and Mac builds will soon be available</p>
 <div class="section" id="debian-users">
-<h2>Debian Users:<a class="headerlink" href="#debian-users" title="Permalink to this headline">¶</a></h2>
+<h2>Debian Users<a class="headerlink" href="#debian-users" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>Simply run ./INSTALL after cloning this <a class="reference external" href="https://github.com/rahul080327/medusa">repo</a> on your Debian</dt>
 <dd>based Linux distro.</dd>
@@ -75,6 +75,18 @@
 </dd>
 </dl>
 </div>
+<div class="section" id="using-medusa">
+<h2>Using Medusa<a class="headerlink" href="#using-medusa" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>Medusa is available as medusavm after a successful buid and install</li>
+<li>Python programs can be run by passing them as parameters: medusavm hello.py</li>
+<li>Medusa can be stopped after the Dart compile phase by passing a -c switch: medusavm -c hello.py. The Dart code is obtained in hello.dart in the same directory.</li>
+<li>Python files can be globally installed into Medusa for imports by other files: medusavm -install python_file</li>
+<li>Help is at: medusavm &#8211;help</li>
+</ul>
+</div></blockquote>
+</div>
 </div>
 
 
@@ -86,7 +98,8 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#debian-users">Debian Users:</a></li>
+<li><a class="reference internal" href="#debian-users">Debian Users</a></li>
+<li><a class="reference internal" href="#using-medusa">Using Medusa</a></li>
 </ul>
 </li>
 </ul>
