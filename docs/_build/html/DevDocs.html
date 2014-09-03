@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Developers Corner &mdash; medusa 0.01 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="medusa 0.01 documentation" href="index.html" />
+    <link rel="next" title="About" href="About.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="About.html" title="About"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">medusa 0.01 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="developers-corner">
+<h1>Developers Corner<a class="headerlink" href="#developers-corner" title="Permalink to this headline">¶</a></h1>
+<p>We&#8217;d love to have your help in making Medusa better and Python faster. Any and all contributions are welcome. Frankly speaking there&#8217;s still a hell lot to do.</p>
+<div class="section" id="how-medusa-works">
+<h2>How Medusa works<a class="headerlink" href="#how-medusa-works" title="Permalink to this headline">¶</a></h2>
+<p>Running python faster has been a major challenge since the very start. Python brought with it the joy of flexibility
+and simpler prototyping. What Medusa intends to do is run the same python scripts you wrote faster.
+Medusa takes the python file and creates its equivalent dart code. This Dart code can be run on the DartVM.</p>
+<p>The challenge here is converting python to dart. Medusa tokenizes the python file and creates an Abstract Syntax Tree.
+As we traverse this tree from one node to another, the equivalent Dart code is emitted and at the end all this code is stitched , optimized and run on the DartVM.</p>
+</div>
+<div class="section" id="development-workflow">
+<h2>Development Workflow<a class="headerlink" href="#development-workflow" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><em class="xref std std-ref">Creating the environment</em></li>
+<li><em class="xref std std-ref">Workflow process</em></li>
+<li><em class="xref std std-ref">How to submit a patch</em></li>
+<li><em class="xref std std-ref">Coding Conventions</em></li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Developers Corner</a><ul>
+<li><a class="reference internal" href="#how-medusa-works">How Medusa works</a></li>
+<li><a class="reference internal" href="#development-workflow">Development Workflow</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="About.html"
+                        title="next chapter">About</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/DevDocs.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="About.html" title="About"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="index.html">medusa 0.01 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Rahul De&#39;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

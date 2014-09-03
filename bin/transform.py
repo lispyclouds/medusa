@@ -43,29 +43,49 @@ userImports = []
 fNames = []
 fCalled = []
 
-classyMode = False
-funMode = False
+classyMode = False                              # True during conversion of code in a Class
+funMode = False                                 # True during conversion of code in a Function
 broken = False
 formats = False
 fromTest = False
 wrap = True
-importing = False
+importing = False                               # True when an external module is imported
 
+# Imports is a dictionary that maps the
+# imported python modules to equivalent Dart module from Lib
 imports = {}
 imports['random'] = [inc_path + "pyrandom.dart", "$PyRandom"]
 imports['time'] = [inc_path + "pytime.dart", "$PyTime"]
 
+# exceptions is the dictionary that maps the
 exceptions = {}
 exceptions['Exception'] = "Exception"
 exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"
 
 class PyParser(ast.NodeVisitor):
+    '''
+    This class forms the core of 'Python-to-Dart' code conversion.
+    The module parses the whole python code as a string. The code is then
+    tokenized and converted to a Abstract Syntax Tree(ast).
+
+    Functions defined as def visit_*(self,stmt_*) emit the Dart code for the
+    respective node.
+    Here * refers to any node that has been recognized.
+
+    It also contains other helper functions that assit in the code generation.
+    '''
     def parse(self, code):
+        '''
+        Parses the input files and traverses it node by node.
+        '''
         tree = ast.parse(code)
         self.visit(tree)
 
     def escape(self, s):
+        '''
+        Converting python escape sequences to that of Dart.
+        '''
         s = s.replace('\\', '\\\\')
         s = s.replace('\n', r'\n')
         s = s.replace('\t', r'\t')
@@ -80,6 +100,9 @@ class PyParser(ast.NodeVisitor):
         return s
 
     def addImport(self, module):
+        '''
+        Add corresponding imports from Dart.
+        '''
         global dartImports
 
         if module not in dartImports:
@@ -92,6 +115,11 @@ class PyParser(ast.NodeVisitor):
             dartGlobalVars.append(name)
 
     def visit_Module(self, stmt_module):
+        '''
+        Identifies the Imports, Classes, Functions and code.
+        The parsedClasses, parsedCode, parsedFunctions, parsedImports
+        global variables are updated.
+        '''
         global parsedType, parsedClasses, parsedFunctions, parsedCode, parsedImports
 
         for node in stmt_module.body:
@@ -111,6 +139,9 @@ class PyParser(ast.NodeVisitor):
                 exit(-1)
 
     def visit_UAdd(self, stmt_uadd):
+        '''
+        Returns '+' symbol for
+        '''
         return "+"
 
     def visit_USub(self, stmt_usub):
