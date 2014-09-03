@@ -1,6 +1,6 @@
 About
 =====
-Medusa Development Team
+Development Team
 -----------------------
 
 This project was started by `Rahul De' <https://github.com/rahul080327>`_, Apoorv Agarwal and Akash Giri in the spring of 2014.
