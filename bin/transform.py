@@ -51,11 +51,11 @@ fromTest = False
 wrap = True
 importing = False
 
-imports = dict()
+imports = {}
 imports['random'] = [inc_path + "pyrandom.dart", "$PyRandom"]
 imports['time'] = [inc_path + "pytime.dart", "$PyTime"]
 
-exceptions = dict()
+exceptions = {}
 exceptions['Exception'] = "Exception"
 exceptions['IOError'] = "FileSystemException"
 exceptions['ZeroDivisionError'] = "IntegerDivisionByZeroException"

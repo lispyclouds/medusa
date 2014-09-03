@@ -224,8 +224,8 @@ $PyNum $n([x]) {
 $PyNum int([x]) {
     if (x == null)
         x = 0;
-    else
-        x = x.value.toInt();
+    else if (x is $PyString)
+        x = num.parse(x.value);
     return new $PyNum(x);
 }
 
@@ -420,6 +420,7 @@ class $PyString extends IterableBase {
     final String _str;
 
     const $PyString(this._str);
+    get value => _str;
     get iterator => this.toList().iterator;
     get length => new $PyNum(_str.length);
 
