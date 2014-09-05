@@ -74,6 +74,9 @@ class PyParser(ast.NodeVisitor):
     Here * refers to any node that has been recognized.
 
     It also contains other helper functions that assit in the code generation.
+    When a node is visited the corresponding visit_ finction is called. These
+    functions arent explicitly called, instead the 'visit' function does it .
+    For further assistance refer http://hg.python.org/cpython/file/2.7/Lib/ast.py
     '''
     def parse(self, code):
         '''
@@ -114,6 +117,15 @@ class PyParser(ast.NodeVisitor):
         if name not in dartGlobalVars:
             dartGlobalVars.append(name)
 
+    '''
+    The visit function for mod node classes are defined below.
+    The list of mod node classes are :
+        1.  Module
+        2.  Interactive [TODO]
+        3.  Expression  [TODO]
+        4.  Suite       [TODO]
+    '''
+
     def visit_Module(self, stmt_module):
         '''
         Identifies the Imports, Classes, Functions and code.
@@ -138,10 +150,16 @@ class PyParser(ast.NodeVisitor):
                 sys.stderr.write("[Medusa Error] Can't Parse " + type(node))
                 exit(-1)
 
+    '''
+    The visit function for Unary Operator node classes are defined below.
+    The list of Unary Operator node classes are :
+        1. UAdd
+        2. USub
+        3. Invert
+        4. Not
+    '''
+
     def visit_UAdd(self, stmt_uadd):
-        '''
-        Returns '+' symbol for
-        '''
         return "+"
 
     def visit_USub(self, stmt_usub):
@@ -149,6 +167,146 @@ class PyParser(ast.NodeVisitor):
 
     def visit_Invert(self, stmt_invert):
         return "~"
+
+    def visit_Not(self, stmt_not):
+        return "!"
+
+    '''
+    The visit function for operator node classes are defined below.
+    The list of Operator node classes are :
+        1. Add
+        2. Sub
+        3. Mult
+        4. Div
+        5. Mod
+        6. Pow
+        7. LShift
+        8. RShift
+        9. BitOr
+        10.BitXor
+        11.BitAnd
+        12.FloorDiv
+    '''
+
+    def visit_Add(self, stmt_add):
+        return "+"
+
+    def visit_Sub(self, stmt_sub):
+        return "-"
+
+    def visit_Mult(self, stmt_mult):
+        return "*"
+
+    def visit_Div(self, stmt_div):
+        return "/"
+
+
+    def visit_FloorDiv(self, stmt_fdiv):
+        return "/"
+
+    def visit_Pow(self, stmt_pow):
+        self.addImport(inc_path + "inbuilts.dart")
+        return ","
+
+    def visit_RShift(self, stmt_rshift):
+        return ">>"
+
+    def visit_LShift(self, stmt_lshift):
+        return "<<"
+
+    def visit_BitAnd(self, stmt_bitand):
+        return "&"
+
+    def visit_BitXor(self, stmt_bitxor):
+        return "^"
+
+    def visit_BitOr(self, stmt_bitor):
+        return "|"
+
+    def visit_Mod(self, stmt_mod):
+        return "%"
+
+    '''
+    The visit function for cmpop(comparator operator) node classes
+    are defined below.
+    The list of cmpop node classes are :
+        1. Eq
+        2. NotEq
+        3. Lt
+        4. LtE
+        5. Gt
+        6. GtE
+        7. Is
+        8. IsNot
+        9. In
+        10.NotIn
+    '''
+
+    def visit_Eq(self, stmt_eq):
+        return "=="
+
+    def visit_Gt(self, stmt_gt):
+        return ">"
+
+    def visit_Lt(self, stmt_lt):
+        return "<"
+
+    def visit_GtE(self, stmt_gte):
+        return ">="
+
+    def visit_LtE(self, stmt_lte):
+        return "<="
+
+    def visit_NotEq(self, stmt_neq):
+        return "!="
+
+    def visit_In(self, stmt_in):
+        return ".contains"
+
+    def visit_Is(self, stmt_is):
+        return "=="
+
+    def visit_IsNot(self, stmt_isnot):
+        return "!="
+
+    def visit_NotIn(self, stmt_notin):
+        return "NotIn"
+
+    '''
+    The visit function for boolop node classes
+    are defined below.
+    The list of boolop node classes are :
+        1. And
+        2. Or
+    '''
+
+    def visit_And(self, stmt_and):
+        return "and"
+
+    def visit_Or(self, stmt_or):
+        return "or"
+
+    '''
+    The visit function for expr(expressions) node classes
+    are defined below.
+    The list of expr node classes are :
+        1.  Name
+        2.  Num
+        3.  Str
+        4.  IfExp
+        5.  UnaryOp
+        6.  BinOp
+        7.  BoolOp
+        8.  List
+        9.  ListComp
+        10. GeneratorExp
+        11. Dict
+        12. Tuple
+        13. Subscript
+        14. Compare
+
+        [TODO's]
+    '''
 
     def visit_Name(self, stmt_name):
         global parsedType, wrap
@@ -188,82 +346,6 @@ class PyParser(ast.NodeVisitor):
         else:
             code = "'" + str(stmt_str.s) + "'"
         return code
-
-    def visit_Add(self, stmt_add):
-        return "+"
-
-    def visit_Sub(self, stmt_sub):
-        return "-"
-
-    def visit_Mult(self, stmt_mult):
-        return "*"
-
-    def visit_Div(self, stmt_div):
-        return "/"
-
-    def visit_FloorDiv(self, stmt_fdiv):
-        return "/"
-
-    def visit_Pow(self, stmt_pow):
-        self.addImport(inc_path + "inbuilts.dart")
-        return ","
-
-    def visit_RShift(self, stmt_rshift):
-        return ">>"
-
-    def visit_LShift(self, stmt_lshift):
-        return "<<"
-
-    def visit_BitAnd(self, stmt_bitand):
-        return "&"
-
-    def visit_BitXor(self, stmt_bitxor):
-        return "^"
-
-    def visit_BitOr(self, stmt_bitor):
-        return "|"
-
-    def visit_Mod(self, stmt_mod):
-        return "%"
-
-    def visit_Eq(self, stmt_eq):
-        return "=="
-
-    def visit_Gt(self, stmt_gt):
-        return ">"
-
-    def visit_Lt(self, stmt_lt):
-        return "<"
-
-    def visit_GtE(self, stmt_gte):
-        return ">="
-
-    def visit_LtE(self, stmt_lte):
-        return "<="
-
-    def visit_NotEq(self, stmt_neq):
-        return "!="
-
-    def visit_And(self, stmt_and):
-        return "and"
-
-    def visit_Or(self, stmt_or):
-        return "or"
-
-    def visit_In(self, stmt_in):
-        return ".contains"
-
-    def visit_Not(self, stmt_not):
-        return "!"
-
-    def visit_Is(self, stmt_is):
-        return "=="
-
-    def visit_IsNot(self, stmt_isnot):
-        return "!="
-
-    def visit_NotIn(self, stmt_notin):
-        return "NotIn"
 
     def visit_IfExp(self, stmt_ternary):
         stmt = self.visit(stmt_ternary.test) + "?" + self.visit(stmt_ternary.body) + ":" + self.visit(stmt_ternary.orelse)
@@ -315,70 +397,6 @@ class PyParser(ast.NodeVisitor):
             code = "$checkValue(" + code + ")"
 
         return code
-
-    def visit_Import(self, stmt_import):
-        global parsedType, imports, parsedClasses, parsedFunctions, parsedCode, importing, userImports
-
-        code, alias, wd = [], "", os.path.split(os.path.realpath(sys.argv[1]))[0]
-
-        for name in stmt_import.names:
-            if name.name in userImports:
-                continue
-
-            try:
-                self.addImport(imports[name.name][0])
-                if name.asname is None:
-                    alias = name.name
-                else:
-                    alias = name.asname
-
-                userImports.append(name.name)
-                code.append(alias + "=new " + imports[name.name][1] + "()")
-            except KeyError:
-                if os.path.exists(wd + os.sep + name.name + ".py"):
-                    iFile =  wd + os.sep + name.name + ".py";
-                elif os.path.exists(inc_path + name.name + ".py"):
-                    iFile = inc_path + name.name + ".py"
-                else:
-                    sys.stderr.write("[Medusa Error] Unimplemented or module found for import: " + name.name)
-                    exit(-1)
-
-                if importing:
-                    sys.stderr.write("[Medusa Error] Cannot recursively import user code. Yet. Sorry :(")
-                    exit(-1)
-
-                importing = True
-                class_bak, func_bak, code_bak = parsedClasses, parsedFunctions, parsedCode
-                parsedClasses, parsedFunctions, parsedCode = [], [], []
-
-                self.parse(open(iFile).read())
-
-                class_bak.append("class $" + name.name + "{")
-                class_bak[-1] += "".join(parsedClasses)
-                class_bak[-1] += "".join(parsedFunctions)
-                class_bak[-1] += "}";
-                parsedClasses = class_bak
-                parsedFunctions = func_bak
-
-                if code_bak is not []:
-                    code_bak += parsedCode
-                    parsedCode = code_bak
-
-                importing = False
-
-                if name.asname is None:
-                    alias = name.name
-                else:
-                    alias = name.asname
-
-                userImports.append(name.name)
-                code.append(alias + "=new $" + name.name + "()")
-
-        parsedType = "imports"
-        if code is not []:
-            return ":".join(code)
-        else:
-            return ""
 
     def visit_List(self, stmt_list):
         global wrap
@@ -480,11 +498,54 @@ class PyParser(ast.NodeVisitor):
             sys.stderr.write("[Medusa Error] Unimplemented Type => " + type(stmt_Subscript.slice))
             exit(-1)
 
-    def subsituteVisit(self, node):
-        if node is not None:
-            return self.visit(node)
-        else:
-            return None
+    def visit_Call(self, stmt_call):
+        global pyClasses, pyInbuilts, forceCall, formats, fCalled
+
+        code = self.visit(stmt_call.func)
+        fname = code
+        keyDict = {}
+
+        if fname in pyInbuilts:
+            self.addImport(inc_path + "inbuilts.dart")
+        elif code in pyClasses:
+            code = "new " + fname
+        elif not isinstance(stmt_call.func, _ast.Attribute) and fname not in fCalled:
+            fCalled.append(fname)
+
+        alen = len(stmt_call.args)
+        i = 0
+
+        if code == "exit":
+            self.addImport("dart:io")
+            if alen == 1:
+                arg = stmt_call.args[0].n
+            else:
+                arg = 0
+            return "exit(" + str(arg) + ")"
+        elif code == "main":
+            fname, code = "$main", "$main"
+
+        code += "([" if (formats or fname in variableArgs) else "("
+        while i < alen:
+            code += self.visit(stmt_call.args[i])
+
+            if (i + 1) < alen:
+                code += ","
+            i += 1
+        code += "]" if (fname in variableArgs or formats) else ""
+
+        if stmt_call.starargs != None:
+            code += "," + self.visit(stmt_call.starargs)
+
+        for node in stmt_call.keywords:
+            arg = node.arg
+            value = self.visit(node.value)
+            keyDict[arg] = value
+
+        code += ("," + str(keyDict) + ")") if formats else ")"
+
+        formats = False
+        return code
 
     def visit_Compare(self, stmt_test):
         global wrap
@@ -503,6 +564,135 @@ class PyParser(ast.NodeVisitor):
             code = left + op + right
 
         return code
+
+
+
+    def visit_Attribute(self, stmt_attribute):
+        global formats
+
+        value = self.visit(stmt_attribute.value)
+        if isinstance(stmt_attribute.value, _ast.Str) and stmt_attribute.attr is "format":
+            formats = True
+
+        code = value + "." + stmt_attribute.attr
+        return code
+
+    '''
+
+    The visit function for stmt(statement) node classes
+    are defined below.
+    The list of stmt node classes are :
+        1.  If
+        2.  Import
+        3.  ClassDef
+        4.  Global
+        5.  Pass
+        6.  FunctionDef
+        7.  Call
+        8.  Expr
+        9.  Return
+        10. Print
+        11. Assign
+        12. AugAssign
+        13. Break
+        14. While
+        15. For
+        16. Raise
+        17. TryExcept
+        18. TryFinally
+
+        [TODO's]
+
+    '''
+
+    def visit_If(self, stmt_if):
+        global fromTest
+
+        fromTest = True
+        code = self.visit(stmt_if.test)
+        if isinstance(stmt_if.test, _ast.Name):
+            code = "$checkValue(" + code + ")"
+        code = "if(" + code + "){"
+        for node in stmt_if.body:
+            code += self.visit(node)
+        code += "}"
+
+        if len(stmt_if.orelse) > 0:
+            code += "else "
+            if len(stmt_if.orelse) == 1 and isinstance(stmt_if.orelse[0], _ast.If):
+                code += self.visit(stmt_if.orelse[0])
+            else:
+                code += "{"
+                for node in stmt_if.orelse:
+                    code += self.visit(node)
+                code += "}"
+
+        fromTest = False
+        return code
+
+    def visit_Import(self, stmt_import):
+        global parsedType, imports, parsedClasses, parsedFunctions, parsedCode, importing, userImports
+
+        code, alias, wd = [], "", os.path.split(os.path.realpath(sys.argv[1]))[0]
+
+        for name in stmt_import.names:
+            if name.name in userImports:
+                continue
+
+            try:
+                self.addImport(imports[name.name][0])
+                if name.asname is None:
+                    alias = name.name
+                else:
+                    alias = name.asname
+
+                userImports.append(name.name)
+                code.append(alias + "=new " + imports[name.name][1] + "()")
+            except KeyError:
+                if os.path.exists(wd + os.sep + name.name + ".py"):
+                    iFile =  wd + os.sep + name.name + ".py";
+                elif os.path.exists(inc_path + name.name + ".py"):
+                    iFile = inc_path + name.name + ".py"
+                else:
+                    sys.stderr.write("[Medusa Error] Unimplemented or module found for import: " + name.name)
+                    exit(-1)
+
+                if importing:
+                    sys.stderr.write("[Medusa Error] Cannot recursively import user code. Yet. Sorry :(")
+                    exit(-1)
+
+                importing = True
+                class_bak, func_bak, code_bak = parsedClasses, parsedFunctions, parsedCode
+                parsedClasses, parsedFunctions, parsedCode = [], [], []
+
+                self.parse(open(iFile).read())
+
+                class_bak.append("class $" + name.name + "{")
+                class_bak[-1] += "".join(parsedClasses)
+                class_bak[-1] += "".join(parsedFunctions)
+                class_bak[-1] += "}";
+                parsedClasses = class_bak
+                parsedFunctions = func_bak
+
+                if code_bak is not []:
+                    code_bak += parsedCode
+                    parsedCode = code_bak
+
+                importing = False
+
+                if name.asname is None:
+                    alias = name.name
+                else:
+                    alias = name.asname
+
+                userImports.append(name.name)
+                code.append(alias + "=new $" + name.name + "()")
+
+        parsedType = "imports"
+        if code is not []:
+            return ":".join(code)
+        else:
+            return ""
 
     def visit_ClassDef(self, stmt_class):
         global parsedType, dartLocalVars, dartClassVars, classyMode, pyClassCache
@@ -618,55 +808,6 @@ class PyParser(ast.NodeVisitor):
         parsedType = "function"
         return code
 
-    def visit_Call(self, stmt_call):
-        global pyClasses, pyInbuilts, forceCall, formats, fCalled
-
-        code = self.visit(stmt_call.func)
-        fname = code
-        keyDict = {}
-
-        if fname in pyInbuilts:
-            self.addImport(inc_path + "inbuilts.dart")
-        elif code in pyClasses:
-            code = "new " + fname
-        elif not isinstance(stmt_call.func, _ast.Attribute) and fname not in fCalled:
-            fCalled.append(fname)
-
-        alen = len(stmt_call.args)
-        i = 0
-
-        if code == "exit":
-            self.addImport("dart:io")
-            if alen == 1:
-                arg = stmt_call.args[0].n
-            else:
-                arg = 0
-            return "exit(" + str(arg) + ")"
-        elif code == "main":
-            fname, code = "$main", "$main"
-
-        code += "([" if (formats or fname in variableArgs) else "("
-        while i < alen:
-            code += self.visit(stmt_call.args[i])
-
-            if (i + 1) < alen:
-                code += ","
-            i += 1
-        code += "]" if (fname in variableArgs or formats) else ""
-
-        if stmt_call.starargs != None:
-            code += "," + self.visit(stmt_call.starargs)
-
-        for node in stmt_call.keywords:
-            arg = node.arg
-            value = self.visit(node.value)
-            keyDict[arg] = value
-
-        code += ("," + str(keyDict) + ")") if formats else ")"
-
-        formats = False
-        return code
-
     def visit_Expr(self, stmt_expr):
         return self.visit(stmt_expr.value) + ";"
 
@@ -756,30 +897,6 @@ class PyParser(ast.NodeVisitor):
         global broken
         return "$broken=true;break;" if broken else "break;"
 
-    def visit_If(self, stmt_if):
-        global fromTest
-
-        fromTest = True
-        code = self.visit(stmt_if.test)
-        if isinstance(stmt_if.test, _ast.Name):
-            code = "$checkValue(" + code + ")"
-        code = "if(" + code + "){"
-        for node in stmt_if.body:
-            code += self.visit(node)
-        code += "}"
-
-        if len(stmt_if.orelse) > 0:
-            code += "else "
-            if len(stmt_if.orelse) == 1 and isinstance(stmt_if.orelse[0], _ast.If):
-                code += self.visit(stmt_if.orelse[0])
-            else:
-                code += "{"
-                for node in stmt_if.orelse:
-                    code += self.visit(node)
-                code += "}"
-
-        fromTest = False
-        return code
 
     def visit_While(self, stmt_while):
         code = "while(" + self.visit(stmt_while.test) + "){"
@@ -887,15 +1004,12 @@ class PyParser(ast.NodeVisitor):
 
         return code
 
-    def visit_Attribute(self, stmt_attribute):
-        global formats
+    def subsituteVisit(self, node):
+        if node is not None:
+            return self.visit(node)
+        else:
+            return None
 
-        value = self.visit(stmt_attribute.value)
-        if isinstance(stmt_attribute.value, _ast.Str) and stmt_attribute.attr is "format":
-            formats = True
-
-        code = value + "." + stmt_attribute.attr
-        return code
 
 PyParser().parse(open(sys.argv[1]).read())
 
