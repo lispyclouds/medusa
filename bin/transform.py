@@ -74,8 +74,8 @@ class PyParser(ast.NodeVisitor):
     Here * refers to any node that has been recognized.
 
     It also contains other helper functions that assit in the code generation.
-
-    The
+    When a node is visited the corresponding visit_ finction is called. These
+    functions arent explicitly called, instead the 'visit' function does it .
     For further assistance refer http://hg.python.org/cpython/file/2.7/Lib/ast.py
     '''
     def parse(self, code):
