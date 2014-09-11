@@ -1,0 +1,73 @@
+#!/bin/bash
+
+echo "Checking for qmake..."
+if type "qmake" > /dev/null 2>&1
+then
+    echo "qmake found, moving on..."
+else
+    echo "qmake not found, Install Qt5 first."
+    exit
+fi
+
+echo "Checking for moc..."
+if type "moc" > /dev/null 2>&1
+then
+    echo "moc found, moving on..."
+else
+    echo "moc not found, Install Qt5 first."
+    exit
+fi
+
+echo "Checking for Python 2.7..."
+if type "python" > /dev/null 2>&1
+then
+    echo "Python 2.7 found, moving on..."
+else
+    echo "Python 2.7 not found, Install Python 2.7.x."
+    exit
+fi
+
+echo "Checking for dart..."
+if type "dart" > /dev/null 2>&1
+then
+    echo "Dart VM found, moving on..."
+else
+    echo "Dart VM not found, Install Dart SDK first."
+    exit
+fi
+
+echo "Checking for clang++..."
+if type "clang++" > /dev/null 2>&1
+then
+    echo "clang++ found, moving on..."
+else
+    echo "clang++ compilers found. Instal XCode first..."
+    exit
+fi
+
+echo "All dependencies satisified! We are good to go... :D"
+echo "Starting Medusa build..."
+
+echo "moc'ing transform.h..."
+moc inc/transform.h > inc/transform_moc.h
+echo "Done!"
+
+echo "Generating Makefile..."
+qmake -o Makefile medusa.pro -recursive -spec macx-clang
+echo "Done"
+
+echo "Buliding and Installing Medusa 2.7.3..."
+make -j $(sysctl -n hw.ncpu)
+sudo make install
+make clean
+echo "Done!"
+
+echo "Installing Medusa 2.7.3 Runtime..."
+if [ ! -d ~/.medusa ];
+then
+    echo "Creating Medusa Home Directory"
+    mkdir ~/.medusa
+fi
+echo "Installing Dart Libs and FPT Transformer"
+cp -R bin/ ~/.medusa
+echo "Medusa 2.7.3 Successfully installed Yo! Runnable directly as 'medusavm' from the terminal. Happy Pythoning!"

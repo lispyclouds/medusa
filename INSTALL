@@ -72,13 +72,11 @@ make clean
 echo "Done!"
 
 echo "Installing Medusa 2.7.3 Runtime..."
-if [ ! -d $HOME/.medusa ];
+if [ ! -d ~/.medusa ];
 then
     echo "Creating Medusa Home Directory"
-    mkdir $HOME/.medusa
+    mkdir ~/.medusa
 fi
-echo "Installing Dart Libs"
-cp -R bin/lib $HOME/.medusa
-echo "Installing FPT Python Transformer"
-cp bin/transform.py $HOME/.medusa
+echo "Installing Dart Libs and FPT Transformer"
+cp -R bin/ ~/.medusa
 echo "Medusa 2.7.3 Successfully installed Yo! Runnable directly as 'medusavm' from the terminal. Happy Pythoning!"
