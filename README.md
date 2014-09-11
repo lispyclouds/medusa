@@ -17,6 +17,20 @@ Still in its nascent stages and implemented using Qt/C++, Python and Dart, the p
 
 Simply run <b>./INSTALL</b> after cloning this repo on your Debian based Linux distro. Thats it. All dependencies are installed, code compiled and paths setup automatically.
 
+<b>Mac OSX Users (packaged app):</b>
+Coming Soon ;) Thanks for your patience.
+
+<b>Mac OSX Users (building from source):</b>
+* Install XCode (Sorry for the bandwidth hogging...)
+* Install python 2.7.x and add it to PATH
+* Download and Install latest Qt5 for Mac from [here](http://qt-project.org/downloads) and add qmake and moc to PATH
+* Download the latest Dart SDK from [here](https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-ia32-release.zip), unzip and add the dart executable to PATH
+* Clone this repo and simply run <b>./INSTALL.mac</b>
+* After a succesful compile medusavm binary is available in /usr/bin/ for use
+* For updates and subsequent builds, fetch changes and just run <b>./INSTALL.mac</b>
+
+<b>Yeah, I finally have a MacBook! ^_^</b>
+
 <b>Others:</b>
 * Install C++ compilers and Make tools
 * Install Qt5 build tools and libs
@@ -26,7 +40,6 @@ Simply run <b>./INSTALL</b> after cloning this repo on your Debian based Linux d
 * Run qmake on medusa.pro
 * Run make
 * Use the medusavm executable
-
 
 ## Running
 

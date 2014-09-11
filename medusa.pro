@@ -35,3 +35,8 @@ linux {
   QMAKE_CXXFLAGS         += -m64
   QMAKE_CXXFLAGS_RELEASE *= -O3
 }
+
+macx {
+  target.path             = /usr/bin
+  QMAKE_CXXFLAGS_RELEASE *= -O3
+}
