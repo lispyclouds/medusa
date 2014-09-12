@@ -3,11 +3,15 @@
 Cache::Cache() {
     QString medusaHome = QDir::homePath() + "/.medusa/";
 
+    if (!QFile(medusaHome).exists()) {
+        cerr << "[Medusa Error] What?! Medusa Home folder not found or unreadable. Please Reinstall." << endl;
+        exit(-1);
+    }
+
     db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(medusaHome + "medusa.cache");
 
-    QFile dbFile(medusaHome + "medusa.cache");
-    if (!dbFile.exists()) {
+    if (!QFile(medusaHome + "medusa.cache").exists()) {
         db.open();
         QSqlQuery query(db);
         query.exec("CREATE TABLE MedusaCache (InFile TEXT PRIMARY KEY, Hash VARCHAR(64), GenCode TEXT)");

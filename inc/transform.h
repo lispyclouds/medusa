@@ -20,6 +20,7 @@ private slots:
     void pythonFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void readStandardError();
     void readStandardOutput();
+    void shitHappened(QProcess::ProcessError);
 private:
     QSqlDatabase db;
     QProcess *python;
