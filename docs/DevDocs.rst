@@ -22,6 +22,8 @@ Medusa follows a six step procedure:
     5. Invoke the Dart virtual machine with Dart code
     6. Cache the generated machine code and provide output
 
+.. image:: /_static/image1.png
+
 Development Workflow
 ====================
 Introduction
