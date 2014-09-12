@@ -55,22 +55,75 @@
 <p>We&#8217;d love to have your help in making Medusa better and Python faster. Any and all contributions are welcome. Frankly speaking there&#8217;s still a hell lot to do.</p>
 <div class="section" id="how-medusa-works">
 <h2>How Medusa works<a class="headerlink" href="#how-medusa-works" title="Permalink to this headline">¶</a></h2>
-<p>Running python faster has been a major challenge since the very start. Python brought with it the joy of flexibility
-and simpler prototyping. What Medusa intends to do is run the same python scripts you wrote faster.
-Medusa takes the python file and creates its equivalent dart code. This Dart code can be run on the DartVM.</p>
-<p>The challenge here is converting python to dart. Medusa tokenizes the python file and creates an Abstract Syntax Tree.
-As we traverse this tree from one node to another, the equivalent Dart code is emitted and at the end all this code is stitched , optimized and run on the DartVM.</p>
+<p>Python is one of the most widely used scripting languages and has immense deployment
+and brought with it the joy of flexibility and simpler prototyping.One place where it falls short is development of very large scale software implementations primarily because the implementation is not fast enough.
+|
+What Medusa intends to do is run the same python code you wrote a lot faster.</p>
+<div class="section" id="the-concept">
+<h3>The Concept<a class="headerlink" href="#the-concept" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Medusa follows a six step procedure:</dt>
+<dd><ol class="first last arabic simple">
+<li>Breaks the python source file into tokens</li>
+<li>Parse these tokens into an Abstract Syntax Tree while checking for errors</li>
+<li>Walk the tree and emit the equivalent Dart code at each node while optimizing it</li>
+<li>Cache the code in persistent SQLite3 Database</li>
+<li>Invoke the Dart virtual machine with Dart code</li>
+<li>Cache the generated machine code and provide output</li>
+</ol>
+</dd>
+</dl>
+</div>
 </div>
 <div class="section" id="development-workflow">
 <h2>Development Workflow<a class="headerlink" href="#development-workflow" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><ul class="simple">
-<li><em class="xref std std-ref">Creating the environment</em></li>
-<li><em class="xref std std-ref">Workflow process</em></li>
-<li><em class="xref std std-ref">How to submit a patch</em></li>
-<li><em class="xref std std-ref">Coding Conventions</em></li>
-</ul>
-</div></blockquote>
+<div class="section" id="introduction">
+<h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
+<p>Medusa encourages everyone to join and implement new features, fix some bugs,
+review pull requests and suggest ideas, take part in general discussions etc.</p>
+</div>
+<div class="section" id="creating-the-environment">
+<h3>Creating the environment<a class="headerlink" href="#creating-the-environment" title="Permalink to this headline">¶</a></h3>
+<p>Before you start contributing, you will have to follow the steps below to make
+sure that there are no hiccups when you are working.</p>
+<div class="section" id="install-git">
+<h4>Install git<a class="headerlink" href="#install-git" title="Permalink to this headline">¶</a></h4>
+<p>Installing git on linux-like systems can be done using the native package management systems.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install git
+</pre></div>
+</div>
+<p>or.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ yum install git
+</pre></div>
+</div>
+<p>Windows users may download the installer from</p>
+<div class="highlight-python"><div class="highlight"><pre>http://python.org/download/
+</pre></div>
+</div>
+<p>Then do not forget to add Python to the $PATH environment.</p>
+<p>On Windows and Mac OS X, the easiest way to get git is to download GitHub’s
+software, which will install git, and also provide a nice GUI (this tutorial
+will be based on the command line interface). Note, you may need to go into the
+GitHub preferences and choose the “Install Command Line Tools” option to get git
+installed into the terminal.
+If you do decide to use the GitHub GUI, you should make sure that any
+“sync does rebase” option is disabled in the settings.</p>
+</div>
+<div class="section" id="cloning-medusa">
+<h4>Cloning Medusa<a class="headerlink" href="#cloning-medusa" title="Permalink to this headline">¶</a></h4>
+<p>Clone medusa&#8217;s repository on your machine to browse and work on the code locally.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ git clone https://github.com/rahul080327/medusa
+$ cd medusa
+</pre></div>
+</div>
+</div>
+<div class="section" id="how-to-submit-a-patch">
+<h4>How to submit a patch<a class="headerlink" href="#how-to-submit-a-patch" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="coding-conventions">
+<h4>Coding Conventions<a class="headerlink" href="#coding-conventions" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
 </div>
 </div>
 
@@ -83,8 +136,21 @@ As we traverse this tree from one node to another, the equivalent Dart code is e
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Developers Corner</a><ul>
-<li><a class="reference internal" href="#how-medusa-works">How Medusa works</a></li>
-<li><a class="reference internal" href="#development-workflow">Development Workflow</a></li>
+<li><a class="reference internal" href="#how-medusa-works">How Medusa works</a><ul>
+<li><a class="reference internal" href="#the-concept">The Concept</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#development-workflow">Development Workflow</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#creating-the-environment">Creating the environment</a><ul>
+<li><a class="reference internal" href="#install-git">Install git</a></li>
+<li><a class="reference internal" href="#cloning-medusa">Cloning Medusa</a></li>
+<li><a class="reference internal" href="#how-to-submit-a-patch">How to submit a patch</a></li>
+<li><a class="reference internal" href="#coding-conventions">Coding Conventions</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
