@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
         else if (arg == "-install")
             install = true;
         else if (arg == "--version" || arg == "-v") {
-            cout << version << endl;
+            cout << version << " running on Qt " << qVersion() << endl;
             return 0;
         }
         else {
