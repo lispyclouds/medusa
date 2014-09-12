@@ -10,7 +10,20 @@ Simply run ./INSTALL after cloning this `repo <https://github.com/rahul080327/me
  based Linux distro.
 Thats it. All dependencies are installed, code compiled and paths setup automatically.
 
-Others:
+
+Mac OSX Users (building from source)
+------------------------------------
+
+    * Install XCode if not installed (Sorry for the bandwidth hogging...)
+    * Install python 2.7.x if not installed and add it to PATH
+    * Download and Install latest Qt5 for Mac from here and add qmake and moc to PATH
+    * Download the latest Dart SDK from here, unzip and add the dart executable to PATH
+    * Clone this repo and simply run ./INSTALL.mac
+    * After a succesful compile medusavm binary is available in /usr/bin/ for use
+    * For updates and subsequent builds, fetch changes and just run ./INSTALL.mac
+
+Others
+------
     * Install C++ compilers and Make tools
     * Install Qt5 build tools and libs
     * Install Dart SDK
@@ -19,6 +32,8 @@ Others:
     * Run qmake on medusa.pro
     * Run make
     * Use the medusavm executable
+
+
 
 Using Medusa
 ------------
