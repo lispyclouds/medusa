@@ -2,6 +2,9 @@
 #define EXEC_H
 
 #include <QFile>
+#include <iostream>
+
+using namespace std;
 
 class Exec {
 public:

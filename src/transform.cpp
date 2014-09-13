@@ -38,21 +38,32 @@ void Transform::pythonFinished(int exitCode, QProcess::ExitStatus) {
     }
 }
 
+void Transform::shitHappened(QProcess::ProcessError error) {
+    if (error == QProcess::FailedToStart) {
+        QSqlQuery query(db);
+        query.exec("DELETE FROM MedusaCache WHERE InFile='" + path + "'");
+        cerr << "[Medusa Error] Python not found in PATH. Make sure its installed and is accesible via PATH" << endl;
+        exitCode = -1;
+    }
+}
+
 bool Transform::transform(QString path, QString &code) {
     QStringList args;
+
+    if (!QFile(QDir::homePath() + "/.medusa/transform.py").exists()) {
+        QSqlQuery query(db);
+        query.exec("DELETE FROM MedusaCache WHERE InFile='" + path + "'");
+        cerr << "[Medusa Error] What?! FPT Transformer not found. Please Reinstall." << endl;
+        exit(-1);
+    }
 
     args << QDir::homePath() + "/.medusa/transform.py" << path;
     this->path = path;
 
-    QObject::connect(python,
-                SIGNAL(finished(int, QProcess::ExitStatus)),
-                this, SLOT(pythonFinished(int, QProcess::ExitStatus)));
-    QObject::connect(python,
-                SIGNAL(readyReadStandardError()),
-                this, SLOT(readStandardError()));
-    QObject::connect(python,
-                SIGNAL(readyReadStandardOutput()),
-                this, SLOT(readStandardOutput()));
+    connect(python, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(pythonFinished(int, QProcess::ExitStatus)));
+    connect(python, SIGNAL(readyReadStandardError()), this, SLOT(readStandardError()));
+    connect(python, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
+    connect(python, SIGNAL(error(QProcess::ProcessError)), this, SLOT(shitHappened(QProcess::ProcessError)));
 
     python->start("python", args);
     python->waitForFinished();

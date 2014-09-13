@@ -11,6 +11,8 @@ void Exec::run(QString code, QString fileName, bool cStop) {
     if (cStop)
         return;
 
-    system(command.toStdString().c_str());
+    if (system(command.toStdString().c_str()) != 0)
+        cerr << "[Medusa Error] Dart not found in PATH. Make sure its installed and is accesible via PATH" << endl;
+
     out.remove();
 }
