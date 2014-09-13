@@ -69,5 +69,11 @@ Clone medusa's repository on your machine to browse and work on the code locally
 
 How to submit a patch
 ^^^^^^^^^^^^^^^^^^^^^
-Coding Conventions
-^^^^^^^^^^^^^^^^^^
+Currently we follow a very simple system.
+    1. Fork this `repo <https://github.com/rahul080327/medusa>`_
+    2. Clone it to your machine
+    3. Make the changes locally
+    4. Rebase the local repository with upstream
+    5. Commit changes with valid verbose comments
+    6. Push to your repository
+    7. Compare and send a pull request
