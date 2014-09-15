@@ -15,6 +15,7 @@ Contents:
    installation.rst
    DevDocs.rst
    About.rst
+   License.rst
 
 
 
