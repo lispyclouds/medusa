@@ -4,7 +4,7 @@ Cache::Cache() {
     QString medusaHome = QDir::homePath() + "/.medusa/";
 
     if (!QFile(medusaHome).exists()) {
-        cerr << "[Medusa Error] What?! Medusa Home folder not found or unreadable. Please Reinstall." << endl;
+        cerr << "\x1b[31m[Medusa Error] What?! Medusa Home folder not found or unreadable. Please Reinstall.\x1b[0m" << endl;
         exit(-1);
     }
 
@@ -32,10 +32,7 @@ QString Cache::hashFile(QString path) {
     int bytes;
 
     if (!(inFile = fopen(path.toStdString().c_str(), "rb"))) {
-        cerr << "Error: Couldn't read "
-            << path.toStdString().c_str()
-            << ". Please check if it exists and is readable."
-            << endl;
+        cerr << "\x1b[31m[Medusa Error]: Couldn't read " + path.toStdString() + ". Please check if it exists and is readable.\x1b[0m" << endl;
         exit(-1);
     }
 
