@@ -75,4 +75,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ## Fear and Respect her at the same time!
 
+![alt tag](https://raw.github.com/rahul080327/medusa/master/icon.jpg)
+
 ## Just Kidding, Happy Pythoning Yo!
