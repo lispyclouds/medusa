@@ -14,7 +14,7 @@ Cache::Cache() {
     if (!QFile(medusaHome + "medusa.cache").exists()) {
         db.open();
         QSqlQuery query(db);
-        query.exec("CREATE TABLE MedusaCache (InFile TEXT PRIMARY KEY, Hash VARCHAR(64), GenCode TEXT)");
+        query.exec("CREATE TABLE MedusaCache (InFile TEXT, Hash VARCHAR(64), GenCode TEXT, PRIMARY KEY(InFile, Hash))");
     }
     else
         db.open();
@@ -59,7 +59,6 @@ bool Cache::changed(QString path, QString hash, QString &code) {
     QSqlQuery query(db);
 
     query.exec("SELECT Hash, GenCode FROM MedusaCache WHERE InFile='" + path + "'");
-    QSqlRecord rec = query.record();
     query.next();
 
     if (query.value(0).toString() != hash)
@@ -71,9 +70,17 @@ bool Cache::changed(QString path, QString hash, QString &code) {
 
 bool Cache::isCached(QString path, QString &code) {
     QString hash = hashFile(path);
+    QSqlQuery query(db);
 
-    if (!tryInsert(path, hash))
-        return changed(path, hash, code) ? false : true;
+    if (!tryInsert(path, hash)) {
+        query.exec("SELECT GenCode FROM MedusaCache WHERE Hash='" + hash + "'");
+        query.next();
+
+        if ((code = query.value(0).toString()) != "")
+            return true;
+        else
+            return changed(path, hash, code) ? false : true;
+    }
     else
         return false;
 }
