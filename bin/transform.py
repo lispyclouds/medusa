@@ -40,16 +40,16 @@ parsedCode = []
 variableArgs = ["max", "min", "zip"]
 userImports = []
 
-fNames = []
-fCalled = []
+fNames = []                           # Function names
+fCalled = []                          # Called functions
 
-classyMode = False                              # True during conversion of code in a Class
-funMode = False                                 # True during conversion of code in a Function
+classyMode = False                    # True during conversion of code in a Class
+funMode = False                       # True during conversion of code in a Function
 broken = False
 formats = False
 fromTest = False
-wrap = True
-importing = False                               # True when an external module is imported
+wrap = True                           # True when wrapping something with braces
+importing = False                     # True when an external module is imported
 
 # Imports is a dictionary that maps the
 # imported python modules to equivalent Dart module from Lib
@@ -131,6 +131,13 @@ class PyParser(ast.NodeVisitor):
         Identifies the Imports, Classes, Functions and code.
         The parsedClasses, parsedCode, parsedFunctions, parsedImports
         global variables are updated.
+
+        Module is the topmost node of the AST and the body contains a list of all
+        the otehr nodes. It traverses through every node which calls the overloaded
+        function visit_* where the Dart code is emitted.
+
+        Whenever a node is visited, the parsedType is updated to convey to visit_Module
+        wether it was a class, function, imports or just code.
         '''
         global parsedType, parsedClasses, parsedFunctions, parsedCode, parsedImports
 
@@ -309,11 +316,14 @@ class PyParser(ast.NodeVisitor):
     '''
 
     def visit_Name(self, stmt_name):
+        '''
+        Assigns True, False, Self, or None equivalents of python in Dart
+        '''
         global parsedType, wrap
 
         name = stmt_name.id
         if name is "False" or name is "True":
-            name = 'false' if name == 'False' else 'true'
+            name = "false" if name == "False" else "true"
             if wrap:
                 self.addImport(inc_path + "inbuilts.dart")
                 name = "new $PyBool(" + name + ")"
@@ -326,6 +336,9 @@ class PyParser(ast.NodeVisitor):
         return name
 
     def visit_Num(self, stmt_num):
+        '''
+        Assigns numeric value to the variable from the AST
+        '''
         global wrap
 
         code = ""
@@ -357,6 +370,9 @@ class PyParser(ast.NodeVisitor):
         return data
 
     def visit_BinOp(self, stmt_binop):
+        '''
+        Evaluates expressions using a Binary Operator
+        '''
         global wrap
 
         left = self.visit(stmt_binop.left)
@@ -372,6 +388,10 @@ class PyParser(ast.NodeVisitor):
         return exp
 
     def visit_BoolOp(self, stmt_boolop):
+        '''
+        Implementation of boolean operations.
+        Currently implemented And and Or
+        '''
         self.addImport(inc_path + "inbuilts.dart");
         op = self.visit(stmt_boolop.op)
         code = "$generator((){var $temp;"
@@ -399,6 +419,11 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_List(self, stmt_list):
+        '''
+        Generates code for Dart equivalent of Python lists.
+        new $pyList creates a new list with elements give as an attribute
+        int the AST
+        '''
         global wrap
 
         code = ""
@@ -445,6 +470,9 @@ class PyParser(ast.NodeVisitor):
         return self.visit_ListComp(stmt_generatorexp)
 
     def visit_Dict(self, stmt_dict):
+        '''
+        Generates code when a a dictionary is used in python
+        '''
         self.addImport(inc_path + "inbuilts.dart");
         code = "dict(list(["
         l = len(stmt_dict.keys)
@@ -499,6 +527,11 @@ class PyParser(ast.NodeVisitor):
             exit(-1)
 
     def visit_Call(self, stmt_call):
+        '''
+        This node is visited whenever a function is called.
+        First a check is done if the call is made ot an inbuilt library
+        or an object or a function
+        '''
         global pyClasses, pyInbuilts, forceCall, formats, fCalled
 
         code = self.visit(stmt_call.func)
@@ -548,6 +581,9 @@ class PyParser(ast.NodeVisitor):
         return code
 
     def visit_Compare(self, stmt_test):
+        '''
+        Comapring the left and right operands calls the visit_compare.
+        '''
         global wrap
 
         left = self.visit(stmt_test.left)
