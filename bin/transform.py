@@ -57,7 +57,7 @@ imports = {}
 imports['random'] = [inc_path + "pyrandom.dart", "$PyRandom"]
 imports['time'] = [inc_path + "pytime.dart", "$PyTime"]
 
-# exceptions is the dictionary that maps the
+# exceptions is the dictionary that maps to Dart expressions
 exceptions = {}
 exceptions['Exception'] = "Exception"
 exceptions['IOError'] = "FileSystemException"

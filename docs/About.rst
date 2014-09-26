@@ -13,3 +13,4 @@ Everyone who has contributed towards this project are:
 3. `Akash Giri <akashgiri@outlook.com>`_
 4. Pratik Shah
 5. `Mayuresh Waykole <mayuresh2212@gmail.com>`_
+6. `Aditi Mahajan <aditi.mahajan92@gmail.com>`_
