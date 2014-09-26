@@ -52,6 +52,11 @@ Coming Soon ;) Thanks for your patience.
 * Python files can be globally installed into Medusa for imports by other files: <b>medusavm -install python_file</b>
 * Help is at: <b>medusavm --help</b>
 
+## Documentation
+
+The medusa's documentation for developers and users can be accessed [here](http://medusa.readthedocs.org/)
+
+
 ## Contributing
 
 We'd love to have your help in making Medusa better and Python faster. Any and all contributions are welcome. Frankly speaking there's still a hell lot to do.
