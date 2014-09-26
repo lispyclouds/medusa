@@ -1,5 +1,7 @@
 ## Medusa
 
+![alt tag](https://raw.github.com/rahul080327/medusa/master/icon.png)
+
 An attempt at making Python stronger and faster like Medusa herself!
 
 Python being an interpreted language has its pros and cons and the aim is to fix one of the most obvious cons of Python: its execution speed.
@@ -21,7 +23,7 @@ Simply run <b>./INSTALL</b> after cloning this repo on your Debian based Linux d
 Coming Soon ;) Thanks for your patience.
 
 <b>Mac OSX Users (building from source):</b>
-* Install XCode if not installed (Sorry for the bandwidth hogging...)
+* Install Xcode if not installed (Sorry for the bandwidth hogging...)
 * Install python 2.7.x if not installed and add it to PATH
 * Download and Install latest Qt5 for Mac from [here](http://qt-project.org/downloads) and add qmake and moc to PATH
 * Download the latest Dart SDK from [here](https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-ia32-release.zip), unzip and add the dart executable to PATH

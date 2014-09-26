@@ -34,7 +34,7 @@ void Transform::pythonFinished(int exitCode, QProcess::ExitStatus) {
         query.exec();
     } else {
         query.exec("DELETE FROM MedusaCache WHERE InFile='" + path + "'");
-        cerr << reply.toStdString() << endl;
+        cerr << "\x1b[31m" + reply.toStdString() + "\x1b[0m" << endl;
     }
 }
 
@@ -42,7 +42,7 @@ void Transform::shitHappened(QProcess::ProcessError error) {
     if (error == QProcess::FailedToStart) {
         QSqlQuery query(db);
         query.exec("DELETE FROM MedusaCache WHERE InFile='" + path + "'");
-        cerr << "[Medusa Error] Python not found in PATH. Make sure its installed and is accesible via PATH" << endl;
+        cerr << "\x1b[31m[Medusa Error] Python not found in PATH. Make sure its installed and is accesible via PATH\x1b[0m" << endl;
         exitCode = -1;
     }
 }
@@ -53,7 +53,7 @@ bool Transform::transform(QString path, QString &code) {
     if (!QFile(QDir::homePath() + "/.medusa/transform.py").exists()) {
         QSqlQuery query(db);
         query.exec("DELETE FROM MedusaCache WHERE InFile='" + path + "'");
-        cerr << "[Medusa Error] What?! FPT Transformer not found. Please Reinstall." << endl;
+        cerr << "\x1b[31m[Medusa Error] What?! FPT Transformer not found. Please Reinstall.\x1b[0m" << endl;
         exit(-1);
     }
 

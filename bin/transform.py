@@ -154,7 +154,7 @@ class PyParser(ast.NodeVisitor):
             elif parsedType is "imports":
                 parsedImports += parsed.split(":")
             else:
-                sys.stderr.write("[Medusa Error] Can't Parse " + type(node))
+                sys.stderr.write("\x1b[31m[Medusa Error] Can't Parse " + type(node) + "\x1b[0m")
                 exit(-1)
 
     '''
@@ -408,7 +408,7 @@ class PyParser(ast.NodeVisitor):
                 elif op == "or":
                     code += "if($checkValue($temp))return $temp;"
                 else:
-                    sys.stderr.write("[Medusa Error] Operator not implemented => " + op)
+                    sys.stderr.write("\x1b[31m[Medusa Error] Operator not implemented => " + op + "\x1b[0m")
                     exit(-1)
             i += 1
 
@@ -523,7 +523,7 @@ class PyParser(ast.NodeVisitor):
             data = str(listVar) + index
             return data
         else:
-            sys.stderr.write("[Medusa Error] Unimplemented Type => " + type(stmt_Subscript.slice))
+            sys.stderr.write("\x1b[31m[Medusa Error] Unimplemented Type => " + type(stmt_Subscript.slice) + "\x1b[0m")
             exit(-1)
 
     def visit_Call(self, stmt_call):
@@ -690,11 +690,11 @@ class PyParser(ast.NodeVisitor):
                 elif os.path.exists(inc_path + name.name + ".py"):
                     iFile = inc_path + name.name + ".py"
                 else:
-                    sys.stderr.write("[Medusa Error] Unimplemented or module found for import: " + name.name)
+                    sys.stderr.write("\x1b[31m[Medusa Error] Unimplemented or module found for import: " + name.name + "\x1b[0m")
                     exit(-1)
 
                 if importing:
-                    sys.stderr.write("[Medusa Error] Cannot recursively import user code. Yet. Sorry :(")
+                    sys.stderr.write("\x1b[31m[Medusa Error] Cannot yet recursively import user code. Yet. Sorry :(\x1b[0m")
                     exit(-1)
 
                 importing = True
@@ -749,7 +749,7 @@ class PyParser(ast.NodeVisitor):
                 try:
                     code += pyClassCache[str(base.id)]
                 except KeyError:
-                    sys.stderr.write("[Medusa Error] Class " + str(base.id) + " is not yet defined!")
+                    sys.stderr.write("\x1b[31m[Medusa Error] Class " + str(base.id) + " is not yet defined!\x1b[0m")
                     exit(-1)
         else:
             code += "{"
@@ -1013,7 +1013,7 @@ class PyParser(ast.NodeVisitor):
                     code += self.visit(node)
                 code += "}"
             except KeyError:
-                sys.stderr.write("[Medusa Error] Exception handler not implemented for " + handler.type.id)
+                sys.stderr.write("\x1b[31m[Medusa Error] Exception handler not implemented for " + handler.type.id + "\x1b[0m")
                 exit(-1)
 
         if not final and len(nodes.orelse) > 0:
