@@ -14,7 +14,7 @@ Cache::Cache() {
     if (!QFile(medusaHome + "medusa.cache").exists()) {
         db.open();
         QSqlQuery query(db);
-        query.exec("CREATE TABLE MedusaCache (InFile TEXT, Hash VARCHAR(64), GenCode TEXT, PRIMARY KEY(InFile, Hash))");
+        query.exec("CREATE TABLE MedusaCache (InFile TEXT UNIQUE, Hash VARCHAR(64) UNIQUE, GenCode TEXT)");
     }
     else
         db.open();
