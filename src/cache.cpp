@@ -76,8 +76,10 @@ bool Cache::isCached(QString path, QString &code) {
         query.exec("SELECT GenCode FROM MedusaCache WHERE Hash='" + hash + "'");
         query.next();
 
-        if ((code = query.value(0).toString()) != "")
+        if (query.isValid()) {
+            code = query.value(0).toString();
             return true;
+        }
         else
             return changed(path, hash, code) ? false : true;
     }
