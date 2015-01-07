@@ -78,5 +78,5 @@ then
     mkdir ~/.medusa
 fi
 echo "Installing Dart Libs and FPT Transformer"
-cp -R bin/ ~/.medusa
+cp -a bin/.s ~/.medusa
 echo "Medusa 2.7.3 Successfully installed Yo! Runnable directly as 'medusavm' from the terminal. Happy Pythoning!"
