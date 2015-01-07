@@ -1,0 +1,5 @@
+**/.DS_Store
+medusavm
+.qmake.stash
+Makefile
+inc/transform_moc.h
