@@ -19,17 +19,13 @@ int main(int argc, char **argv) {
     QString path, name, code;
 
     if (app.arguments().size() == 1) {
-        cout << help << QString(QByteArray::fromBase64(art)).toStdString();
+        cout << help;
         return 0;
     }
 
     foreach (QString arg, args) {
         if (arg == "--help" || arg == "-h") {
-            cout << help << QString(QByteArray::fromBase64(art)).toStdString();
-            return 0;
-        }
-        else if (arg == "moo") {
-            cout << QString(QByteArray::fromBase64(mooData)).toStdString() << endl;
+            cout << help;
             return 0;
         }
         else if (arg == "-c")
