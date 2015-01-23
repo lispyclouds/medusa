@@ -355,9 +355,9 @@ class PyParser(ast.NodeVisitor):
         code = ""
         if wrap:
             self.addImport(inc_path + "inbuilts.dart")
-            code =  "str('" + str(stmt_str.s) + "')"
+            code =  "str(" + str(self.escape(stmt_str.s)) + ")"
         else:
-            code = "'" + str(stmt_str.s) + "'"
+            code = str(self.escape(stmt_str.s))
         return code
 
     def visit_IfExp(self, stmt_ternary):
