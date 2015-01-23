@@ -17,7 +17,7 @@ Still in its nascent stages and implemented using Qt/C++, Python and Dart, the p
 
 <b>Ubuntu/Ubuntu-derived Linux users:</b>
 
-Simply run <b>./INSTALL</b> after cloning this repo on your Debian based Linux distro. Thats it. All dependencies are installed, code compiled and paths setup automatically.
+Simply run <b>./INSTALL</b> after cloning this repo on your Ubuntu based Linux distro. Thats it. All dependencies are installed, code compiled and paths setup automatically.
 
 <b>Mac OSX Users (packaged app):</b>
 Coming Soon ;) Thanks for your patience.
