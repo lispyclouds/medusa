@@ -1,4 +1,6 @@
 #include <exec.h>
+#include <QFile>
+#include <iostream>
 
 void Exec::run(QString code, QString fileName, bool cStop) {
     QFile out(fileName);

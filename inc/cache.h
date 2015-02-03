@@ -1,13 +1,8 @@
 #ifndef CACHE_H
 #define CACHE_H
 
-#include <QDir>
+#include<QString>
 #include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlRecord>
-#include <QtSql/QSqlQuery>
-#include <QVariant>
-#include <sha256.h>
-#include <iostream>
 
 using namespace std;
 

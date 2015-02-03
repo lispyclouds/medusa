@@ -1,4 +1,5 @@
 #include <sha256.h>
+#include <string.h>
 
 uint32 sha256_h0[8] = {
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
