@@ -6,6 +6,7 @@
 #include <transform.h>
 #include <exec.h>
 #include <static_data.h>
+#include <QDir>
 
 using namespace std;
 

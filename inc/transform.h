@@ -2,11 +2,7 @@
 #define TRANSFORM_H
 
 #include <QObject>
-#include <QDir>
 #include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlRecord>
-#include <QtSql/QSqlQuery>
-#include <QVariant>
 #include <QProcess>
 
 class Transform : public QObject {

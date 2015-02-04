@@ -1,5 +1,8 @@
 #include <iostream>
 #include <transform_moc.h>
+#include <QDir>
+#include <QVariant>
+#include <QtSql/QSqlQuery>
 
 using namespace std;
 

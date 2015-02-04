@@ -1,4 +1,10 @@
 #include <cache.h>
+#include <QDir>
+#include <QtSql/QSqlRecord>
+#include <QtSql/QSqlQuery>
+#include <QVariant>
+#include <sha256.h>
+#include <iostream>
 
 Cache::Cache() {
     QString medusaHome = QDir::homePath() + "/.medusa/";

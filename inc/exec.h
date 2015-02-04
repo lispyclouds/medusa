@@ -1,8 +1,7 @@
 #ifndef EXEC_H
 #define EXEC_H
 
-#include <QFile>
-#include <iostream>
+#include <QString>
 
 using namespace std;
 
