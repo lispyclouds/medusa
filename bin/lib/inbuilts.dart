@@ -26,6 +26,14 @@ class $PyFile {
         }
     }
 
+    $enter() {
+        return this;
+    }
+
+    $exit() {
+        this.close();
+    }
+
     read([bytes]) {
         if (bytes == null)
             bytes = handle.lengthSync();
@@ -39,7 +47,7 @@ class $PyFile {
         // do something here please
     }
 
-    readlines() => new $PyString(new File(name).readAsLinesSync());
+    readlines() => new $PyList(new File(name).readAsLinesSync());
     write(data) => handle.writeStringSync(data.toString());
     tell() => handle.positionSync();
 
@@ -79,11 +87,10 @@ class $PyFile {
 open(name, [mode = 'r']) {
     name = name.toString();
 
-    $PyFile file = new $PyFile(name, mode);
     if ((mode == "r" || mode == "rb") && !new File(name).existsSync())
         throw new FileSystemException();
 
-    return file;
+    return new $PyFile(name, mode);
 }
 
 file(path, [mode = 'r']) {
