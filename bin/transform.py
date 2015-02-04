@@ -42,6 +42,7 @@ userImports = []
 
 fNames = []                           # Function names
 fCalled = []                          # Called functions
+withBlock = ""
 
 classyMode = False                    # True during conversion of code in a Class
 funMode = False                       # True during conversion of code in a Function
@@ -139,7 +140,7 @@ class PyParser(ast.NodeVisitor):
         Whenever a node is visited, the parsedType is updated to convey to visit_Module
         wether it was a class, function, imports or just code.
         '''
-        global parsedType, parsedClasses, parsedFunctions, parsedCode, parsedImports
+        global parsedType, parsedClasses, parsedFunctions, parsedCode, parsedImports, withBlock
 
         for node in stmt_module.body:
             parsedType = "code"
@@ -150,7 +151,11 @@ class PyParser(ast.NodeVisitor):
             elif parsedType is "function":
                 parsedFunctions.append(parsed)
             elif parsedType is "code":
-                parsedCode.append(parsed)
+                if isinstance(node, _ast.With):
+                    parsedCode.append(withBlock)
+                    withBlock = ""
+                else:
+                    parsedCode.append(parsed)
             elif parsedType is "imports":
                 parsedImports += parsed.split(":")
             else:
@@ -780,7 +785,7 @@ class PyParser(ast.NodeVisitor):
         return ""
 
     def visit_FunctionDef(self, stmt_function):
-        global dartLocalVars, funMode, parsedType, fNames
+        global dartLocalVars, funMode, parsedType, fNames, withBlock
 
         body, code, defines, arguments = "", "", "", []
 
@@ -792,7 +797,12 @@ class PyParser(ast.NodeVisitor):
 
         funMode = True
         for node in stmt_function.body:
-            body += self.visit(node)
+            if isinstance(node, _ast.With):
+                self.visit(node)
+                body += withBlock
+                withBlock = ""
+            else:
+                body += self.visit(node)
         funMode = False
 
         for arg in arguments:
@@ -1046,6 +1056,29 @@ class PyParser(ast.NodeVisitor):
         else:
             return None
 
+    def visit_With(self, stmt_with):
+        global dartLocalVars, dartClassVars, dartGlobalVars, funMode, classyMode, withBlock
+
+        expr = self.visit(stmt_with.context_expr)
+        var = self.visit(stmt_with.optional_vars)
+
+        if funMode and var not in dartLocalVars:
+            dartLocalVars.append(var)
+        elif classyMode and var not in dartClassVars:
+            dartClassVars.append(var)
+        else:
+            if var not in dartGlobalVars:
+                dartGlobalVars.append(var)
+
+        withBlock += "".join([var, " = ", expr, ".$enter();"])
+
+        for node in stmt_with.body:
+            if not isinstance(node, _ast.With):
+                withBlock += self.visit(node)
+            else:
+                self.visit(node)
+
+        withBlock += var + ".$exit();"
 
 PyParser().parse(open(sys.argv[1]).read())
 
