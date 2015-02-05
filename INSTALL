@@ -41,7 +41,7 @@ elif type "g++" > /dev/null 2>&1
 then
     echo "g++ found, using it."
 else
-    echo "No C++ compilers found. Installing GNU bulid tools..."
+    echo "No C++ compilers found. Installing GNU build tools..."
     sudo apt-get -y install build-essential
 fi
 
@@ -65,7 +65,7 @@ echo "Generating Makefile..."
 $qHome/qmake -o Makefile medusa.pro $qmake_opt
 echo "Done"
 
-echo "Buliding and Installing Medusa 2.7.3..."
+echo "Building and Installing Medusa 2.7.3..."
 make -j $(grep -c ^processor /proc/cpuinfo)
 sudo make install
 make clean
