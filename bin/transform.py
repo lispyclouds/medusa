@@ -1,6 +1,6 @@
 import ast, _ast, sys, os
 
-inc_path = "file:///" + os.path.expanduser("~").replace("\\", "/") + "/.medusa/lib/"
+inc_path = "".join(["file:///", os.path.expanduser("~").replace("\\", "/"), "/.medusa/lib/"])
 
 dartImports = []
 dartLocalVars = []
@@ -212,7 +212,6 @@ class PyParser(ast.NodeVisitor):
     def visit_Div(self, stmt_div):
         return "/"
 
-
     def visit_FloorDiv(self, stmt_fdiv):
         return "/"
 
@@ -349,7 +348,7 @@ class PyParser(ast.NodeVisitor):
         code = ""
         if wrap:
             self.addImport(inc_path + "inbuilts.dart")
-            code = "$n(" + str(stmt_num.n) + ")"
+            code = "".join(["$n(", str(stmt_num.n), ")"])
         else:
             code = str(stmt_num.n)
         return code
@@ -360,13 +359,13 @@ class PyParser(ast.NodeVisitor):
         code = ""
         if wrap:
             self.addImport(inc_path + "inbuilts.dart")
-            code =  "str(" + str(self.escape(stmt_str.s)) + ")"
+            code =  "".join(["str(", str(self.escape(stmt_str.s)), ")"])
         else:
             code = str(self.escape(stmt_str.s))
         return code
 
     def visit_IfExp(self, stmt_ternary):
-        stmt = self.visit(stmt_ternary.test) + "?" + self.visit(stmt_ternary.body) + ":" + self.visit(stmt_ternary.orelse)
+        stmt = "".join([self.visit(stmt_ternary.test), "?", self.visit(stmt_ternary.body), ":", self.visit(stmt_ternary.orelse)])
         return stmt
 
     def visit_UnaryOp(self, stmt_unop):
@@ -456,11 +455,11 @@ class PyParser(ast.NodeVisitor):
         self.addImport(inc_path + "inbuilts.dart")
         code = "$generator((){var $list=new $PyList([]);"
         for node in stmt_listcomp.generators:
-            code += "for(var " + self.visit(node.target) + " in " + self.visit(node.iter) + "){"
+            code += "".join(["for(var ", self.visit(node.target), " in ", self.visit(node.iter), "){"])
             for ifnode in node.ifs:
-                code += "if(" + self.visit(ifnode) + "){"
+                code += "".join(["if(", self.visit(ifnode), "){"])
 
-        code += "$list.append(" + self.visit(stmt_listcomp.elt) + ");"
+        code += "".join(["$list.append(", self.visit(stmt_listcomp.elt), ");"])
 
         for node in reversed(stmt_listcomp.generators):
             for ifnode in node.ifs:
@@ -483,7 +482,7 @@ class PyParser(ast.NodeVisitor):
         l = len(stmt_dict.keys)
         i = 0
         while i < l:
-            code += "tuple([" + self.visit(stmt_dict.keys[i]) + "," + self.visit(stmt_dict.values[i]) + "])"
+            code += "".join(["tuple([", self.visit(stmt_dict.keys[i]), ",", self.visit(stmt_dict.values[i]), "])"])
             if (i + 1) < l:
                 code += ","
             i += 1
@@ -651,8 +650,10 @@ class PyParser(ast.NodeVisitor):
 
         fromTest = True
         code = self.visit(stmt_if.test)
-        if isinstance(stmt_if.test, _ast.Name):
-            code = "$checkValue(" + code + ")"
+
+        if not isinstance(stmt_if.test, _ast.BoolOp):
+            code = "".join(["$checkValue(", code, ")"])
+
         code = "if(" + code + "){"
         for node in stmt_if.body:
             code += self.visit(node)
