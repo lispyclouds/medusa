@@ -1,5 +1,7 @@
 ## Medusa
 
+[![Join the chat at https://gitter.im/rahul080327/medusa](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/rahul080327/medusa?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ![alt tag](https://raw.github.com/rahul080327/medusa/master/icon.png)
 
 An attempt at making Python stronger and faster like Medusa herself!
