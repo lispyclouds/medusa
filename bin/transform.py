@@ -944,7 +944,6 @@ class PyParser(ast.NodeVisitor):
         global broken
         return "$broken=true;break;" if broken else "break;"
 
-
     def visit_While(self, stmt_while):
         code = "while(" + self.visit(stmt_while.test) + "){"
         for node in stmt_while.body:

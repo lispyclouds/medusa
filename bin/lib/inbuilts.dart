@@ -44,7 +44,8 @@ class $PyFile {
     }
 
     readline() {
-        // do something here please
+        stderr.writeln("readline() unimplemented till now. Sorry. Exiting...");
+        exit(1);
     }
 
     readlines() => new $PyList(new File(name).readAsLinesSync());
@@ -1096,13 +1097,14 @@ any(iterable) {
 
 bin(integer) {
     integer = integer.value;
-    int num1, x = 0;
-    while (integer > 0) {
-        x = integer % 2;
-        num1 = num1 * 10 + x;
-        integer ~/= 2;
+    String binString = "0b";
+
+    if (integer < 0) {
+        binString = "-" + binString;
+        integer *= -1;
     }
-    return new $PyNum(num1);
+
+    return new $PyString(binString + integer.toRadixString(2));
 }
 
 len(target) => new $PyNum(target.length);
