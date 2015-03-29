@@ -51,6 +51,7 @@ formats = False
 fromTest = False
 wrap = True                           # True when wrapping something with braces
 importing = False                     # True when an external module is imported
+isGenerator = False
 
 # Imports is a dictionary that maps the
 # imported python modules to equivalent Dart module from Lib
@@ -786,7 +787,7 @@ class PyParser(ast.NodeVisitor):
         return ""
 
     def visit_FunctionDef(self, stmt_function):
-        global dartLocalVars, funMode, parsedType, fNames, withBlock
+        global dartLocalVars, funMode, parsedType, fNames, withBlock, isGenerator
 
         body, code, defines, arguments = "", "", "", []
 
@@ -817,11 +818,11 @@ class PyParser(ast.NodeVisitor):
             fNames.append(stmt_function.name)
 
         if stmt_function.name == "__init__":
-            code = pyClasses[-1] + "(" + code
+            code = pyClasses[-1] + "("
         elif stmt_function.name == "main":
-            code = "$main(" + code
+            code = "$main("
         else:
-            code = stmt_function.name + "(" + code
+            code = stmt_function.name + "("
 
         alen = len(stmt_function.args.args)
         dIndex = -1
@@ -847,10 +848,15 @@ class PyParser(ast.NodeVisitor):
             if (i + 1) < alen:
                 code += ","
             i += 1
+        if b: code += "]"
 
-        if b:
-            code += "]"
-        code += "){" + fixers + defines + body + "}"
+        if isGenerator:
+            genPrefix, genSuffix = "return new $Generator(() sync* {", "});"
+            isGenerator = False
+        else:
+            genPrefix, genSuffix = "", ""
+
+        code += "".join(["){", fixers, genPrefix, defines, body, genSuffix, "}"])
         dartLocalVars = []
         parsedType = "function"
         return code
@@ -1079,6 +1085,13 @@ class PyParser(ast.NodeVisitor):
                 self.visit(node)
 
         withBlock += var + ".$exit();"
+
+    def visit_Yield(self, stmt_yield):
+        global isGenerator
+
+        isGenerator = True
+        self.addImport(inc_path + "inbuilts.dart")
+        return "yield " + self.visit(stmt_yield.value)
 
 PyParser().parse(open(sys.argv[1]).read())
 

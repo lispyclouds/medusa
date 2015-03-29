@@ -1275,6 +1275,18 @@ min(values) {
     return values.first;
 }
 
+next(object) => object.next();
+
+class $Generator extends IterableBase {
+    var _logic, _current = 0;
+
+    $Generator(this._logic);
+    get iterator => this._logic().iterator;
+    prev() => _current - 1 < 0 ? throw "StopIteration" : this.elementAt(_current--);
+    next() => _current + 1 > this.length ? throw "StopIteration" : this.elementAt(_current++);
+    toString() => "<medusa-generator object>";
+}
+
 class $Range extends Object with IterableMixin<int> {
     int start, stop, step;
 
