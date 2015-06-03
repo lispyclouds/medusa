@@ -9,7 +9,7 @@ An attempt at making Python stronger and faster like Medusa herself!
 Python being an interpreted language has its pros and cons and the aim is to fix one of the most obvious cons of Python: its execution speed.
 We all love Python for its simplicity and flexibility but when it comes to writing large volumes of code involving complex operations and recursions Python somewhat falls short compared to the other native/JIT languages.
 
-In late 2011, Google came up with Dart, a language aiming for the unification of server and client side web development and scalable apps. Along with it came The Dart Virtual Machine. A hyper fast VM which builds upon the V8 js engine and even outperforms it. We decided why not let Python have a go on this?
+In late 2012, Google came up with Dart, a language aiming for the unification of server and client side web development and scalable apps. Along with it came The Dart Virtual Machine. A hyper fast VM which builds upon the V8 js engine and even outperforms it. We decided why not let Python have a go on this?
 
 The main aim behind creating the Medusa project is giving a typless and flexible language like Python a faster execution environment while still maintaining all its flexibility which we all love. Numerous projects such as the ShedSkin project which converts implicitly typed Python to C++ have tried doing it, but have put some or the other restriction on the input Python code. The Medusa project aims at running pre-existing Python code without any or minimal modification at a much faster rates compared to the usual implementations.
 
