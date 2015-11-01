@@ -26,9 +26,12 @@ then
     echo "Dart SDK found, moving on..."
 else
     echo "Dart SDK not found, installing..."
-    sudo add-apt-repository -y ppa:hachre/dart
     sudo apt-get update
-    sudo apt-get -y install dartsdk
+    sudo apt-get install apt-transport-https
+    sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+    sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+    sudo apt-get update
+    sudo apt-get install dart/stable
 fi
 
 echo "Checking for C++ compilers..."
