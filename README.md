@@ -9,29 +9,29 @@ An attempt at making Python stronger and faster like Medusa herself!
 Python being an interpreted language has its pros and cons and the aim is to fix one of the most obvious cons of Python: its execution speed.
 We all love Python for its simplicity and flexibility but when it comes to writing large volumes of code involving complex operations and recursions Python somewhat falls short compared to the other native/JIT languages.
 
-In late 2012, Google came up with Dart, a language aiming for the unification of server and client side web development and scalable apps. Along with it came The Dart Virtual Machine. A hyper fast VM which builds upon the V8 js engine and even outperforms it. We decided why not let Python have a go on this?
+In late 2012, Google came up with Dart, a language aiming for the unification of server- and client-side web development and scalable apps. Along with it came The Dart Virtual Machine. A hyperfast VM which builds upon the V8 JS engine and even outperforms it. We decided: why not let Python have a go on this?
 
-The main aim behind creating the Medusa project is giving a typless and flexible language like Python a faster execution environment while still maintaining all its flexibility which we all love. Numerous projects such as the ShedSkin project which converts implicitly typed Python to C++ have tried doing it, but have put some or the other restriction on the input Python code. The Medusa project aims at running pre-existing Python code without any or minimal modification at a much faster rates compared to the usual implementations.
+The main aim behind creating the Medusa project was to give a typeless and flexible language like Python a faster execution environment, while still maintaining all the flexibility which we know and love. Numerous projects such as the ShedSkin project which converts implicitly typed Python to C++ have tried doing it, but have put some or the other restriction on the input Python code. The Medusa project aims at running pre-existing Python code with minimal or no modifications, at a much faster rates compared to the usual implementations.
 
-Still in its nascent stages and implemented using Qt/C++, Python and Dart, the project works by compiling Python code to a highly optimized Dart code in real time, persistently caching it and letting it rip on the Dart VM. The Dart VM like V8 compiles the dart code directly to machine code and using its vast array of runtime optimizations runs at a much higher speed compared to the CPython implementation and at times upto a 1000 - 1500% faster while maintaining all the features Python offers. Apart from this Python is further enriched with extra features provided by the Dart VM and you can do more stuff with Python which isn't possible with the vanilla Python.
+Still in its nascent stages and implemented using Qt/C++, Python and Dart, the project works by compiling Python code to a highly optimized Dart code in real-time, persistently caching it and letting it rip on the Dart VM. The Dart VM, like V8, compiles the Dart code directly to machine code and using its vast array of runtime optimizations runs at a much higher speed compared to the CPython implementation and at times up to 1000 - 1500% faster, while maintaining all the features Python offers. Apart from this Python is further enriched with extra features provided by the Dart VM and you can do more stuff with Python which isn't possible with the vanilla Python.
 
 ## Installing
 
 <b>Ubuntu/Ubuntu-derived Linux users:</b>
 
-Simply run <b>./INSTALL</b> after cloning this repo on your Ubuntu based Linux distro. Thats it. All dependencies are installed, code compiled and paths setup automatically.
+Simply run `./INSTALL` after cloning this repo on your Ubuntu-based Linux distro. That's it. All dependencies are installed, code compiled and paths setup automatically.
 
-<b>Mac OSX Users (packaged app):</b>
+<b>Mac OS X Users (packaged app):</b>
 Coming Soon ;) Thanks for your patience.
 
-<b>Mac OSX Users (building from source):</b>
-* Install Xcode if not installed (Sorry for the bandwidth hogging...)
-* Install python 2.7.x if not installed and add it to PATH
-* Download and Install latest Qt5 for Mac from [here](http://qt-project.org/downloads) and add qmake and moc to PATH
-* Download the latest Dart SDK from [here](https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-ia32-release.zip), unzip and add the dart executable to PATH
-* Clone this repo and simply run <b>./INSTALL.mac</b>
-* After a succesful compile medusavm binary is available in /usr/bin/ for use
-* For updates and subsequent builds, fetch changes and just run <b>./INSTALL.mac</b>
+<b>Mac OS X Users (building from source):</b>
+* Install XCode if not installed (Sorry for the bandwidth hogging...)
+* Install Python 2.7.x if not installed and add it to $PATH
+* Download and install latest Qt5 for Mac from [here](http://qt-project.org/downloads) and add `qmake` and `moc` to $PATH
+* Download the latest Dart SDK from [here](https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-ia32-release.zip), unzip and add the `dart` executable to $PATH
+* Clone this repo and simply run `./INSTALL.mac<`
+* After a succesful compile, `medusavm` binary is available in /usr/bin/ for use
+* For updates and subsequent builds, fetch changes and just run `./INSTALL.mac`
 
 <b>Yeah, I finally have a MacBook! ^_^</b>
 
@@ -40,24 +40,23 @@ Coming Soon ;) Thanks for your patience.
 * Install Qt5 build tools and libs
 * Install Dart SDK
 * Install Python 2.7.x
-* Rum moc on inc/transform.h to inc/transform_moc.h
-* Run qmake on medusa.pro
-* Run make
+* Run `moc` on `inc/transform.h` to `inc/transform_moc.h`
+* Run `qmake` on `medusa.pro`
+* Run `make`
 * Use the medusavm executable
 
 ## Running
 
 <b>Using Medusa:</b>
-* Medusa is available as <b>medusavm</b> after a successful buid and install
-* Python programs can be run by passing them as parameters: <b>medusavm hello.py</b>
-* Medusa can be stopped after the Dart compile phase by passing a -c switch: <b>medusavm -c hello.py</b>. The Dart code is obtained in hello.dart in the same directory.
-* Python files can be globally installed into Medusa for imports by other files: <b>medusavm -install python_file</b>
-* Help is at: <b>medusavm --help</b>
+* Medusa is available as `medusavm` after a successful buid and install
+* Python programs can be run by passing them as parameters: `medusavm hello.py`
+* Medusa can be stopped after the Dart compile phase by passing a -c switch: `medusavm -c hello.py`. The Dart code can be found in `hello.dart` in the same directory.
+* Python files can be globally installed into Medusa for imports by other files: `medusavm -install python_file`
+* Help is at: `medusavm --help`
 
 ## Documentation
 
-The medusa's documentation for developers and users can be accessed [here](http://medusa.readthedocs.org/)
-
+medusa's documentation for developers and users can be accessed [here](http://medusa.readthedocs.org/)
 
 ## Contributing
 
