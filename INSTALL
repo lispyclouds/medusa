@@ -12,12 +12,12 @@ else
 fi
 
 echo "Checking for Python 2.7 Installation..."
-if type "python" > /dev/null 2>&1
+if type "python2.7" > /dev/null 2>&1
 then
     echo "Python 2.7 found, moving on..."
 else
     echo "Python 2.7 not found, installing..."
-    sudo apt-get -y install python
+    sudo apt-get -y install python2.7
 fi
 
 echo "Checking for Dart SDK Installation..."

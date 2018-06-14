@@ -68,7 +68,7 @@ bool Transform::transform(QString path, QString &code) {
     connect(python, SIGNAL(readyReadStandardOutput()), this, SLOT(readStandardOutput()));
     connect(python, SIGNAL(error(QProcess::ProcessError)), this, SLOT(shitHappened(QProcess::ProcessError)));
 
-    python->start("python", args);
+    python->start("python2.7", args);
     python->waitForFinished();
     code = reply;
 
